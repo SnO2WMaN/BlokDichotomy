@@ -1,0 +1,10 @@
+name = "BlokDichotomy"
+version = "0.1.0"
+defaultTargets = ["blokdichotomy"]
+
+[[lean_lib]]
+name = "BlokDichotomy"
+
+[[lean_exe]]
+name = "blokdichotomy"
+root = "Main"
