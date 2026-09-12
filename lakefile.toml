@@ -8,3 +8,8 @@ name = "BlokDichotomy"
 [[lean_exe]]
 name = "blokdichotomy"
 root = "Main"
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.33.1"
