@@ -1,13 +1,9 @@
 name = "BlokDichotomy"
 version = "0.1.0"
-defaultTargets = ["blokdichotomy"]
+defaultTargets = ["BlokDichotomy"]
 
 [[lean_lib]]
 name = "BlokDichotomy"
-
-[[lean_exe]]
-name = "blokdichotomy"
-root = "Main"
 
 [[require]]
 name = "mathlib"
