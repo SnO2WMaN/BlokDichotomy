@@ -1,12 +1,13 @@
 module
 
 public import BlokDichotomy.Kripke.Basic
+public import Mathlib.SetTheory.Cardinal.Continuum
 
 /-!
-# Uncountably many consistent normal logics
+# Continuum many consistent normal logics
 
 `logicMaks 𝔸` is `𝐊` extended by the axioms `axiomMaks n` for `n ∈ 𝔸`. The map `logicMaks` is
-injective with consistent values, so there are uncountably many consistent normal logics over `ℕ`.
+injective with consistent values, so there are exactly `𝔠` consistent normal logics over `ℕ`.
 -/
 
 @[expose]
@@ -190,14 +191,25 @@ theorem injective_logicMaks : Function.Injective logicMaks := by
   exact Set.Subset.antisymm (of_logicMaks_le (by grind)) (of_logicMaks_le (by grind));
 
 
-instance : Uncountable (Set ℕ) :=
-  uncountable_iff_forall_not_surjective.mpr Function.cantor_surjective
-
-theorem uncountable_consistent_normal_logics :
-    Uncountable ({ L : NormalLogic ℕ // L.Consistent }) := by
-  apply Function.Injective.uncountable (f := fun 𝔸 => ⟨logicMaks 𝔸, consistent_logicMaks⟩);
-  intro 𝔸 𝔹 h;
-  exact injective_logicMaks <| by simpa using h;
+open Cardinal in
+/--
+There are exactly continuum many consistent normal logics over `ℕ`.
+- [CZ98, §10.5]
+-/
+theorem mk_consistent_normalLogic_eq_continuum
+  : Cardinal.mk { L : NormalLogic ℕ // L.Consistent } = 𝔠 := by
+  apply le_antisymm
+  · calc
+      _ ≤ Cardinal.mk (Set (Formula ℕ)) :=
+          mk_le_of_injective (f := fun L => (L.1 : Set (Formula ℕ)))
+            fun _ _ h => Subtype.ext <| SetLike.coe_injective h
+      _ = 2 ^ Cardinal.mk (Formula ℕ) := mk_set
+      _ ≤ 2 ^ ℵ₀ := power_le_power_left two_ne_zero mk_le_aleph0
+      _ = _ := two_power_aleph0
+  · calc
+      𝔠 = Cardinal.mk (Set ℕ) := by simp
+      _ ≤ _ := mk_le_of_injective (f := fun 𝔸 => ⟨logicMaks 𝔸, consistent_logicMaks⟩)
+          fun 𝔸 𝔹 h => injective_logicMaks <| by simpa using h
 
 end Maks
 

@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Data.Finset.Basic
 public import Mathlib.Data.List.Basic
+public import Mathlib.Tactic.DeriveCountable
 
 /-!
 # Formulas of propositional modal logic
@@ -20,6 +21,8 @@ inductive Formula (α : Type u) where
   | imp    : Formula α → Formula α → Formula α
   | dia  : Formula α → Formula α
   deriving DecidableEq
+
+deriving instance Countable for Formula
 
 abbrev FormulaSet (α : Type u) := Set (Formula α)
 

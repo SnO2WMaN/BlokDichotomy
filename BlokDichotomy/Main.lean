@@ -2,7 +2,6 @@ module
 
 public import BlokDichotomy.Incomplete.Naming
 public import BlokDichotomy.Incomplete.Minimal
-public import Mathlib.Tactic.DeriveCountable
 
 /-!
 # Blok's dichotomy theorem
@@ -19,7 +18,6 @@ The degree of Kripke incompleteness of a normal logic extending `𝐊` is `1` or
 
 universe u
 
-deriving instance Countable for Formula
 
 namespace NormalLogic
 
