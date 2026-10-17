@@ -201,7 +201,8 @@ theorem mk_consistent_normalLogic_eq_continuum
   apply le_antisymm
   · calc
       _ ≤ Cardinal.mk (Set (Formula ℕ)) :=
-          mk_le_of_injective (f := fun L => (L.1 : Set (Formula ℕ)))
+          mk_le_of_injective
+            (f := fun L : { L : NormalLogic ℕ // L.Consistent } => (L.1 : Set (Formula ℕ)))
             fun _ _ h => Subtype.ext <| SetLike.coe_injective h
       _ = 2 ^ Cardinal.mk (Formula ℕ) := mk_set
       _ ≤ 2 ^ ℵ₀ := power_le_power_left two_ne_zero mk_le_aleph0
