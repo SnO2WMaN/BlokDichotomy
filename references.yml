@@ -1,0 +1,29 @@
+# Bibliography for BlokDichotomy, in Hayagriva YAML format.
+# https://github.com/typst/hayagriva/blob/main/docs/file-format.md
+#
+# The keys are the citation keys used in docstrings, e.g. `- [CZ98, Theorem 10.55]`;
+# see docs/conventions.md. Entries are sorted by key.
+
+Blok78:
+  type: Misc
+  title: "On the degree of incompleteness of modal logics and the covering relation in the lattice of modal logics"
+  author: Blok, Willem J.
+  genre: Technical report
+  organization: Department of Mathematics, University of Amsterdam
+  date: 1978
+  note: "Report 78-07"
+
+CZ98:
+  type: Book
+  title: Modal Logic
+  author: ["Chagrov, Alexander", "Zakharyaschev, Michael"]
+  date: 1997
+  publisher:
+    name: Clarendon Press
+    location: Oxford
+  serial-number:
+    isbn: "0-19-853779-4"
+  parent:
+    type: Anthology
+    title: Oxford Logic Guides
+    volume: 35

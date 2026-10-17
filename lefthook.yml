@@ -1,0 +1,63 @@
+# Local mirror of the checks CI runs on a pull request, executed before `git push` so a red CI
+# run is caught here instead of on GitHub.
+#
+#   just hooks           install the hooks into this clone (once per clone)
+#   LEFTHOOK=0 git push  push without running them
+#
+# Anything host-specific (extra checks, local skips) belongs in `lefthook-local.yml`, which is
+# git-ignored.
+#
+# Every command starts with the same preamble:
+#
+#   set -e                          a multi-line `run` reports only its last command's status
+#   unset GIT_DIR …                 git exports these to its hooks, and they leak into the `git`
+#                                   calls `lake` makes for its git dependencies (mathlib and its own
+#                                   dependencies): with GIT_DIR set, a nested
+#                                   `git -C .lake/packages/<dep> remote get-url origin` answers
+#                                   for THIS repository instead, so lake concludes the
+#                                   dependency's URL changed and deletes the package to re-clone
+#                                   it. Clearing them makes every nested `git` discover its
+#                                   repository from the working directory again, as it does
+#                                   outside a hook.
+
+min_version: 1.11.0
+
+pre-push:
+  # Sequential and fail-fast: `lake check` reads the oleans the build produces, so there is
+  # nothing to check once the build is red, and `mk_all` rewrites the root module the build then
+  # reads.
+  piped: true
+  # Nothing to check while a merge or rebase is only half-finished.
+  skip:
+    - merge
+    - rebase
+  commands:
+    # `commands` run in name order, hence the numeric prefixes.
+
+    # `mk_all` is deterministic, so regenerating the root module and finding it different from
+    # `HEAD` means the commit being pushed is missing an import.
+    1_mk-all:
+      run: |
+        set -e
+        unset GIT_DIR GIT_WORK_TREE GIT_COMMON_DIR GIT_INDEX_FILE GIT_PREFIX
+        lake exe mk_all --lib BlokDichotomy --module
+        if ! git diff HEAD --quiet -- BlokDichotomy.lean; then
+          echo "BlokDichotomy.lean was out of date; it has been regenerated. Commit it and push again."
+          exit 1
+        fi
+
+    # `--wfail` fails the build on any warning, so a linter warning is caught here rather than
+    # becoming a review finding.
+    2_build:
+      run: |
+        set -e
+        unset GIT_DIR GIT_WORK_TREE GIT_COMMON_DIR GIT_INDEX_FILE GIT_PREFIX
+        lake build BlokDichotomy --wfail
+
+    # The main theorem is checked by the kernel and must reach only the standard axioms: no
+    # `sorry`, no `axiom`.
+    3_check:
+      run: |
+        set -e
+        unset GIT_DIR GIT_WORK_TREE GIT_COMMON_DIR GIT_INDEX_FILE GIT_PREFIX
+        lake check

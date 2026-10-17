@@ -1,1 +1,17 @@
-/.lake
+# Lake
+.lake
+
+# direnv
+.envrc
+
+# VSCode
+.vscode/settings.json
+
+# Claude
+.claude/*
+
+# lefthook
+lefthook-local.yml
+
+# Generated import graph
+import-graph/

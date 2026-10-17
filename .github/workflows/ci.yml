@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Supersede stale runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Builds with Mathlib's olean cache, and turns every warning into an error, matching the
+      # pre-push hook (`lake build BlokDichotomy --wfail`).
+      - uses: leanprover/lean-action@v1
+        with:
+          build-args: "BlokDichotomy --wfail"
+
+      - uses: extractions/setup-just@v3
+
+      # The main theorem is checked by the kernel against its statement, and must reach only the
+      # standard axioms (`propext`, `Quot.sound`, `Classical.choice`): no `sorry`, no `axiom`.
+      - name: Check the proof
+        run: lake check
+
+      # `mk_all` is deterministic, so regenerating the root module and finding it different from
+      # `HEAD` means the commit is missing an import.
+      - name: Check mk_all executed
+        run: |
+          just mk-all
+          if ! git diff HEAD --quiet -- BlokDichotomy.lean; then
+            echo "BlokDichotomy.lean was out of date. Run 'just mk-all' and commit the changes."
+            exit 1
+          fi

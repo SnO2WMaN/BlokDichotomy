@@ -2,10 +2,21 @@ name = "BlokDichotomy"
 version = "0.1.0"
 defaultTargets = ["BlokDichotomy"]
 
+# Mathlib's own options: `autoImplicit` off, and the standard linter set that downstream
+# projects are meant to opt into wholesale (see `register_linter_set linter.mathlibStandardSet`
+# in `Mathlib/Init.lean`). Only the header linter is dropped: it enforces Mathlib's copyright
+# header, which this repository does not carry. `lake build --wfail` turns every warning the
+# set emits into an error.
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+weak.linter.mathlibStandardSet = true
+weak.linter.style.header = false
+
 [[lean_lib]]
 name = "BlokDichotomy"
 
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4"
-rev = "v4.33.1"
+rev = "stable"
