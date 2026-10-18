@@ -1724,7 +1724,8 @@ variable {L : NormalLogic ℕ} {P : {κ : Type u} → Frame κ → Prop}
 - [CZ98, §10.5]
 -/
 theorem degree_le_continuum : degree P L ≤ 𝔠 :=
-  calc degree P L ≤ Cardinal.mk (Set (Formula ℕ)) :=
+  calc
+    _ ≤ Cardinal.mk (Set (Formula ℕ)) :=
         mk_le_of_injective (f := fun L₁ : Companion P L => (L₁.1 : Set (Formula ℕ)))
           fun _ _ h => Subtype.ext <| SetLike.coe_injective h
     _ = 2 ^ Cardinal.mk (Formula ℕ) := mk_set
@@ -1754,9 +1755,9 @@ theorem degree_eq_one_iff_isUnionSplitting (hc : L.Consistent)
   : L.degree (fun _ => True) = 1 ↔ L.IsUnionSplitting := by
   constructor;
   · intro h;
-    exact
-      not_not.mp fun hL => (one_lt_aleph0.trans aleph0_lt_continuum).ne'
-      ((degree_eq_continuum hc hL).symm.trans h)
+    by_contra hL;
+    apply (one_lt_aleph0.trans aleph0_lt_continuum).ne';
+    rwa [degree_eq_continuum hc hL] at h;
   · exact degree_eq_one_of_isUnionSplitting
 
 /--
