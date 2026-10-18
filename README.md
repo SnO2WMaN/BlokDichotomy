@@ -10,6 +10,10 @@ This project depends only on [Mathlib](https://github.com/leanprover-community/m
   lattice of modal logics*, Report 78-07, Department of Mathematics, University of Amsterdam,
   1978.
 
+## Import graph
+
+![Import graph](https://sno2wman.github.io/BlokDichotomy/import-graph.png)
+
 ## Setup
 
 ```bash
