@@ -1,9 +1,7 @@
 # BlokDichotomy
 
-A Lean 4 formalization of Blok's dichotomy theorem: the degree of Kripke incompleteness of a
-normal modal logic is either $1$ or $2^{\aleph_0}$, with nothing in between. The result is due
-to W. J. Blok's 1978 report and is presented in Chagrov and Zakharyaschev's *Modal Logic*,
-§10.5. This project depends only on [Mathlib](https://github.com/leanprover-community/mathlib4).
+A Lean 4 formalization of Blok's dichotomy theorem.
+This project depends only on [Mathlib](https://github.com/leanprover-community/mathlib4).
 
 ## References
 
