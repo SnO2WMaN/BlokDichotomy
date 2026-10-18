@@ -40,7 +40,7 @@ theorem deadEnd_validates_of_not_mem (h : ◇⊤ ∉ L) : deadEnd ⊧ L := by
   intro φ hA U w;
   have h₁ := canonicalModel_validates_of_mem (L.subst (s := pointSubst U) hA) x;
   rw [forces_subst] at h₁;
-  apply (forces_iff_of_no_succ _ _ _).mp h₁;
+  apply (forces_iff_of_no_succ _ _ _ _).mp h₁;
   · exact fun x' Rxx' => hx <| forces_dia.mpr ⟨x', Rxx', forces_top⟩;
   · exact fun _ => id;
   · exact fun a => forces_pointSubst w;
@@ -53,7 +53,7 @@ theorem reflPoint_validates_of_mem (hc : L.Consistent) (h : ◇⊤ ∈ L) : refl
   intro φ hA U w;
   have h₁ := canonicalModel_validates_of_mem (L.subst (s := pointSubst U) hA) x;
   rw [forces_subst] at h₁;
-  apply (forces_iff_of_serial _ _ _ x w).mp h₁;
+  apply (forces_iff_of_serial _ _ _ x w _).mp h₁;
   · intro y;
     obtain ⟨y', Ryy', -⟩ := forces_dia.mp <| canonicalModel_validates_of_mem h y;
     exact ⟨y', Ryy'⟩;

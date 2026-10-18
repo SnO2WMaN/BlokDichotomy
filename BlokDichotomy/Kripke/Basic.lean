@@ -25,7 +25,7 @@ namespace Frame
 
 variable {F : Frame κ}
 
-abbrev World {_ : Frame κ} := κ
+abbrev World (_ : Frame κ) := κ
 
 variable {x y z : F.World} {n m : ℕ}
 
@@ -260,28 +260,50 @@ section Bisimilar
 
 variable {κ₁ κ₂ : Type*} {M : Model κ₁ α} {N : Model κ₂ α}
 
+def ModalEquivalent {M : Model κ₁ α} {N : Model κ₂ α} (x : M.World) (y : N.World) :=
+  ∀ φ, x ⊩ φ ↔ y ⊩ φ
+infix:60 " ↭ " => ModalEquivalent
+
+namespace ModalEquivalent
+
+variable {κ₃ : Type*} {O : Model κ₃ α} {x : M.World} {y : N.World} {z : O.World}
+
+@[refl] lemma refl (x : M.World) : x ↭ x := fun _ => Iff.rfl
+
+@[symm] lemma symm (h : x ↭ y) : y ↭ x := fun φ => (h φ).symm
+
+@[trans] lemma trans (h₁ : x ↭ y) (h₂ : y ↭ z) : x ↭ z := fun φ => (h₁ φ).trans (h₂ φ)
+
+end ModalEquivalent
+
 /-- Two worlds without successors that agree on the variables agree on every formula. -/
-lemma forces_iff_of_no_succ {x : M.World} {y : N.World} (hx : ∀ x', x ⊀ x')
-    (hy : ∀ y', y ⊀ y') (hval : ∀ a, M.Val x a ↔ N.Val y a) : x ⊩ φ ↔ y ⊩ φ := by
+lemma forces_iff_of_no_succ {x : M.World} {y : N.World}
+    (hx : ∀ x', x ⊀ x')
+    (hy : ∀ y', y ⊀ y')
+    (hval : ∀ a, M.Val x a ↔ N.Val y a)
+    : x ↭ y := by
+  intro φ;
   induction φ with
-  | falsum => exact Iff.rfl;
-  | atom a => exact hval a;
-  | imp φ ψ ihφ ihψ => rw [forces_imp, forces_imp, NotForces, NotForces, ihφ, ihψ];
   | dia φ _ =>
-    rw [forces_dia, forces_dia];
-    exact iff_of_false (fun ⟨x', Rxx', _⟩ => hx x' Rxx') (fun ⟨y', Ryy', _⟩ => hy y' Ryy');
+    apply iff_of_false;
+    · contrapose! hx;
+      rcases hx with ⟨x', _, -⟩;
+      use x';
+    · contrapose! hy;
+      rcases hy with ⟨y', _, -⟩;
+      use y';
+  | _ => grind;
 
 /-- In two models where every world has a successor and the valuations are constant and agree,
 all worlds agree on every formula. -/
-lemma forces_iff_of_serial (hM : ∀ x : M.World, ∃ x', x ≺ x')
-    (hN : ∀ y : N.World, ∃ y', y ≺ y') (hval : ∀ (x : M.World) (y : N.World) a,
-      M.Val x a ↔ N.Val y a) (x : M.World) (y : N.World) : x ⊩ φ ↔ y ⊩ φ := by
+lemma forces_iff_of_serial
+    (hM : ∀ x : M.World, ∃ x', x ≺ x')
+    (hN : ∀ y : N.World, ∃ y', y ≺ y')
+    (hval : ∀ (x : M.World) (y : N.World) a, M.Val x a ↔ N.Val y a)
+    (x : M.World) (y : N.World) : x ↭ y := by
+  intro φ;
   induction φ generalizing x y with
-  | falsum => exact Iff.rfl;
-  | atom a => exact hval x y a;
-  | imp φ ψ ihφ ihψ => rw [forces_imp, forces_imp, NotForces, NotForces, ihφ x y, ihψ x y];
   | dia φ ih =>
-    rw [forces_dia, forces_dia];
     constructor;
     · rintro ⟨x', -, hx'⟩;
       obtain ⟨y', Ryy'⟩ := hN y;
@@ -289,25 +311,7 @@ lemma forces_iff_of_serial (hM : ∀ x : M.World, ∃ x', x ≺ x')
     · rintro ⟨y', -, hy'⟩;
       obtain ⟨x', Rxx'⟩ := hM x;
       exact ⟨x', Rxx', (ih x' y').mpr hy'⟩;
-
-/-- A point whose only successor is itself agrees with the reflexive point. -/
-lemma forces_iff_reflPoint {ι : Type*} {F : Frame ι} {V : F.World → ℕ → Prop} {u : F.World}
-    {φ : Formula ℕ} (Ruu : u ≺ u) (hsucc : ∀ v, u ≺ v → v = u) :
-    u ⊩[(⟨F, V⟩ : Model _ ℕ)] φ ↔
-      (0 : Fin 1) ⊩[(⟨reflPoint, fun _ a => V u a⟩ : Model _ ℕ)] φ := by
-  induction φ with
-  | falsum => exact Iff.rfl;
-  | atom a => exact Iff.rfl;
-  | imp φ ψ ihφ ihψ => rw [forces_imp, forces_imp, NotForces, NotForces, ihφ, ihψ];
-  | dia φ ih =>
-    rw [forces_dia, forces_dia];
-    constructor;
-    · rintro ⟨v, Ruv, hvA⟩;
-      rw [hsucc v Ruv] at hvA;
-      exact ⟨0, trivial, ih.mp hvA⟩;
-    · rintro ⟨w, -, hw⟩;
-      rw [Subsingleton.elim w 0] at hw;
-      exact ⟨u, Ruu, ih.mpr hw⟩;
+  | _ => grind;
 
 end Bisimilar
 

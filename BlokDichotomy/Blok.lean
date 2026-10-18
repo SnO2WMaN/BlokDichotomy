@@ -117,38 +117,25 @@ private lemma atoms_deltaPair (j : ℕ) :
     (∀ a ∈ (deltaPair N j).1.atoms, a = 0) ∧ ∀ a ∈ (deltaPair N j).2.atoms, a = 0 := by
   induction j with
   | zero => simpa [deltaPair] using atoms_tau;
-  | succ j ih =>
-    constructor <;>
-    · intro a ha;
-      simp only [deltaPair, atoms_imp, atoms_dia, atoms_bot, Finset.mem_union] at ha;
-      grind;
+  | succ j ih => grind [deltaPair, atoms_imp, atoms_dia, atoms_bot];
 
 private lemma atoms_pi : ∀ a ∈ (pi N j).atoms, a = 0 := by
   induction j with
   | zero => exact (atoms_deltaPair 0).1;
   | succ j ih =>
-    intro a ha;
-    simp only [pi, delta, atoms_imp, atoms_dia, atoms_bot, Finset.mem_union] at ha;
-    have := (atoms_deltaPair (N := N) (j + 1)).1 a;
-    grind;
+    have := (atoms_deltaPair (N := N) (j + 1)).1;
+    grind [pi, delta, atoms_imp, atoms_dia, atoms_bot];
 
 private lemma atoms_alpha : ∀ a ∈ (alpha N m i).atoms, a = 0 := by
   induction i with
   | zero =>
-    intro a ha;
-    simp only [alpha, atoms_imp, atoms_dia, atoms_bot, Finset.mem_union] at ha;
-    have := atoms_pi (N := N) (j := m) a;
-    grind;
-  | succ i ih =>
-    intro a ha;
-    simp only [alpha, atoms_imp, atoms_dia, atoms_bot, Finset.mem_union] at ha;
-    grind;
+    have := atoms_pi (N := N) (j := m);
+    grind [alpha, atoms_imp, atoms_dia, atoms_bot];
+  | succ i ih => grind [alpha, atoms_imp, atoms_dia, atoms_bot];
 
 private lemma atoms_gamma : ∀ a ∈ (gamma N m).atoms, a = 0 := by
-  intro a ha;
-  simp only [gamma, atoms_imp, atoms_dia, atoms_bot, Finset.mem_union] at ha;
-  have := atoms_alpha (N := N) (m := m) (i := 0) a;
-  grind;
+  have := atoms_alpha (N := N) (m := m) (i := 0);
+  grind [gamma, atoms_imp, atoms_dia, atoms_bot];
 
 end Atoms
 
@@ -188,16 +175,16 @@ private lemma not_forces_tau (hN : 1 ≤ N) {y : M.World} (hx : M.Val x 0) (Rxy 
 `x ⊮ tau N`.
 - [CZ98, Example 10.58]
 -/
-private lemma not_forces_tau_of_reach (hreach : ∀ y, ∃ n ≤ N, x ≺^[n] y) (h₁ : ∃ w, M.Val w 0)
-    (h₂ : ∃ w, ¬M.Val w 0) : x ⊮ tau N := by
-  obtain ⟨w₁, hw₁⟩ := h₁;
-  obtain ⟨w₂, hw₂⟩ := h₂;
+private lemma not_forces_tau_of_reach (hreach : ∀ y, ∃ n ≤ N, x ≺^[n] y)
+    (hq : ¬((∀ w, M.Val w 0) ∨ (∀ w, ¬M.Val w 0))) : x ⊮ tau N := by
+  push Not at hq;
+  obtain ⟨⟨w₁, hw₁⟩, ⟨w₂, hw₂⟩⟩ := hq;
   rw [NotForces, forces_tau];
   rintro (h | h);
-  · obtain ⟨n, hn, hx⟩ := hreach w₂;
-    exact hw₂ <| h n hn w₂ hx;
   · obtain ⟨n, hn, hx⟩ := hreach w₁;
-    exact h n hn w₁ hx hw₁;
+    exact hw₁ <| h n hn w₁ hx;
+  · obtain ⟨n, hn, hx⟩ := hreach w₂;
+    exact h n hn w₂ hx hw₂;
 
 private lemma forces_deltaUpTo : x ⊩ deltaUpTo N j ↔ ∃ i ≤ j, x ⊩ delta N i := by
   induction j with
@@ -320,32 +307,11 @@ end Naming
 
 open Formula Model.World
 
-namespace NormalLogic
-
-variable {α : Type*} {κ : Type*}
-
-/-- `L ∩ H.logic`.
-- [CZ98, p. 367]
--/
-def interLog (L : NormalLogic α) (H : GeneralFrame κ) : NormalLogic α := L ∩ H.logic
-
-variable {L : NormalLogic α} {H : GeneralFrame κ} {φ : Formula α}
-
-instance [L.IsNExt 𝐊] : (L.interLog H).IsNExt 𝐊 := by
-  unfold interLog;
-  infer_instance
-
-private lemma mem_interLog_iff : φ ∈ L.interLog H ↔ φ ∈ L ∧ H ⊧ φ := Iff.rfl
-
-private lemma interLog_le : L.interLog H ≤ L := fun _ h => h.1
-
-end NormalLogic
-
 namespace Naming
 
 open NormalLogic
 
-variable {κ : Type w} (L : NormalLogic ℕ) (N m l e : ℕ) (φ : Formula ℕ) (I : Set ℕ)
+variable {κ : Type w} (L : NormalLogic ℕ) (N m e : ℕ) (φ : Formula ℕ) (I : Set ℕ)
 
 /-- The properties of a hooked general frame `H` with index set `I`.
 - [CZ98, p. 367, p. 368]
@@ -360,34 +326,34 @@ structure HookInterface (H : GeneralFrame κ) where
   serial (h : deadEnd ⊭ L) (x : H.World) : ∃ y, x ≺ y
   /-- The point named by `γ`. -/
   gammaPoint : H.World
-  gammaPoint_forces (V : H.World → ℕ → Prop) (hV : H.IsAdmissible V) (h₁ : ∃ w, V w 0)
-    (h₂ : ∃ w, ¬V w 0) : gammaPoint ⊩[H.model V] gamma N m
-  reach_gammaPoint {x : H.World} (hx : x ∉ safe) : ∃ n ≤ l, H.toFrame.RelItr n x gammaPoint
+  gammaPoint_forces (V : H.World → ℕ → Prop) (hV : H.IsAdmissible V)
+    (hq : ¬((∀ w, V w 0) ∨ (∀ w, ¬V w 0))) : gammaPoint ⊩[H.model V] gamma N m
+  reach_gammaPoint {x : H.World} (hx : x ∉ safe) : ∃ n ≤ N, H.toFrame.RelItr n x gammaPoint
   /-- When the reflexive point does not validate `L`, a dead end is reachable. -/
   reach_deadEnd (h : reflPoint ⊭ L) {x : H.World} (hx : x ∉ safe) :
-    ∃ n ≤ l, ∃ y, H.toFrame.RelItr n x y ∧ ∀ z, ¬y ≺ z
+    ∃ n ≤ N, ∃ y, H.toFrame.RelItr n x y ∧ ∀ z, ¬y ≺ z
   validates_gammaLöb : H ⊧ gammaLöb N m
   alpha_unique {i : ℕ} (hi : i ∉ I) (V : H.World → ℕ → Prop) (hV : H.IsAdmissible V)
     {x y : H.World}
     (hx : x ⊩[H.model V] alpha N m i) (hy : y ⊩[H.model V] alpha N m i) : x = y
   not_validates_xi {i : ℕ} (hi : i ∈ I) : H ⊭ xi N m e φ i
 
-variable {L N m l e φ I} {H : GeneralFrame κ} [L.IsNExt 𝐊]
+variable {L N m e φ I} {H : GeneralFrame κ} [L.IsNExt 𝐊]
 variable {P : {κ : Type u} → Frame κ → Prop}
 
 namespace HookInterface
 
-variable (hH : HookInterface L N m l e φ I H)
+variable (hH : HookInterface L N m e φ I H)
 include hH
 
 section Formulas
 
 variable {ψ : Formula ℕ}
 
-/-- If `deadEnd ⊭ L`, then `◇⊤ ∈ L.interLog H`.
+/-- If `deadEnd ⊭ L`, then `◇⊤ ∈ L ∩ H.logic`.
 - [CZ98, (10.12)]
 -/
-private lemma diaTop_mem (h : deadEnd ⊭ L) : ◇⊤ ∈ L.interLog H := by
+private lemma diaTop_mem (h : deadEnd ⊭ L) : ◇⊤ ∈ L ∩ H.logic := by
   constructor;
   · by_contra h';
     exact h <| deadEnd_validates_of_not_mem h';
@@ -395,10 +361,10 @@ private lemma diaTop_mem (h : deadEnd ⊭ L) : ◇⊤ ∈ L.interLog H := by
     obtain ⟨y, hy⟩ := hH.serial h x;
     exact forces_dia.mpr ⟨y, hy, forces_top⟩;
 
-/-- `∼ψ ⋏ ∼tau N 🡒 ◇^≤[l] gamma N m ∈ L.interLog H` for `ψ ∈ L`.
+/-- `∼ψ ⋏ ∼tau N 🡒 ◇^≤[N] gamma N m ∈ L ∩ H.logic` for `ψ ∈ L`.
 - [CZ98, (10.12)]
 -/
-private lemma tau_mem (hψ : ψ ∈ L) : ∼ψ ⋏ ∼tau N 🡒 ◇^≤[l] gamma N m ∈ L.interLog H := by
+private lemma tau_mem (hψ : ψ ∈ L) : ∼ψ ⋏ ∼tau N 🡒 ◇^≤[N] gamma N m ∈ L ∩ H.logic := by
   constructor;
   · apply mem_mdp hψ;
     apply mem_of_isTautology;
@@ -410,16 +376,13 @@ private lemma tau_mem (hψ : ψ ∈ L) : ∼ψ ⋏ ∼tau N 🡒 ◇^≤[l] gamm
     · exact Or.inl fun h => h.1 <| hH.forces_of_mem_safe hx hψ V;
     · by_cases hq : (∀ w, V w 0) ∨ (∀ w, ¬V w 0);
       · exact Or.inl fun h => h.2 <| forces_tau_of_const hq;
-      · push Not at hq;
-        obtain ⟨⟨w₁, hw₁⟩, ⟨w₂, hw₂⟩⟩ := hq;
-        obtain ⟨n, hn, hxc⟩ := hH.reach_gammaPoint hx;
-        exact Or.inr <| forces_diaLe.mpr
-          ⟨n, hn, _, hxc, hH.gammaPoint_forces V hV ⟨w₂, hw₂⟩ ⟨w₁, hw₁⟩⟩;
+      · obtain ⟨n, hn, hxc⟩ := hH.reach_gammaPoint hx;
+        exact Or.inr <| forces_diaLe.mpr ⟨n, hn, _, hxc, hH.gammaPoint_forces V hV hq⟩;
 
-/-- `∼ψ 🡒 □^≤[l] gammaLöb N m ∈ L.interLog H` for `ψ ∈ L`.
+/-- `∼ψ 🡒 □^≤[N] gammaLöb N m ∈ L ∩ H.logic` for `ψ ∈ L`.
 - [CZ98, (10.13)]
 -/
-private lemma gammaLöb_mem (hψ : ψ ∈ L) : ∼ψ 🡒 □^≤[l] gammaLöb N m ∈ L.interLog H := by
+private lemma gammaLöb_mem (hψ : ψ ∈ L) : ∼ψ 🡒 □^≤[N] gammaLöb N m ∈ L ∩ H.logic := by
   constructor;
   · apply mem_mdp hψ;
     apply mem_of_isTautology;
@@ -429,11 +392,10 @@ private lemma gammaLöb_mem (hψ : ψ ∈ L) : ∼ψ 🡒 □^≤[l] gammaLöb N
     rw [forces_imp];
     exact Or.inr <| forces_boxLe.mpr fun _ _ y _ => hH.validates_gammaLöb V hV y;
 
-/-- If `reflPoint ⊭ L`, then `ψ ⋎ ◇^≤[l] □⊥ ∈ L.interLog H` for `ψ ∈ L`.
+/-- If `reflPoint ⊭ L`, then `ψ ⋎ ◇^≤[N] □⊥ ∈ L ∩ H.logic` for `ψ ∈ L`.
 - [CZ98, (10.12)]
 -/
-private lemma deadEnd_mem (h : reflPoint ⊭ L) (hψ : ψ ∈ L) :
-    ψ ⋎ ◇^≤[l] □⊥ ∈ L.interLog H := by
+private lemma deadEnd_mem (h : reflPoint ⊭ L) (hψ : ψ ∈ L) : ψ ⋎ ◇^≤[N] □⊥ ∈ L ∩ H.logic := by
   constructor;
   · apply mem_mdp hψ;
     apply mem_of_isTautology;
@@ -455,15 +417,6 @@ section FrameEquiv
 
 variable {ι : Type*} {F : Frame ι} {V : F.World → ℕ → Prop} {u : F.World} {ψ : Formula ℕ}
 
-private lemma eq_of_relItr_of_forall_rel (hsucc : ∀ v, u ≺ v → v = u) {n : ℕ} {v : F.World}
-    (h : F.RelItr n u v) : v = u := by
-  induction n generalizing v with
-  | zero => exact (Frame.iff_relItr_zero.mp h).symm;
-  | succ n ih =>
-    obtain ⟨z, hz, hzv⟩ := Frame.iff_relItr_succ'.mp h;
-    rw [ih hz] at hzv;
-    exact hsucc v hzv;
-
 abbrev shift (ψ : Formula ℕ) : Formula ℕ := ψ⟦fun a => #(a + 2)⟧
 
 private lemma shift_mem {L : NormalLogic ℕ} (h : ψ ∈ L) : shift ψ ∈ L := L.subst h
@@ -477,33 +430,33 @@ private lemma forces_shift {W : F.World → ℕ → Prop} (hW : ∀ w a, W w (a 
 
 namespace HookInterface
 
-variable (hH : HookInterface L N m l e φ I H)
+variable (hH : HookInterface L N m e φ I H)
 include hH
 
-private lemma false_of_refutes_of_rel_ne (hN : 1 ≤ N) (hF : F ⊧ L.interLog H) (hA : ψ ∈ L)
+private lemma false_of_refutes_of_rel_ne (hN : 1 ≤ N) (hF : F ⊧ L ∩ H.logic) (hA : ψ ∈ L)
     (hu : u ⊮[(⟨F, V⟩ : Model _ ℕ)] ψ) {v : F.World} (Ruv : u ≺ v) (hvu : v ≠ u) : False := by
   let V₁ : F.World → ℕ → Prop := fun w a => if a = 0 then w = u else V w (a - 2);
   have hV₁ : ∀ w a, V₁ w (a + 2) ↔ V w a := fun w a => by simp [V₁];
   have hψ : u ⊮[(⟨F, V₁⟩ : Model _ ℕ)] shift ψ := by rwa [NotForces, forces_shift hV₁];
   have hτ : u ⊮[(⟨F, V₁⟩ : Model _ ℕ)] tau N :=
     not_forces_tau (M := ⟨F, V₁⟩) hN (by simp [V₁, Model.Val]) Ruv (by simp [V₁, Model.Val, hvu]);
-  have h₁ := hF _ (hH.tau_mem (l := l) (shift_mem hA)) V₁ u;
+  have h₁ := hF _ (hH.tau_mem (shift_mem hA)) V₁ u;
   rw [forces_imp, NotForces, forces_and, forces_neg, forces_neg] at h₁;
   obtain ⟨n, hn, x, hux, hx⟩ := forces_diaLe.mp <| h₁.resolve_left fun h => h ⟨hψ, hτ⟩;
   obtain ⟨y, Rxy, -⟩ := forces_dia.mp (forces_gamma.mp hx).1;
   let V₂ : F.World → ℕ → Prop := fun w a => if a = 1 then w ≠ y else V₁ w a;
   have hV₂ : ∀ w a, V₂ w (a + 2) ↔ V w a := fun w a => by simp [V₂, V₁];
-  have h₂ := hF _ (hH.gammaLöb_mem (l := l) (shift_mem hA)) V₂ u;
+  have h₂ := hF _ (hH.gammaLöb_mem (shift_mem hA)) V₂ u;
   rw [forces_imp, NotForces, forces_neg, NotForces, forces_shift hV₂] at h₂;
   have h₃ := forces_boxLe.mp (h₂.resolve_left fun h => h hu) n hn x hux;
   have hx₂ : x ⊩[(⟨F, V₂⟩ : Model _ ℕ)] gamma N m :=
     (forces_congr_of_atoms_subset atoms_gamma fun w => by simp [V₂, Model.Val]).mp hx;
   exact not_forces_löb V₁ y <| forces_gammaLöb.mp h₃ hx₂ y Rxy;
 
-/-- `L.interLog H` is a frame companion of `L`.
+/-- `L ∩ H.logic` is a frame companion of `L`.
 - [CZ98, p. 368]
 -/
-theorem frameEquiv (hN : 1 ≤ N) : L ≊[P] L.interLog H := by
+theorem frameEquiv (hN : 1 ≤ N) : L ≊[P] L ∩ H.logic := by
   intro ι F _;
   constructor;
   · exact fun hF ψ hA => hF ψ hA.1;
@@ -516,19 +469,16 @@ theorem frameEquiv (hN : 1 ≤ N) : L ≊[P] L.interLog H := by
       exact hH.false_of_refutes_of_rel_ne hN hF hA hu Ruv hvu;
     · push Not at hv;
       by_cases Ruu : u ≺ u;
-      · have hr : reflPoint ⊭ L := fun h =>
-          hu <| (forces_iff_reflPoint Ruu hv).mpr <| h ψ hA _ 0;
-        have h := hF _ (hH.deadEnd_mem (l := l) hr hA) V u;
-        rcases forces_or.mp h with h | h;
+      · have hr : reflPoint ⊭ L := fun h => hu <| Frame.forces_of_pointGenerate_validateLogic
+          ((Frame.pointGenerate_validateLogic_iff_reflPoint Ruu hv).mpr h) hA V;
+        rcases forces_or.mp <| hF _ (hH.deadEnd_mem hr hA) V u with h | h;
         · exact hu h;
         · obtain ⟨n, -, y, huy, hy⟩ := forces_diaLe.mp h;
-          rw [eq_of_relItr_of_forall_rel hv huy] at hy;
+          rw [Frame.eq_of_mem_reach_of_forall_rel_eq hv ⟨n, huy⟩] at hy;
           exact forces_box.mp hy u Ruu;
-      · have hx : ∀ v, ¬u ≺ v := fun v Ruv => Ruu <| hv v Ruv ▸ Ruv;
-        have hd : deadEnd ⊭ L := fun h => hu <|
-          (forces_iff_of_no_succ (M := ⟨F, V⟩) (N := ⟨deadEnd, fun _ a => V u a⟩) (x := u)
-            (y := 0) hx
-            (fun _ h => h) fun _ => Iff.rfl).mpr <| h ψ hA _ 0;
+      · have hx : ∀ v, u ⊀ v := fun v Ruv => Ruu <| hv v Ruv ▸ Ruv;
+        have hd : deadEnd ⊭ L := fun h => hu <| Frame.forces_of_pointGenerate_validateLogic
+          ((Frame.pointGenerate_validateLogic_iff_deadEnd hx).mpr h) hA V;
         obtain ⟨y, hy, -⟩ := forces_dia.mp <| hF _ (hH.diaTop_mem hd) V u;
         exact hx y hy;
 
@@ -556,12 +506,12 @@ private lemma xi_mem (hφ : φ ∈ L) (i : ℕ) : xi N m e φ i ∈ L := by
   simp;
   grind;
 
-/-- If `I ≠ J`, then `L.interLog H ≠ L.interLog H'`.
+/-- If `I ≠ J`, then `L ∩ H.logic ≠ L ∩ H'.logic`.
 - [CZ98, p. 367]
 -/
-theorem HookInterface.interLog_ne {J : Set ℕ} {κ' : Type*} {H' : GeneralFrame κ'} (hφ : φ ∈ L)
-    (hI : HookInterface L N m l e φ I H) (hJ : HookInterface L N m l e φ J H') (hIJ : I ≠ J) :
-    L.interLog H ≠ L.interLog H' := by
+theorem HookInterface.inter_logic_ne {J : Set ℕ} {κ' : Type*} {H' : GeneralFrame κ'} (hφ : φ ∈ L)
+    (hI : HookInterface L N m e φ I H) (hJ : HookInterface L N m e φ J H') (hIJ : I ≠ J) :
+    L ∩ H.logic ≠ L ∩ H'.logic := by
   obtain ⟨i, hi⟩ : ∃ i, ¬(i ∈ I ↔ i ∈ J) := by
     by_contra h;
     push Not at h;
@@ -569,11 +519,11 @@ theorem HookInterface.interLog_ne {J : Set ℕ} {κ' : Type*} {H' : GeneralFrame
   intro he;
   by_cases hiI : i ∈ I;
   · have hiJ : i ∉ J := fun h => hi ⟨fun _ => h, fun _ => hiI⟩;
-    have h : xi N m e φ i ∈ L.interLog H' := ⟨xi_mem hφ i, hJ.validates_xi hiJ⟩;
+    have h : xi N m e φ i ∈ L ∩ H'.logic := ⟨xi_mem hφ i, hJ.validates_xi hiJ⟩;
     rw [← he] at h;
     exact hI.not_validates_xi hiI h.2;
   · have hiJ : i ∈ J := by tauto;
-    have h : xi N m e φ i ∈ L.interLog H := ⟨xi_mem hφ i, hI.validates_xi hiI⟩;
+    have h : xi N m e φ i ∈ L ∩ H.logic := ⟨xi_mem hφ i, hI.validates_xi hiI⟩;
     rw [he] at h;
     exact hJ.not_validates_xi hiJ h.2;
 
@@ -581,13 +531,13 @@ theorem HookInterface.interLog_ne {J : Set ℕ} {κ' : Type*} {H' : GeneralFrame
 - [CZ98, p. 367, p. 368]
 -/
 theorem HookInterface.continuum_le_degree {κ : Set ℕ → Type w} {H : ∀ I, GeneralFrame (κ I)}
-    (hH : ∀ I, HookInterface L N m l e φ I (H I)) (hφ : φ ∈ L) (hN : 1 ≤ N) :
+    (hH : ∀ I, HookInterface L N m e φ I (H I)) (hφ : φ ∈ L) (hN : 1 ≤ N) :
     Cardinal.continuum ≤ degree P L := by
   let f : Set ℕ → Companion P L := fun I =>
-    ⟨L.interLog (H I), inferInstance, (hH I).frameEquiv hN⟩;
+    ⟨L ∩ (H I).logic, inferInstance, (hH I).frameEquiv hN⟩;
   have hf : Function.Injective f := fun I J h => by
     by_contra hIJ;
-    exact interLog_ne hφ (hH I) (hH J) hIJ <| congrArg Subtype.val h;
+    exact inter_logic_ne hφ (hH I) (hH J) hIJ <| congrArg Subtype.val h;
   rw [← Cardinal.mk_set_nat];
   exact Cardinal.mk_le_of_injective hf;
 
@@ -596,92 +546,6 @@ end FrameEquiv
 end Naming
 
 /-! ## Hooked frames -/
-
-namespace Frame
-
-section
-variable {κ : Type u} {F : Frame κ} {x y : F.World}
-
-private lemma exists_relItr_lt_card [Finite F.World] (h : y ∈ F.Reach x) :
-    ∃ n < Nat.card F.World, x ≺^[n] y := by
-  obtain ⟨n, hn⟩ := h;
-  induction n using Nat.strong_induction_on with
-  | _ n ih =>
-    by_cases hlt : n < Nat.card F.World;
-    · exact ⟨n, hlt, hn⟩;
-    obtain ⟨p, hp₀, hpn, hp⟩ := exists_path hn;
-    have hni : ¬Function.Injective (fun i : Fin (Nat.card F.World + 1) => p i) := by
-      intro hi;
-      have := Nat.card_le_card_of_injective _ hi;
-      simp at this;
-    obtain ⟨i, j, hij, hne⟩ := Function.not_injective_iff.mp hni;
-    have hne' : (i : ℕ) ≠ j := Fin.val_ne_of_ne hne;
-    wlog hij' : (i : ℕ) < j generalizing i j;
-    · exact this j i hij.symm hne.symm hne'.symm <| by omega;
-    have h₁ := relItr_of_path hp (Nat.zero_le i) (by omega);
-    have h₂ := relItr_of_path hp (i := j) (j := n) (by omega) le_rfl;
-    rw [hp₀] at h₁;
-    rw [hpn, ← hij] at h₂;
-    exact ih _ (by omega) (relItr_trans h₁ h₂);
-
-
-end
-
-section
-variable {κ : Type*} {F : Frame κ} {x y : F.World} {α : Type*} {L : NormalLogic α}
-
-private lemma HasCycle.exists_path (h : F.HasCycle) : ∃ p : ℕ → F.World, ∀ t, p t ≺ p (t + 1) := by
-  obtain ⟨x, k, hk, hx⟩ := h;
-  obtain ⟨p, hp₀, hpk, hp⟩ := Frame.exists_path hx;
-  use fun t => p (t % k);
-  intro t;
-  have hdm := Nat.div_add_mod t k;
-  have hlt := Nat.mod_lt t hk;
-  rcases Nat.lt_or_ge (t % k + 1) k with h | h;
-  · have he : (t + 1) % k = t % k + 1 := by
-      rw [show t + 1 = (t % k + 1) + k * (t / k) by omega, Nat.add_mul_mod_self_left];
-      exact Nat.mod_eq_of_lt h;
-    simpa only [he] using hp _ hlt;
-  · have he : (t + 1) % k = 0 := by
-      rw [show t + 1 = k * (t / k + 1) by rw [Nat.mul_succ]; omega, Nat.mul_mod_right];
-    have h' := hp (k - 1) (by omega);
-    rw [show k - 1 + 1 = k by omega, hpk, ← hp₀] at h';
-    simpa only [he, show t % k = k - 1 by omega] using h';
-
-private lemma eq_of_mem_reach_of_forall_not_rel (hx : ∀ z, x ⊀ z) (h : y ∈ F.Reach x) : y = x := by
-  obtain ⟨n, hn⟩ := h;
-  cases n with
-  | zero => exact hn.symm;
-  | succ n =>
-    obtain ⟨z, hz, -⟩ := hn;
-    exact absurd hz (hx z);
-
-private lemma deadEnd_validates_of_forall_not_rel (hx : ∀ z, x ⊀ z) (h : F⥜x ⊧ L)
-  : deadEnd ⊧ L := by
-  let f : F⥜x →ₚ deadEnd :=
-    { toFun := fun _ => 0
-      forth := fun {y z} Ryz => by
-        have Ryz' : y.1 ≺ z.1 := Ryz;
-        rw [eq_of_mem_reach_of_forall_not_rel hx y.2] at Ryz';
-        exact hx z.1 Ryz'
-      back := fun h => h.elim };
-  exact ValidateLogic.of_surjective_pMorphism f (fun i => ⟨(pointGenerate.root F x).1,
-    Subsingleton.elim _ _⟩) h
-
-private lemma not_isRootedBy_of_forall_not_rel (hc : F.HasCycle) (hx : ∀ z, x ⊀ z) :
-    ¬F.IsRootedBy x := by
-  intro hr;
-  obtain ⟨y, k, hk, hy⟩ := hc;
-  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hk.ne';
-  obtain ⟨z, hz, -⟩ := hy;
-  exact hx z <| eq_of_mem_reach_of_forall_not_rel hx (hr y) ▸ hz;
-
-
-end
-
-end Frame
-
-
 
 /-- The data of a hooked frame: a rooted frame `F`, an infinite path in `F`, the number `len + 1`
 of copies, the length `m` of the `d`-chain, and whether `dBot` is reflexive.
@@ -886,7 +750,6 @@ def hooked : GeneralFrame (D.World I) where
 
 @[simp] lemma hooked_adm : (D.hooked I).Adm = D.Adm I := rfl
 
-
 section Rel
 
 /-! ### Successors and predecessors -/
@@ -916,37 +779,8 @@ private lemma rel_a_iff {i : ℕ} {t : Bool} {h : t = true → i ∈ I} :
       (y.IsA ∧ y.index < i) ∨ (i = 0 ∧ y = .d D.m le_rfl) := by
   cases y <;> simp [Rel, IsA, index];
 
-private lemma rel_a_zero_iff {t : Bool} {h : t = true → 0 ∈ I} :
-    (.a 0 t h : (D.hookFrame I).World) ≺ y ↔ y = .d D.m le_rfl := by
-  rw [rel_a_iff];
-  simp;
-
-private lemma rel_d_succ_iff {j : ℕ} {hj : j + 1 ≤ D.m} :
-    (.d (j + 1) hj : (D.hookFrame I).World) ≺ y ↔ y = .d j (by omega) := by
-  cases y <;> simp [Rel, eq_comm];
-
-private lemma rel_d_zero_iff {hj : 0 ≤ D.m} :
-    (.d 0 hj : (D.hookFrame I).World) ≺ y ↔ y = .dBot ∨ y = .c ∨ y = .base D.root := by
-  cases y <;> simp [Rel, eq_comm];
-
 private lemma rel_dBot_iff : (.dBot : (D.hookFrame I).World) ≺ y ↔ y = .dBot ∧ D.refl := by
   cases y <;> simp [Rel];
-
-private lemma rel_to_base_iff {v : D.F.World} :
-    x ≺ (.base v : (D.hookFrame I).World) ↔
-      (∃ u, x = .base u ∧ u ≺ v) ∨
-        (∃ t ht, x = .copy t ht ∧ D.path (t + 1) ≺ v) ∨
-        (x = .d 0 (Nat.zero_le _) ∧ v = D.root) := by
-  cases x <;> simp_all [Rel];
-
-private lemma rel_to_copy_iff {t : ℕ} {ht : t ≤ D.len} :
-    x ≺ (.copy t ht : (D.hookFrame I).World) ↔
-      (t = 0 ∧ x = .base (D.path 0)) ∨ ∃ s hs, t = s + 1 ∧ x = .copy s hs := by
-  cases x <;> simp [Rel, and_comm];
-  omega;
-
-private lemma rel_to_c_iff : x ≺ (.c : (D.hookFrame I).World) ↔ x = .d 0 (Nat.zero_le _) := by
-  cases x <;> simp [Rel];
 
 private lemma rel_to_b_iff : x ≺ (.b : (D.hookFrame I).World) ↔ x = .c := by
   cases x <;> simp [Rel];
@@ -973,9 +807,6 @@ private lemma isUnwound_of_rel (hy : y.IsUnwound) (Rxy : x ≺ y) :
 private lemma isUnwound_of_isUnwound_rel (hx : x.IsUnwound) (Rxy : x ≺ y) :
     y.IsUnwound ∨ y = .d 0 (Nat.zero_le _) := by
   cases x <;> cases y <;> simp_all [Rel, IsUnwound];
-
-private lemma isA_of_rel (hy : y.IsA) (Rxy : x ≺ y) : x = .b ∨ x.IsA := by
-  cases x <;> cases y <;> simp_all [Rel, IsA];
 
 end Rel
 
@@ -1055,14 +886,6 @@ private lemma eq_dBot_or_isUnwound_of_mem_detached (hx : x ∈ D.detached I) :
   · exact Or.inl rfl;
   · exact Or.inr trivial;
 
-private lemma mem_detached_of_rel (hx : x ∈ D.detached I) (Rxy : x ≺ y) : y ∈ D.detached I := by
-  rcases hx with rfl | ⟨u, rfl, hu⟩;
-  · rw [(rel_dBot_iff.mp Rxy).1];
-    exact dBot_mem_detached;
-  · rcases rel_base_iff.mp Rxy with ⟨v, rfl, Ruv⟩ | ⟨rfl, -⟩;
-    · exact base_mem_detached_iff.mpr fun hv => hu <| reach_trans (mem_reach_of_rel Ruv) hv;
-    · exact absurd self_mem_reach hu;
-
 private lemma relItr_base_iff_of_not_mem_reach {u : D.F.World} (hu : D.path 0 ∉ D.F.Reach u) :
     ((.base u : (D.hookFrame I).World) ≺^[n] y) ↔
       ∃ v : D.F.World, (u ≺^[n] v) ∧ y = .base v := by
@@ -1099,31 +922,15 @@ private lemma pointGenerate_base_validates {α : Type*} {L : NormalLogic α} {u 
     (D.hookFrame I)⥜(.base u) ⊧ L :=
   ValidateLogic.of_surjective_pMorphism (pointGenerateBase hu) (pointGenerateBase_surjective hu) h
 
-private lemma surjective_to_pointGenerate_dBot {ι : Type*}
-    (f : ι → ((D.hookFrame I)⥜.dBot).World) [Nonempty ι] :
-    Function.Surjective f := by
-  rintro ⟨z, n, hn⟩;
-  obtain rfl := eq_dBot_of_dBot_relItr hn;
-  obtain ⟨k, hk⟩ := (f (Classical.arbitrary ι)).2;
-  exact ⟨Classical.arbitrary ι, Subtype.ext <| eq_dBot_of_dBot_relItr hk⟩;
-
 private lemma pointGenerate_dBot_validates {α : Type*} {L : NormalLogic α}
     (h₁ : ¬D.refl → deadEnd ⊧ L) (h₂ : D.refl → reflPoint ⊧ L) :
     (D.hookFrame I)⥜.dBot ⊧ L := by
+  have hsucc : ∀ y, (.dBot : (D.hookFrame I).World) ≺ y → y = .dBot := fun y Ry =>
+    (rel_dBot_iff.mp Ry).1;
   by_cases hr : D.refl;
-  · let f : reflPoint →ₚ (D.hookFrame I)⥜.dBot :=
-      { toFun := fun _ => (pointGenerate.root _ _).1
-        forth := fun _ => hr
-        back := by
-          rintro _ ⟨z, n, hn⟩ -;
-          obtain rfl := eq_dBot_of_dBot_relItr hn;
-          exact ⟨0, trivial, rfl⟩ };
-    exact ValidateLogic.of_surjective_pMorphism f (surjective_to_pointGenerate_dBot f) (h₂ hr);
-  · let f : deadEnd →ₚ (D.hookFrame I)⥜.dBot :=
-      { toFun := fun _ => (pointGenerate.root _ _).1
-        forth := fun h => h.elim
-        back := fun h => absurd (rel_dBot_iff.mp h).2 hr };
-    exact ValidateLogic.of_surjective_pMorphism f (surjective_to_pointGenerate_dBot f) (h₁ hr);
+  · exact (pointGenerate_validateLogic_iff_reflPoint hr hsucc).mpr (h₂ hr);
+  · exact (pointGenerate_validateLogic_iff_deadEnd fun y Ry => hr (rel_dBot_iff.mp Ry).2).mpr
+      (h₁ hr);
 
 /-- If `x ∈ D.detached I` and `φ ∈ L`, then `x ⊩[(D.hooked I).model V] φ`, provided
 `D.F⥜u ⊧ L` for every non-root `u`, `deadEnd ⊧ L` when `¬D.refl`, and `reflPoint ⊧ L` when
@@ -1184,7 +991,7 @@ private lemma exists_relItr_d_zero (hx : x ∉ D.detached I) :
   cases x with
   | base u =>
     have hu : D.path 0 ∈ D.F.Reach u := by simpa using hx;
-    obtain ⟨k, hk, hku⟩ := exists_relItr_lt_card hu;
+    obtain ⟨k, hk, hku⟩ := exists_relItr_lt_card_of_mem_reach hu;
     exact ⟨_, by omega, relItr_trans (relItr_base hku) <|
       relItr_head (y := .copy 0 (Nat.zero_le _)) (by simp [Rel]) (hcopy 0 _)⟩;
   | copy t ht => exact ⟨_, by omega, hcopy t ht⟩;
@@ -1208,7 +1015,7 @@ private lemma d_zero_exists_relItr (y : (D.hookFrame I).World) :
     relItr_head (y := .c) (by simp [Rel]) <| relItr_head (by simp [Rel]) relItr_zero_self;
   have hroot (v : D.F.World) : ∃ k < Nat.card D.F.World,
       RelItr (F := D.hookFrame I) (1 + k) (.d 0 (Nat.zero_le _)) (.base v) := by
-    obtain ⟨k, hk, hkv⟩ := exists_relItr_lt_card (D.root.2 v);
+    obtain ⟨k, hk, hkv⟩ := exists_relItr_lt_card_of_mem_reach (D.root.2 v);
     exact ⟨k, hk, relItr_trans (n := 1) (by simp [Rel]) (relItr_base hkv)⟩;
   cases y with
   | base v =>
@@ -1229,20 +1036,12 @@ private lemma d_zero_exists_relItr (y : (D.hookFrame I).World) :
 /-- If `x ∉ D.detached I`, then `x ≺^[n] y` for some `n ≤ 2 * D.m + 7`.
 - [CZ98, p. 367]
 -/
-private lemma exists_relItr_of_not_mem_detached (hx : x ∉ D.detached I)
+lemma exists_relItr_of_not_mem_detached (hx : x ∉ D.detached I)
     (y : (D.hookFrame I).World) :
     ∃ n ≤ 2 * D.m + 7, x ≺^[n] y := by
   obtain ⟨k, hk, h⟩ := exists_relItr_d_zero hx;
   obtain ⟨k', hk', h'⟩ := d_zero_exists_relItr y;
   exact ⟨_, by omega, relItr_trans h h'⟩;
-
-lemma exists_relItr_c (hx : x ∉ D.detached I) : ∃ n ≤ D.m + 4, x ≺^[n] .c := by
-  obtain ⟨k, hk, h⟩ := exists_relItr_d_zero hx;
-  exact ⟨_, by omega, relItr_tail h (by simp [Rel])⟩;
-
-private lemma exists_relItr_dBot (hx : x ∉ D.detached I) : ∃ n ≤ D.m + 4, x ≺^[n] .dBot := by
-  obtain ⟨k, hk, h⟩ := exists_relItr_d_zero hx;
-  exact ⟨_, by omega, relItr_tail h (by simp [Rel])⟩;
 
 end Reach
 
@@ -1295,49 +1094,11 @@ open Formula Model.World
 
 variable {κ : Type u} {D : HookData κ} {I : Set ℕ} {α : Type*}
 
-section Unwind
-
-variable (D) in
-def unwindRel : D.F.World ⊕ Fin (D.len + 1) → D.F.World ⊕ Fin (D.len + 1) → Prop
-  | .inl u, .inl v => u ≺ v
-  | .inl u, .inr t => u = D.path 0 ∧ t.1 = 0
-  | .inr t, .inl v => D.path (t.1 + 1) ≺ v
-  | .inr t, .inr t' => t'.1 = t.1 + 1
-
-variable (D) in
-/-- The frame on `D.F.World ⊕ Fin (D.len + 1)` with relation `D.unwindRel`.
-- [CZ98, Fig. 10.4]
--/
-def unwind : Frame (D.F.World ⊕ Fin (D.len + 1)) := ⟨D.unwindRel⟩
-
-variable (D) in
-/-- The p-morphism `D.unwind →ₚ D.F`.
-- [CZ98, Fig. 10.4]
--/
-def unwindProj : D.unwind →ₚ D.F where
-  toFun
-    | .inl u => u
-    | .inr t => D.path (t.1 + 1)
-  forth {x y} h := by
-    rcases x with u | t <;> rcases y with v | t';
-    · exact h;
-    · obtain ⟨rfl, ht'⟩ := h;
-      simpa [ht'] using D.path_rel 0;
-    · exact h;
-    · have ht' : t'.1 = t.1 + 1 := h;
-      simpa [ht'] using D.path_rel (t.1 + 1);
-  back {x z} h := by
-    rcases x with u | t <;> exact ⟨.inl z, h, rfl⟩
-
-private lemma unwindProj_surjective : Function.Surjective (D.unwindProj) := fun u => ⟨.inl u, rfl⟩
-
-private lemma validates_of_unwind_validates {L : NormalLogic α} (h : D.unwind ⊧ L) : D.F ⊧ L :=
-  Frame.ValidateLogic.of_surjective_pMorphism D.unwindProj unwindProj_surjective h
-
-end Unwind
-
-
 variable (D I) in
+/-- The valuation on the hooked frame that copies `V` to the unwound points and is false
+elsewhere.
+- [CZ98, Proposition 3.2]
+-/
 def liftVal (V : D.F.World → α → Prop) : D.World I → α → Prop
   | .base u, a => V u a
   | .copy t _, a => V (D.path (t + 1)) a
@@ -1350,32 +1111,37 @@ private lemma isAdmissible_liftVal (V : D.F.World → α → Prop) :
   intro w hw;
   cases w <;> simp_all [liftVal, World.IsA];
 
-section Transfer
+private lemma isAdmissible_ite_liftVal (V₀ : D.F.World → ℕ → Prop) {z : D.World I} (hz : z ≠ .b) :
+    (D.hooked I).IsAdmissible fun w a => if a = 0 then w = z else D.liftVal I V₀ w (a - 2) := by
+  intro a;
+  by_cases ha : a = 0;
+  · subst ha;
+    apply mem_adm_of_not_mem_of_finite;
+    · simpa using hz.symm;
+    · apply (Set.finite_singleton z).subset;
+      intro w hw;
+      simpa using hw.2;
+  · simpa [ha] using isAdmissible_liftVal (I := I) V₀ (a - 2);
 
-variable [DecidableEq α]
+variable {V : D.F.World → α → Prop} {φ : Formula α}
 
-/-- If `V'` agrees with `V` on `.base u` and `.copy t _` for the atoms of `φ`, then
-`.base u ⊩ φ ↔ u ⊩ φ` when `φ.depth ≤ D.len + 1`, and
+/-- Under `D.liftVal I V`, `.base u ⊩ φ ↔ u ⊩ φ` when `φ.depth ≤ D.len + 1`, and
 `.copy t _ ⊩ φ ↔ D.path (t + 1) ⊩ φ` when `φ.depth + t ≤ D.len`.
 - [Blok78, Theorem 4.6]
 - [CZ98, Proposition 3.2]
 -/
-theorem forces_transfer {P : α → Prop} {V : D.F.World → α → Prop} {V' : D.World I → α → Prop}
-    (hbase : ∀ u a, P a → (V' (.base u) a ↔ V u a))
-    (hcopy : ∀ t ht a, P a → (V' (.copy t ht) a ↔ V (D.path (t + 1)) a))
-    {φ : Formula α} (hA : ∀ a ∈ φ.atoms, P a) :
+theorem forces_liftVal :
     (∀ u, φ.depth ≤ D.len + 1 →
-      ((.base u : D.World I) ⊩[(D.hooked I).model V'] φ ↔ u ⊩[⟨D.F, V⟩] φ)) ∧
+      ((.base u : D.World I) ⊩[(D.hooked I).model (D.liftVal I V)] φ ↔ u ⊩[⟨D.F, V⟩] φ)) ∧
     (∀ t ht, φ.depth + t ≤ D.len →
-      ((.copy t ht : D.World I) ⊩[(D.hooked I).model V'] φ ↔ D.path (t + 1) ⊩[⟨D.F, V⟩] φ)) := by
+      ((.copy t ht : D.World I) ⊩[(D.hooked I).model (D.liftVal I V)] φ ↔
+        D.path (t + 1) ⊩[⟨D.F, V⟩] φ)) := by
   induction φ with
-  | atom a =>
-    have ha : P a := hA a <| by simp;
-    exact ⟨fun u _ => hbase u a ha, fun t ht _ => hcopy t ht a ha⟩;
+  | atom a => exact ⟨fun _ _ => Iff.rfl, fun _ _ _ => Iff.rfl⟩;
   | falsum => exact ⟨fun _ _ => Iff.rfl, fun _ _ _ => Iff.rfl⟩;
   | imp φ ψ ihφ ihψ =>
-    obtain ⟨hA₁, hA₂⟩ := ihφ fun a ha => hA a <| by simp [ha];
-    obtain ⟨hB₁, hB₂⟩ := ihψ fun a ha => hA a <| by simp [ha];
+    obtain ⟨hA₁, hA₂⟩ := ihφ;
+    obtain ⟨hB₁, hB₂⟩ := ihψ;
     constructor;
     · intro u hu;
       simp only [depth_imp, sup_le_iff] at hu;
@@ -1384,7 +1150,7 @@ theorem forces_transfer {P : α → Prop} {V : D.F.World → α → Prop} {V' : 
       simp only [depth_imp] at h;
       exact imp_congr (hA₂ t ht <| by omega) (hB₂ t ht <| by omega);
   | dia φ ih =>
-    obtain ⟨h₁, h₂⟩ := ih hA;
+    obtain ⟨h₁, h₂⟩ := ih;
     simp only [depth_dia];
     constructor;
     · intro u hu;
@@ -1404,20 +1170,6 @@ theorem forces_transfer {P : α → Prop} {V : D.F.World → α → Prop} {V' : 
         · omega;
       · rintro ⟨v, hv, hvA⟩;
         exact ⟨.base v, hv, (h₁ v <| by omega).mpr hvA⟩;
-
-end Transfer
-
-/-- If `φ.depth ≤ D.len + 1`, then `.base u ⊩ φ` under `D.liftVal I V` iff `u ⊩ φ` under `V`.
-- [Blok78, Theorem 4.6]
-- [CZ98, Proposition 3.2]
--/
-theorem forces_liftVal_base_iff {V : D.F.World → α → Prop} {φ : Formula α}
-    (hA : φ.depth ≤ D.len + 1) (u : D.F.World) :
-    (.base u : D.World I) ⊩[(D.hooked I).model (D.liftVal I V)] φ ↔ u ⊩[⟨D.F, V⟩] φ := by
-  classical
-  exact (forces_transfer (P := fun _ => True) (fun _ _ _ => Iff.rfl) (fun _ _ _ _ => Iff.rfl)
-    (fun _ _ => trivial)).1 u hA
-
 
 end
 
@@ -1457,7 +1209,7 @@ section Naming
 def Reaches (D : HookData κ) (I : Set ℕ) (N : ℕ) : Prop :=
   ∀ x : (D.hookFrame I).World, ¬x.IsUnwound → x ≠ .dBot → ∀ y, ∃ n ≤ N, x ≺^[n] y
 
-variable (hreach : D.Reaches I N) (h₁ : ∃ w, V w 0) (h₂ : ∃ w, ¬V w 0)
+variable (hreach : D.Reaches I N) (hq : ¬((∀ w, V w 0) ∨ (∀ w, ¬V w 0)))
 
 local notation "𝓜" => GeneralFrame.model (HookData.hooked D I) V
 
@@ -1467,11 +1219,11 @@ private lemma forces_tau_dBot : (.dBot : D.World I) ⊩[𝓜] tau N := by
   · exact Or.inl fun _ _ y hy => (eq_dBot_of_dBot_relItr hy) ▸ h;
   · exact Or.inr fun _ _ y hy => (eq_dBot_of_dBot_relItr hy) ▸ h;
 
-include hreach h₁ h₂
+include hreach hq
 
 private lemma not_forces_tau_of_ne_dBot {x : D.World I} (hx : ¬x.IsUnwound) (hxd : x ≠ .dBot) :
     x ⊮[𝓜] tau N :=
-  not_forces_tau_of_reach (hreach x hx hxd) h₁ h₂
+  not_forces_tau_of_reach (hreach x hx hxd) hq
 
 private lemma forces_delta_zero_iff {x : D.World I} (hx : ¬x.IsUnwound) :
     x ⊩[𝓜] delta N 0 ↔ x = .d 0 (Nat.zero_le _) := by
@@ -1482,11 +1234,10 @@ private lemma forces_delta_zero_iff {x : D.World I} (hx : ¬x.IsUnwound) :
     have hxb : x ≠ .dBot := by
       rintro rfl;
       exact hxτ forces_tau_dBot;
-    exact not_forces_tau_of_ne_dBot hreach h₁ h₂ (not_isUnwound_of_rel hx hxd Rxy)
+    exact not_forces_tau_of_ne_dBot hreach hq (not_isUnwound_of_rel hx hxd Rxy)
       (ne_dBot_of_rel hxb hxd Rxy) hy;
   · rintro rfl;
-    exact ⟨⟨.dBot, rfl, forces_tau_dBot⟩,
-      not_forces_tau_of_ne_dBot hreach h₁ h₂ hx (by simp)⟩;
+    exact ⟨⟨.dBot, rfl, forces_tau_dBot⟩, not_forces_tau_of_ne_dBot hreach hq hx (by simp)⟩;
 
 /-- If `¬x.IsUnwound`, then `x ⊩ delta N j ↔ x = .d j hj`.
 - [CZ98, Example 10.57]
@@ -1496,7 +1247,7 @@ private lemma forces_delta_iff {j : ℕ} (hj : j ≤ D.m) {x : D.World I} (hx : 
   induction j using Nat.strong_induction_on generalizing x with
   | _ j ih =>
     cases j with
-    | zero => exact forces_delta_zero_iff hreach h₁ h₂ hx;
+    | zero => exact forces_delta_zero_iff hreach hq hx;
     | succ j =>
       rw [forces_delta_succ, forces_dia];
       constructor;
@@ -1504,7 +1255,7 @@ private lemma forces_delta_iff {j : ℕ} (hj : j ≤ D.m) {x : D.World I} (hx : 
         by_cases hyu : y.IsUnwound;
         · rcases isUnwound_of_rel hyu Rxy with h | rfl;
           · exact absurd h hx;
-          · exact absurd ((forces_delta_zero_iff hreach h₁ h₂ hx).mpr rfl) (hne 0 (by omega));
+          · exact absurd ((forces_delta_zero_iff hreach hq hx).mpr rfl) (hne 0 (by omega));
         · obtain rfl := (ih j (by omega) (by omega) hyu).mp hy;
           rcases rel_to_d_iff.mp Rxy with ⟨h, rfl⟩ | ⟨-, rfl⟩ | ⟨h, -⟩;
           · rfl;
@@ -1519,14 +1270,13 @@ private lemma forces_delta_iff {j : ℕ} (hj : j ≤ D.m) {x : D.World I} (hx : 
           omega;
 
 private lemma forces_pi_d : ∀ j (hj : j ≤ D.m), (.d j hj : D.World I) ⊩[𝓜] pi N j
-  | 0, _ => (forces_delta_zero_iff hreach h₁ h₂ (by simp [IsUnwound])).mpr rfl
+  | 0, _ => (forces_delta_zero_iff hreach hq (by simp [IsUnwound])).mpr rfl
   | j + 1, hj => forces_pi_succ.mpr
-      ⟨(forces_delta_iff hreach h₁ h₂ hj (by simp [IsUnwound])).mpr rfl, World.d j (by omega), rfl,
+      ⟨(forces_delta_iff hreach hq hj (by simp [IsUnwound])).mpr rfl, World.d j (by omega), rfl,
         forces_pi_d j (by omega)⟩
 
 private lemma exists_isUnwound_forces_delta {j : ℕ} (hj : j ≤ D.m) {x : D.World I}
-    (hx : x.IsUnwound)
-    (h : x ⊩[𝓜] pi N j) :
+    (hx : x.IsUnwound) (h : x ⊩[𝓜] pi N j) :
     ∀ i, 1 ≤ i → i ≤ j → ∃ w : D.World I, w.IsUnwound ∧ w ⊩[𝓜] delta N i := by
   induction j generalizing x with
   | zero => intro i hi hi'; omega;
@@ -1538,10 +1288,35 @@ private lemma exists_isUnwound_forces_delta {j : ℕ} (hj : j ≤ D.m) {x : D.Wo
       exact ⟨x, hx, hxδ⟩;
     · rcases isUnwound_of_isUnwound_rel hx Rxy with hyu | rfl;
       · exact ih (by omega) hyu hy i hi hji;
-      · have := (forces_delta_iff hreach h₁ h₂ (j := j) (by omega) (by simp [IsUnwound])).mp
+      · have := (forces_delta_iff hreach hq (j := j) (by omega) (by simp [IsUnwound])).mp
           (forces_delta_of_forces_pi hy);
         simp only [d.injEq] at this;
         omega;
+
+/-- No unwound point forces `pi N D.m`, since `D.m` exceeds the number of unwound points.
+- [CZ98, Example 10.57]
+-/
+private lemma not_forces_pi_of_isUnwound [Finite D.F.World] {x : D.World I} (hx : x.IsUnwound) :
+    x ⊮[𝓜] pi N D.m := by
+  intro h;
+  choose w hwu hwδ using exists_isUnwound_forces_delta hreach hq le_rfl hx h;
+  have hne : ∀ a b (ha : 1 ≤ a) (ha' : a ≤ D.m) (hb : 1 ≤ b) (hb' : b ≤ D.m), a < b →
+      w a ha ha' ≠ w b hb hb' := by
+    intro a b ha ha' hb hb' hab he;
+    have h' := hwδ a ha ha';
+    rw [he] at h';
+    exact not_forces_delta_of_lt hab h' (hwδ b hb hb');
+  let f : Fin D.m → D.World I := fun k => w (k + 1) (by omega) (by omega);
+  have hinj : Set.InjOn f Set.univ := by
+    intro k _ k' _ he;
+    by_contra hkk;
+    rcases Nat.lt_or_gt_of_ne (Fin.val_ne_of_ne hkk) with hlt | hlt;
+    · exact hne _ _ _ _ _ _ (by omega) he;
+    · exact hne _ _ _ _ _ _ (by omega) he.symm;
+  have := Set.ncard_le_ncard_of_injOn f (fun k _ => hwu _ _ _) hinj finite_isUnwound;
+  rw [Set.ncard_univ, Nat.card_fin] at this;
+  have := ncard_isUnwound_lt (D := D) (I := I);
+  omega;
 
 /-- `x ⊩ pi N D.m ↔ x = .d D.m _`.
 - [CZ98, Example 10.57]
@@ -1551,30 +1326,12 @@ private lemma forces_pi_iff [Finite D.F.World] {x : D.World I} :
   constructor;
   · intro h;
     by_cases hx : x.IsUnwound;
-    · exfalso;
-      choose w hwu hwδ using exists_isUnwound_forces_delta hreach h₁ h₂ le_rfl hx h;
-      have hne : ∀ a b (ha : 1 ≤ a) (ha' : a ≤ D.m) (hb : 1 ≤ b) (hb' : b ≤ D.m), a < b →
-          w a ha ha' ≠ w b hb hb' := by
-        intro a b ha ha' hb hb' hab he;
-        have h' := hwδ a ha ha';
-        rw [he] at h';
-        exact not_forces_delta_of_lt hab h' (hwδ b hb hb');
-      let f : Fin D.m → D.World I := fun k => w (k + 1) (by omega) (by omega);
-      have hinj : Set.InjOn f Set.univ := by
-        intro k _ k' _ he;
-        by_contra hkk;
-        rcases Nat.lt_or_gt_of_ne (Fin.val_ne_of_ne hkk) with hlt | hlt;
-        · exact hne _ _ _ _ _ _ (by omega) he;
-        · exact hne _ _ _ _ _ _ (by omega) he.symm;
-      have := Set.ncard_le_ncard_of_injOn f (fun k _ => hwu _ _ _) hinj finite_isUnwound;
-      rw [Set.ncard_univ, Nat.card_fin] at this;
-      have := ncard_isUnwound_lt (D := D) (I := I);
-      omega;
-    · exact (forces_delta_iff hreach h₁ h₂ le_rfl hx).mp (forces_delta_of_forces_pi h);
+    · exact absurd h <| not_forces_pi_of_isUnwound hreach hq hx;
+    · exact (forces_delta_iff hreach hq le_rfl hx).mp (forces_delta_of_forces_pi h);
   · rintro rfl;
-    exact forces_pi_d hreach h₁ h₂ D.m le_rfl;
+    exact forces_pi_d hreach hq D.m le_rfl;
 
-omit hreach h₁ h₂ in
+omit hreach hq in
 private lemma forces_dia_alpha_iff_of {φ : Formula ℕ} {i : ℕ}
     (hα : ∀ x : D.World I, x ⊩[𝓜] φ ↔ x.IsA ∧ x.index = i) {x : D.World I} :
     x ⊩[𝓜] ◇φ ↔ x = .b ∨ (x.IsA ∧ i < x.index) := by
@@ -1589,106 +1346,34 @@ private lemma forces_dia_alpha_iff_of {φ : Formula ℕ} {i : ℕ}
     · obtain ⟨i', t, h, rfl⟩ := isA_iff.mp hxA;
       exact ⟨.a i false (by simp), hlt, (hα _).mpr ⟨trivial, rfl⟩⟩;
 
-variable [Finite D.F.World]
-
-/-- `x ⊩ alpha N D.m i ↔ x.IsA ∧ x.index = i`.
-- [CZ98, Example 10.57]
--/
-private lemma forces_alpha_iff (i : ℕ) {x : D.World I} :
-    x ⊩[𝓜] alpha N D.m i ↔ x.IsA ∧ x.index = i := by
-  induction i generalizing x with
-  | zero =>
-    have hm := two_le_m (D := D);
-    rw [forces_alpha_zero, forces_dia];
-    constructor;
-    · rintro ⟨⟨y, Rxy, hy⟩, -⟩;
-      rw [forces_pi_iff hreach h₁ h₂] at hy;
-      subst hy;
-      rcases rel_to_d_iff.mp Rxy with ⟨h, -⟩ | ⟨h, -⟩ | ⟨-, h⟩;
-      · omega;
-      · omega;
-      · exact h;
-    · rintro ⟨hxA, h0⟩;
-      obtain ⟨i', t, h, rfl⟩ := isA_iff.mp hxA;
-      simp only [index_a] at h0;
-      subst h0;
-      constructor;
-      · exact ⟨.d D.m le_rfl, ⟨rfl, rfl⟩, (forces_pi_iff hreach h₁ h₂).mpr rfl⟩;
-      · rw [NotForces, forces_dia];
-        rintro ⟨y, Rxy, hy⟩;
-        obtain ⟨z, Ryz, hz⟩ := forces_dia.mp hy;
-        rw [forces_pi_iff hreach h₁ h₂] at hz;
-        subst hz;
-        rw [rel_a_zero_iff.mp Rxy] at Ryz;
-        have : D.m = D.m + 1 := Ryz;
-        omega;
-  | succ i ih =>
-    have hdia := fun {x : D.World I} => forces_dia_alpha_iff_of (x := x) fun _ => ih;
-    rw [forces_alpha_succ, hdia, NotForces, forces_dia];
-    constructor;
-    · rintro ⟨hd, hdd⟩;
-      rcases hd with rfl | ⟨hxA, hlt⟩;
-      · exact absurd ⟨.a (i + 1) false (by simp), trivial, hdia.mpr <| Or.inr ⟨trivial, by simp⟩⟩
-          hdd;
-      · obtain ⟨i', t, h, rfl⟩ := isA_iff.mp hxA;
-        simp only [index_a] at hlt;
-        by_contra hne;
-        apply hdd ⟨.a (i + 1) false (by simp), _, hdia.mpr <| Or.inr ⟨trivial, by simp⟩⟩;
-        have : i' ≠ i + 1 := fun h' => hne ⟨hxA, h'⟩;
-        exact (by omega : i + 1 < i');
-    · rintro ⟨hxA, hx⟩;
-      obtain ⟨i', t, h, rfl⟩ := isA_iff.mp hxA;
-      simp only [index_a] at hx;
-      subst hx;
-      constructor;
-      · exact Or.inr ⟨trivial, by simp⟩;
-      · rintro ⟨y, Rxy, hy⟩;
-        rcases hdia.mp hy with rfl | ⟨hyA, hlt⟩;
-        · exact absurd Rxy (by simp [Rel]);
-        · rcases rel_a_iff.mp Rxy with ⟨-, hlt'⟩ | ⟨h', -⟩;
-          · omega;
-          · omega;
-
-/-- `x ⊩ theta N D.m ↔ x = .b ∨ (x.IsA ∧ 0 < x.index)`.
-- [CZ98, Example 10.57]
--/
-private lemma forces_theta_iff {x : D.World I} :
-    x ⊩[𝓜] theta N D.m ↔ x = .b ∨ (x.IsA ∧ 0 < x.index) :=
-  forces_dia_alpha_iff_of fun _ => forces_alpha_iff hreach h₁ h₂ 0
-
-/-- `x ⊩ gamma N D.m ↔ x = .c`.
-- [CZ98, Example 10.57]
--/
-lemma forces_gamma_iff {x : D.World I} : x ⊩[𝓜] gamma N D.m ↔ x = .c := by
-  have hθ := fun {x : D.World I} => forces_theta_iff (x := x) hreach h₁ h₂;
-  rw [Naming.forces_gamma, ← theta, forces_dia, NotForces, hθ];
+omit hreach hq in
+private lemma forces_dia_iff_of_b {ψ : Formula ℕ} {i : ℕ}
+    (hψ : ∀ y : D.World I, y ⊩[𝓜] ψ ↔ y = .b ∨ (y.IsA ∧ i < y.index)) {x : D.World I} :
+    x ⊩[𝓜] ◇ψ ↔ x = .c ∨ x = .b ∨ (x.IsA ∧ i + 1 < x.index) := by
+  rw [forces_dia];
   constructor;
-  · rintro ⟨⟨y, Rxy, hy⟩, hn⟩;
-    rw [hθ] at hy;
-    rcases hy with rfl | ⟨hyA, hpos⟩;
-    · exact rel_to_b_iff.mp Rxy;
+  · rintro ⟨y, Rxy, hy⟩;
+    rcases (hψ y).mp hy with rfl | ⟨hyA, hlt⟩;
+    · exact Or.inl <| rel_to_b_iff.mp Rxy;
     · obtain ⟨j, t, h, rfl⟩ := isA_iff.mp hyA;
-      rcases rel_to_a_iff.mp Rxy with rfl | ⟨hxA, hlt⟩;
-      · exact absurd (Or.inl rfl) hn;
-      · simp only [index_a] at hpos hlt;
-        exact absurd (Or.inr ⟨hxA, by omega⟩) hn;
-  · rintro rfl;
-    constructor;
-    · exact ⟨.b, trivial, hθ.mpr <| Or.inl rfl⟩;
-    · rintro (h | ⟨h, -⟩);
-      · simp at h;
-      · exact h;
+      rcases rel_to_a_iff.mp Rxy with rfl | ⟨hxA, hlt'⟩;
+      · exact Or.inr <| Or.inl rfl;
+      · simp only [index_a] at hlt;
+        exact Or.inr <| Or.inr ⟨hxA, by omega⟩;
+  · rintro (rfl | rfl | ⟨hxA, hlt⟩);
+    · exact ⟨.b, trivial, (hψ _).mpr <| Or.inl rfl⟩;
+    · exact ⟨.a (i + 1) false (by simp), trivial, (hψ _).mpr <| Or.inr ⟨trivial, by simp⟩⟩;
+    · obtain ⟨j, t, h, rfl⟩ := isA_iff.mp hxA;
+      exact ⟨.a (i + 1) false (by simp), by simpa [Rel] using hlt,
+        (hψ _).mpr <| Or.inr ⟨trivial, by simp⟩⟩;
 
-/-- Under an admissible valuation, `.b ⊩ löb N D.m`.
-- [CZ98, p. 365]
--/
-private lemma forces_löb_b (hV : (D.hooked I).IsAdmissible V) :
-    (.b : D.World I) ⊩[𝓜] löb N D.m := by
+omit hreach hq in
+/-- If `V` is admissible and `¬V .b 1`, there is an a-point `z` of least positive index with
+`¬V z 1`. -/
+private lemma exists_isA_not_val (hV : (D.hooked I).IsAdmissible V) (hb : ¬V .b 1) :
+    ∃ z : D.World I, z.IsA ∧ 1 ≤ z.index ∧ ¬V z 1 ∧
+      ∀ y : D.World I, y.IsA → 1 ≤ y.index → y.index < z.index → V y 1 := by
   classical
-  have hθ := fun {x : D.World I} => forces_theta_iff (x := x) hreach h₁ h₂;
-  rw [forces_löb];
-  intro h;
-  by_contra hb;
   have hfin : {w : D.World I | w.IsA ∧ w ∈ {w | V w 1}}.Finite := (mem_adm_iff.mp (hV 1)).2 hb;
   have hex : ∃ i, 1 ≤ i ∧ ∃ z : D.World I, z.IsA ∧ z.index = i ∧ ¬V z 1 := by
     by_contra hne;
@@ -1700,10 +1385,94 @@ private lemma forces_löb_b (hV : (D.hooked I).IsAdmissible V) :
     · intro i;
       exact ⟨trivial, hne (i + 1) (by omega) _ trivial rfl⟩;
   obtain ⟨hi, z, hzA, hzi, hz⟩ := Nat.find_spec hex;
-  have hmin : ∀ y : D.World I, y.IsA → 1 ≤ y.index → y.index < Nat.find hex → V y 1 := by
-    intro y hyA hy hlt;
-    by_contra hy';
-    exact Nat.find_min hex hlt ⟨hy, y, hyA, rfl, hy'⟩;
+  use z, hzA, hzi ▸ hi, hz;
+  intro y hyA hy hlt;
+  by_contra hy';
+  exact Nat.find_min hex (hzi ▸ hlt) ⟨hy, y, hyA, rfl, hy'⟩;
+
+variable [Finite D.F.World]
+
+/-- `x ⊩ ◇pi N D.m ↔ x.IsA ∧ x.index = 0`.
+- [CZ98, Example 10.57]
+-/
+private lemma forces_dia_pi_iff {x : D.World I} : x ⊩[𝓜] ◇pi N D.m ↔ x.IsA ∧ x.index = 0 := by
+  have hm := two_le_m (D := D);
+  rw [forces_dia];
+  constructor;
+  · rintro ⟨y, Rxy, hy⟩;
+    rw [forces_pi_iff hreach hq] at hy;
+    subst hy;
+    rcases rel_to_d_iff.mp Rxy with ⟨h, -⟩ | ⟨h, -⟩ | ⟨-, h⟩;
+    · omega;
+    · omega;
+    · exact h;
+  · rintro ⟨hxA, h0⟩;
+    obtain ⟨i', t, h, rfl⟩ := isA_iff.mp hxA;
+    simp only [index_a] at h0;
+    subst h0;
+    exact ⟨.d D.m le_rfl, ⟨rfl, rfl⟩, (forces_pi_iff hreach hq).mpr rfl⟩;
+
+/-- `x ⊩ alpha N D.m 0 ↔ x.IsA ∧ x.index = 0`.
+- [CZ98, Example 10.57]
+-/
+private lemma forces_alpha_zero_iff {x : D.World I} :
+    x ⊩[𝓜] alpha N D.m 0 ↔ x.IsA ∧ x.index = 0 := by
+  rw [forces_alpha_zero, NotForces, forces_dia_alpha_iff_of fun _ => forces_dia_pi_iff hreach hq,
+    forces_dia_pi_iff hreach hq];
+  constructor;
+  · exact fun h => h.1;
+  · rintro ⟨hxA, h0⟩;
+    exact ⟨⟨hxA, h0⟩, by rintro (rfl | ⟨-, h⟩) <;> first | exact hxA | omega⟩;
+
+/-- `x ⊩ alpha N D.m i ↔ x.IsA ∧ x.index = i`.
+- [CZ98, Example 10.57]
+-/
+private lemma forces_alpha_iff (i : ℕ) {x : D.World I} :
+    x ⊩[𝓜] alpha N D.m i ↔ x.IsA ∧ x.index = i := by
+  induction i generalizing x with
+  | zero => exact forces_alpha_zero_iff hreach hq;
+  | succ i ih =>
+    have hdia := fun {x : D.World I} => forces_dia_alpha_iff_of (x := x) fun _ => ih;
+    rw [forces_alpha_succ, hdia, NotForces, forces_dia_iff_of_b fun _ => hdia];
+    constructor;
+    · rintro ⟨rfl | ⟨hxA, hlt⟩, hdd⟩;
+      · exact absurd (Or.inr <| Or.inl rfl) hdd;
+      · push Not at hdd;
+        exact ⟨hxA, by have := hdd.2.2 hxA; omega⟩;
+    · rintro ⟨hxA, hx⟩;
+      exact ⟨Or.inr ⟨hxA, by omega⟩, by rintro (rfl | rfl | ⟨-, h⟩) <;> first | exact hxA | omega⟩;
+
+/-- `x ⊩ theta N D.m ↔ x = .b ∨ (x.IsA ∧ 0 < x.index)`.
+- [CZ98, Example 10.57]
+-/
+private lemma forces_theta_iff {x : D.World I} :
+    x ⊩[𝓜] theta N D.m ↔ x = .b ∨ (x.IsA ∧ 0 < x.index) :=
+  forces_dia_alpha_iff_of fun _ => forces_alpha_iff hreach hq 0
+
+/-- `x ⊩ gamma N D.m ↔ x = .c`.
+- [CZ98, Example 10.57]
+-/
+lemma forces_gamma_iff {x : D.World I} : x ⊩[𝓜] gamma N D.m ↔ x = .c := by
+  have hθ := fun {x : D.World I} => forces_theta_iff (x := x) hreach hq;
+  rw [Naming.forces_gamma, ← theta, forces_dia_iff_of_b fun _ => hθ, NotForces, hθ];
+  constructor;
+  · rintro ⟨rfl | rfl | ⟨hxA, hlt⟩, hn⟩;
+    · rfl;
+    · exact absurd (Or.inl rfl) hn;
+    · exact absurd (Or.inr ⟨hxA, by omega⟩) hn;
+  · rintro rfl;
+    exact ⟨Or.inl rfl, by rintro (h | ⟨h, -⟩) <;> simp_all [IsA]⟩;
+
+/-- Under an admissible valuation, `.b ⊩ löb N D.m`.
+- [CZ98, p. 365]
+-/
+private lemma forces_löb_b (hV : (D.hooked I).IsAdmissible V) :
+    (.b : D.World I) ⊩[𝓜] löb N D.m := by
+  have hθ := fun {x : D.World I} => forces_theta_iff (x := x) hreach hq;
+  rw [forces_löb];
+  intro h;
+  by_contra hb;
+  obtain ⟨z, hzA, hzi, hz, hmin⟩ := exists_isA_not_val hV hb;
   have hzθ : z ⊩[𝓜] theta N D.m := hθ.mpr <| Or.inr ⟨hzA, by omega⟩;
   apply hz;
   apply forces_imp.mp (forces_box₀.mp h z (rel_b_iff.mpr hzA) hzθ) |>.resolve_left;
@@ -1713,7 +1482,7 @@ private lemma forces_löb_b (hV : (D.hooked I).IsAdmissible V) :
   rcases hθ.mp hy with rfl | ⟨hyA, hpos⟩;
   · exact absurd hzy (by simp [Rel]);
   · rcases rel_a_iff.mp hzy with ⟨-, hlt⟩ | ⟨h'', -⟩;
-    · exact hmin y hyA hpos (by simpa [← hzi] using hlt);
+    · exact hmin y hyA hpos hlt;
     · simp only [index_a] at hzi;
       omega;
 
@@ -1734,12 +1503,10 @@ theorem validates_gammaLöb : D.hooked I ⊧ gammaLöb N D.m := by
   intro hx y Rxy;
   by_cases hq : (∀ w, V w 0) ∨ (∀ w, ¬V w 0);
   · exact absurd hx <| not_forces_gamma_of_const (M := (D.hooked I).model V) hq;
-  · push Not at hq;
-    obtain ⟨⟨w₁, hw₁⟩, ⟨w₂, hw₂⟩⟩ := hq;
-    rw [forces_gamma_iff hreach ⟨w₂, hw₂⟩ ⟨w₁, hw₁⟩] at hx;
+  · rw [forces_gamma_iff hreach hq] at hx;
     subst hx;
     rw [rel_c_iff.mp Rxy];
-    exact forces_löb_b hreach ⟨w₂, hw₂⟩ ⟨w₁, hw₁⟩ hV;
+    exact forces_löb_b hreach hq hV;
 
 /-- If `i ∉ I`, `x ⊩ alpha N D.m i` and `y ⊩ alpha N D.m i`, then `x = y`.
 - [CZ98, p. 367]
@@ -1749,10 +1516,8 @@ theorem alpha_unique {i : ℕ} (hi : i ∉ I) (V : D.World I → ℕ → Prop) {
     x = y := by
   by_cases hq : (∀ w, V w 0) ∨ (∀ w, ¬V w 0);
   · exact absurd hx <| not_forces_alpha_of_const (M := (D.hooked I).model V) hq;
-  · push Not at hq;
-    obtain ⟨⟨w₁, hw₁⟩, ⟨w₂, hw₂⟩⟩ := hq;
-    obtain ⟨hxA, hxi⟩ := (forces_alpha_iff hreach ⟨w₂, hw₂⟩ ⟨w₁, hw₁⟩ i).mp hx;
-    obtain ⟨hyA, hyi⟩ := (forces_alpha_iff hreach ⟨w₂, hw₂⟩ ⟨w₁, hw₁⟩ i).mp hy;
+  · obtain ⟨hxA, hxi⟩ := (forces_alpha_iff hreach hq i).mp hx;
+    obtain ⟨hyA, hyi⟩ := (forces_alpha_iff hreach hq i).mp hy;
     obtain ⟨i₁, t₁, h₁, rfl⟩ := isA_iff.mp hxA;
     obtain ⟨i₂, t₂, h₂, rfl⟩ := isA_iff.mp hyA;
     simp only [index_a] at hxi hyi;
@@ -1762,6 +1527,37 @@ theorem alpha_unique {i : ℕ} (hi : i ∉ I) (V : D.World I → ℕ → Prop) {
     · exact absurd (h₂ rfl) hi;
     · exact absurd (h₁ rfl) hi;
     · rfl;
+
+/-- `D.hooked I ⊭ xi N D.m (D.m + 3) (shift φ) i` for `i ∈ I`, when `φ` of depth at most
+`D.len + 1` is refuted at `D.root` under `V₀`.
+- [CZ98, p. 367]
+-/
+theorem not_validates_xi {φ : Formula ℕ} {V₀ : D.F.World → ℕ → Prop}
+    (hV₀ : D.root ⊮[⟨D.F, V₀⟩] φ) (hdepth : φ.depth ≤ D.len + 1) {i : ℕ} (hi : i ∈ I) :
+    D.hooked I ⊭ xi N D.m (D.m + 3) (shift φ) i := by
+  classical
+  intro hval;
+  let V : D.World I → ℕ → Prop := fun w a =>
+    if a = 0 then w = .a i false (by simp) else D.liftVal I V₀ w (a - 2);
+  have hV : (D.hooked I).IsAdmissible V := isAdmissible_ite_liftVal V₀ (by simp);
+  have hq : ¬((∀ w, V w 0) ∨ (∀ w, ¬V w 0)) := by
+    push Not;
+    exact ⟨⟨.b, by simp [V]⟩, ⟨.a i false (by simp), by simp [V]⟩⟩;
+  have hα := fun x => forces_alpha_iff (x := x) hreach hq i;
+  have h := hval V hV .b;
+  rw [xi, forces_neg, NotForces, forces_and, forces_and, forces_dia, forces_dia, forces_neg,
+    NotForces, forces_multidox] at h;
+  apply h;
+  and_intros;
+  · exact ⟨.a i false (by simp), trivial, forces_and.mpr
+      ⟨(hα _).mpr ⟨trivial, rfl⟩, by simp [V, Model.World.Forces, Model.Val]⟩⟩;
+  · exact ⟨.a i true fun _ => hi, trivial, forces_and.mpr
+      ⟨(hα _).mpr ⟨trivial, rfl⟩, by simp [V, Model.World.Forces, Model.Val]⟩⟩;
+  · intro hbox;
+    apply hV₀;
+    have h₃ := hbox _ b_relItr_root;
+    rwa [forces_shift (V := D.liftVal I V₀) (fun w a => by simp [V]),
+      forces_liftVal.1 _ hdepth] at h₃;
 
 end Validity
 
@@ -1773,35 +1569,17 @@ open NormalLogic
 variable [Finite D.F.World] {L : NormalLogic ℕ} [L.IsNExt 𝐊]
 
 omit [Finite D.F.World] [L.IsNExt 𝐊] in
+/-- If `deadEnd ⊭ L` and the non-root generated subframes of `D.F` validate `L`, then `D.F` has
+no dead end.
+- [CZ98, p. 367]
+-/
 lemma exists_rel_of_not_deadEnd (hF : ∀ u : D.F.World, ¬D.F.IsRootedBy u → D.F⥜u ⊧ L)
     (h : deadEnd ⊭ L) (u : D.F.World) : ∃ v, u ≺ v := by
   by_contra! hu;
   by_cases hr : D.F.IsRootedBy u;
-  · obtain ⟨n, hn⟩ := hr (D.path 0);
-    cases n with
-    | zero =>
-      rw [Frame.iff_relItr_zero] at hn;
-      exact hu _ <| hn ▸ D.path_rel 0;
-    | succ n =>
-      obtain ⟨v, Ruv, -⟩ := hn;
-      exact hu v Ruv;
-  · apply h;
-    have hreach : ∀ x ∈ D.F.Reach u, x = u := by
-      rintro x ⟨n, hn⟩;
-      cases n with
-      | zero => exact (Frame.iff_relItr_zero.mp hn).symm;
-      | succ n =>
-        obtain ⟨v, Ruv, -⟩ := hn;
-        exact absurd Ruv (hu v);
-    let f : D.F⥜u →ₚ deadEnd :=
-      { toFun := fun _ => 0
-        forth := fun {x y} Rxy => by
-          have Rxy' : x.1 ≺ y.1 := Rxy;
-          rw [hreach x.1 x.2] at Rxy';
-          exact absurd Rxy' (hu _)
-        back := fun h => h.elim };
-    exact Frame.ValidateLogic.of_surjective_pMorphism f
-      (fun _ => ⟨(Frame.pointGenerate.root _ _).1, Subsingleton.elim _ _⟩) (hF u hr);
+  · have := Frame.eq_of_mem_reach_of_forall_rel_eq (fun v Ruv => (hu v Ruv).elim) (hr (D.path 0));
+    exact hu _ <| this ▸ D.path_rel 0;
+  · exact h <| (Frame.pointGenerate_validateLogic_iff_deadEnd hu).mp (hF u hr);
 
 lemma reaches (I : Set ℕ) : D.Reaches I (2 * D.m + 7) := by
   intro x hx hxd y;
@@ -1818,7 +1596,7 @@ noncomputable def hookInterface (hc : L.Consistent)
     (hF : ∀ u : D.F.World, ¬D.F.IsRootedBy u → D.F⥜u ⊧ L)
     (hrefl : D.refl ↔ deadEnd ⊭ L) {φ : Formula ℕ} {V₀ : D.F.World → ℕ → Prop}
     (hV₀ : D.root ⊮[⟨D.F, V₀⟩] φ) (hdepth : φ.depth ≤ D.len + 1) (I : Set ℕ) :
-    HookInterface L (2 * D.m + 7) D.m (D.m + 4) (D.m + 3) (shift φ) I (D.hooked I) where
+    HookInterface L (2 * D.m + 7) D.m (D.m + 3) (shift φ) I (D.hooked I) where
   safe := D.detached I
   forces_of_mem_safe hx _ hA V := by
     apply forces_of_mem_detached hF _ _ hx hA V;
@@ -1829,10 +1607,10 @@ noncomputable def hookInterface (hc : L.Consistent)
       exact hrefl.mp h <| deadEnd_validates_of_not_mem h';
   serial h x := exists_rel (hrefl.mpr h) (exists_rel_of_not_deadEnd hF h) x
   gammaPoint := .c
-  gammaPoint_forces V _ h₁ h₂ := (forces_gamma_iff (reaches I) h₁ h₂).mpr rfl
-  reach_gammaPoint hx := exists_relItr_c hx
+  gammaPoint_forces V _ hq := (forces_gamma_iff (reaches I) hq).mpr rfl
+  reach_gammaPoint hx := exists_relItr_of_not_mem_detached hx .c
   reach_deadEnd h _ hx := by
-    obtain ⟨n, hn, h'⟩ := exists_relItr_dBot hx;
+    obtain ⟨n, hn, h'⟩ := exists_relItr_of_not_mem_detached hx .dBot;
     use n, hn, .dBot, h';
     intro z hz;
     apply h;
@@ -1841,37 +1619,7 @@ noncomputable def hookInterface (hc : L.Consistent)
     exact hrefl.mp (rel_dBot_iff.mp hz).2 <| deadEnd_validates_of_not_mem h'';
   validates_gammaLöb := validates_gammaLöb (reaches I)
   alpha_unique hi V _ _ _ hx hy := alpha_unique (reaches I) hi V hx hy
-  not_validates_xi {i} hi hval := by
-    classical
-    let V : D.World I → ℕ → Prop := fun w a =>
-      if a = 0 then w = .a i false (by simp) else D.liftVal I V₀ w (a - 2);
-    have hV : (D.hooked I).IsAdmissible V := by
-      intro a;
-      by_cases ha : a = 0;
-      · subst ha;
-        apply mem_adm_of_not_mem_of_finite;
-        · simp [V];
-        · apply (Set.finite_singleton (World.a i false (by simp) : D.World I)).subset;
-          intro w hw;
-          simpa [V] using hw.2;
-      · simpa [V, ha] using isAdmissible_liftVal (I := I) V₀ (a - 2);
-    have h₁ : ∃ w, V w 0 := ⟨.a i false (by simp), by simp [V]⟩;
-    have h₂ : ∃ w, ¬V w 0 := ⟨.b, by simp [V]⟩;
-    have hα := fun x => forces_alpha_iff (x := x) (reaches I) h₁ h₂ i;
-    have h := hval V hV .b;
-    rw [xi, forces_neg, NotForces, forces_and, forces_and, forces_dia, forces_dia, forces_neg,
-      NotForces, forces_multidox] at h;
-    apply h;
-    and_intros;
-    · exact ⟨.a i false (by simp), trivial, forces_and.mpr
-        ⟨(hα _).mpr ⟨trivial, rfl⟩, by simp [V, Model.World.Forces, Model.Val]⟩⟩;
-    · exact ⟨.a i true fun _ => hi, trivial, forces_and.mpr
-        ⟨(hα _).mpr ⟨trivial, rfl⟩, by simp [V, Model.World.Forces, Model.Val]⟩⟩;
-    · intro hbox;
-      apply hV₀;
-      have h₃ := hbox _ b_relItr_root;
-      rwa [forces_shift (V := D.liftVal I V₀) (fun w a => by simp [V]),
-        forces_liftVal_base_iff hdepth] at h₃;
+  not_validates_xi hi := not_validates_xi (reaches I) hV₀ hdepth hi
 
 end Interface
 
@@ -1912,16 +1660,14 @@ private lemma card_reach_lt {n : ℕ} {F : Frame (Fin n)} {u : Fin n} (hu : ¬F.
     _ < Fintype.card (Fin n) := Fintype.card_subtype_lt hy
     _ = n := Fintype.card_fin n;
 
-/-- If `¬L.IsUnionSplitting`, there are a finite frame `F` with root `r`, validating
-`coreUnionSplitting L` but not `L`, with `F⥜u ⊧ L` for every non-root `u`, refuting some `φ ∈ L`
-at `r`, and with `F.HasCycle`.
+/-- If `¬L.IsUnionSplitting`, there is a finite frame `F` with a cycle and a root `r`, with
+`F⥜u ⊧ L` for every non-root `u`, refuting some `φ ∈ L` at `r`.
 - [CZ98, p. 366]
 -/
 theorem exists_minimal_counterexample (hL : ¬L.IsUnionSplitting) :
-    ∃ (n : ℕ) (F : Frame (Fin n)) (r : F.Root),
-      F ⊧ coreUnionSplitting L ∧ F ⊭ L ∧
+    ∃ (n : ℕ) (F : Frame (Fin n)) (r : F.Root), F.HasCycle ∧
       (∀ u : Fin n, ¬F.IsRootedBy u → F⥜u ⊧ L) ∧
-      (∃ φ ∈ L, ∃ V : Fin n → ℕ → Prop, ¬r.1 ⊩[⟨F, V⟩] φ) ∧ F.HasCycle := by
+      ∃ φ ∈ L, ∃ V : Fin n → ℕ → Prop, ¬r.1 ⊩[⟨F, V⟩] φ := by
   classical
   have hex := exists_isCounter hL;
   obtain ⟨F, hcore, hnL⟩ := Nat.find_spec hex;
@@ -1936,45 +1682,33 @@ theorem exists_minimal_counterexample (hL : ¬L.IsUnionSplitting) :
   obtain ⟨V, r, hr⟩ : ∃ V r, ¬r ⊩[⟨F, V⟩] φ := by
     by_contra! h;
     exact hF h;
-  have hroot : F.IsRootedBy r := hmin r fun h => hr <| forces_pointGenerate_root.mp <|
-    h φ hφ (fun y a => V y.1 a) (pointGenerate.root F r).1;
-  use Nat.find hex, F, ⟨r, hroot⟩, hcore, hnL;
+  have hroot : F.IsRootedBy r := hmin r fun h => hr <| forces_of_pointGenerate_validateLogic h hφ V;
+  use Nat.find hex, F, ⟨r, hroot⟩;
   and_intros;
-  · intro u hu;
-    by_contra h;
-    exact hu <| hmin u h;
-  · exact ⟨φ, hφ, V, hr⟩;
   · by_contra hc;
     have hmem : (⟨_, F⟩ : FinFrame) ∈ coreFrames L := ⟨⟨⟨r, hroot⟩, hc⟩, hnL⟩;
     exact FinFrame.not_validates_jfFormula (F := ⟨_, F⟩) ⟨⟨r, hroot⟩, hc⟩ <|
       validates_map_finVal_iff.mp <| hcore _ <| jfFormula_mem_unionSplitting hmem;
+  · intro u hu;
+    by_contra h;
+    exact hu <| hmin u h;
+  · exact ⟨φ, hφ, V, hr⟩;
 
-/-- If `L.Consistent` and `¬L.IsUnionSplitting`, there are `D : HookData (Fin n)`, `φ ∈ L` and `V`
-with `¬D.root ⊩[⟨D.F, V⟩] φ`, `φ.depth ≤ D.len + 1`, `D.F ⊧ coreUnionSplitting L`, `D.F ⊭ L`,
-`D.F⥜u ⊧ L` for every non-root `u`, `D.refl ↔ deadEnd ⊭ L`, `deadEnd ⊧ L` if `¬D.refl`,
-`reflPoint ⊧ L` and no dead end in `D.F` if `D.refl`.
+/-- If `¬L.IsUnionSplitting`, there are `D : HookData (Fin n)` with `D.refl ↔ deadEnd ⊭ L` and
+`D.F⥜u ⊧ L` for every non-root `u`, and `φ ∈ L` of depth at most `D.len + 1` refuted at
+`D.root`.
 - [CZ98, p. 366]
 -/
-theorem exists_hookData (hc : L.Consistent) (hL : ¬L.IsUnionSplitting) :
-    ∃ (n : ℕ) (D : HookData (Fin n)) (φ : Formula ℕ) (V : Fin n → ℕ → Prop),
-      φ ∈ L ∧ ¬D.root ⊩[⟨D.F, V⟩] φ ∧ φ.depth ≤ D.len + 1 ∧
-      D.F ⊧ coreUnionSplitting L ∧ D.F ⊭ L ∧
+theorem exists_hookData (hL : ¬L.IsUnionSplitting) :
+    ∃ (n : ℕ) (D : HookData (Fin n)), (D.refl ↔ deadEnd ⊭ L) ∧
       (∀ u, ¬D.F.IsRootedBy u → D.F⥜u ⊧ L) ∧
-      (D.refl ↔ deadEnd ⊭ L) ∧ (¬D.refl → deadEnd ⊧ L) ∧
-      (D.refl → reflPoint ⊧ L) ∧ (D.refl → ∀ u : D.F.World, ∃ v, u ≺ v) := by
-  obtain ⟨n, F, r, hcore, hnL, hgen, ⟨φ, hφ, V, hV⟩, hcyc⟩ := exists_minimal_counterexample hL;
+      ∃ φ ∈ L, φ.depth ≤ D.len + 1 ∧ ∃ V : Fin n → ℕ → Prop, ¬D.root ⊩[⟨D.F, V⟩] φ := by
+  obtain ⟨n, F, r, hcyc, hgen, φ, hφ, V, hV⟩ := exists_minimal_counterexample hL;
   obtain ⟨p, hp⟩ := hcyc.exists_path;
   let D : HookData (Fin n) :=
     { F := F, root := r, path := p, path_rel := hp, len := φ.depth,
       m := n + φ.depth + 2, card_add_len_lt := by simp, refl := deadEnd ⊭ L };
-  use n, D, φ, V, hφ, hV, by simp [D], hcore, hnL, hgen, Iff.rfl, not_not.mp;
-  and_intros;
-  · exact (makinson hc).resolve_left;
-  · intro hD u;
-    by_contra! hu;
-    exact hD <| deadEnd_validates_of_forall_not_rel hu <|
-      hgen u <| not_isRootedBy_of_forall_not_rel hcyc hu;
-
+  exact ⟨n, D, Iff.rfl, hgen, φ, hφ, by simp [D], V, hV⟩;
 
 end
 
@@ -2006,7 +1740,7 @@ If `L` is consistent and not a union-splitting of `𝐊`, then its degree is `�
 -/
 theorem degree_eq_continuum (hc : L.Consistent) (hL : ¬L.IsUnionSplitting)
   : L.degree.{u} (fun _ => True) = 𝔠 := by
-  obtain ⟨n, D, φ, V, hφ, hV, hdepth, -, -, hgen, hrefl, -⟩ := exists_hookData hc hL;
+  obtain ⟨n, D, hrefl, hgen, φ, hφ, hdepth, V, hV⟩ := exists_hookData hL;
   apply le_antisymm degree_le_continuum;
   exact Naming.HookInterface.continuum_le_degree (H := D.hooked)
     (fun I => D.hookInterface hc hgen hrefl hV hdepth I) (Naming.shift_mem hφ) (by omega);

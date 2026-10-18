@@ -182,6 +182,47 @@ lemma ValidateLogic.of_surjective_pMorphism (f : F →ₚ G) (hf : Function.Surj
     (h : F ⊧ L) : G ⊧ L :=
   fun φ hA => Validates.of_surjective_pMorphism f hf <| h φ hA
 
+section OnePoint
+
+variable {u : F.World} {r : Prop}
+
+private lemma pointGenerate_validateLogic_iff_onePoint (hsucc : ∀ v, u ≺ v → v = u)
+    (hr : u ≺ u ↔ r) : F⥜u ⊧ L ↔ (⟨fun _ _ => r⟩ : Frame (Fin 1)) ⊧ L := by
+  have hu : ∀ y : (F⥜u).World, y.1 = u := fun y => eq_of_mem_reach_of_forall_rel_eq hsucc y.2;
+  constructor;
+  · let f : F⥜u →ₚ (⟨fun _ _ => r⟩ : Frame (Fin 1)) := {
+      toFun _ := 0
+      forth {y z} Ryz := by
+        have Ryz' : y.1 ≺ z.1 := Ryz;
+        rw [hu y, hu z] at Ryz';
+        exact hr.mp Ryz'
+      back {y _} hz := ⟨y,
+        show y.1 ≺ y.1 by rw [hu y]; exact hr.mpr hz, Subsingleton.elim _ _
+      ⟩
+    };
+    exact ValidateLogic.of_surjective_pMorphism f
+      fun _ => ⟨(pointGenerate.root F u).1, Subsingleton.elim _ _⟩;
+  · let f : (⟨fun _ _ => r⟩ : Frame (Fin 1)) →ₚ F⥜u := {
+      toFun := fun _ => (pointGenerate.root F u).1
+      forth := fun hz => hr.mpr hz
+      back := fun {_ z} Rz => by
+        have Rz' : u ≺ z.1 := Rz;
+        rw [hu z] at Rz';
+        exact ⟨0, hr.mp Rz', Subtype.ext (hu z).symm⟩
+    };
+    exact ValidateLogic.of_surjective_pMorphism f fun z => ⟨0, Subtype.ext (hu z).symm⟩;
+
+/-- If `u` has no successor, then `F⥜u ⊧ L` iff `deadEnd ⊧ L`. -/
+lemma pointGenerate_validateLogic_iff_deadEnd (hu : ∀ v, u ⊀ v) : F⥜u ⊧ L ↔ deadEnd ⊧ L :=
+  pointGenerate_validateLogic_iff_onePoint (fun v Ruv => (hu v Ruv).elim) (by grind)
+
+/-- If `u`'s only successor is `u` itself, then `F⥜u ⊧ L` iff `reflPoint ⊧ L`. -/
+lemma pointGenerate_validateLogic_iff_reflPoint (Ruu : u ≺ u) (hsucc : ∀ v, u ≺ v → v = u) :
+    F⥜u ⊧ L ↔ reflPoint ⊧ L :=
+  pointGenerate_validateLogic_iff_onePoint hsucc (by tauto)
+
+end OnePoint
+
 end Frame
 
 end

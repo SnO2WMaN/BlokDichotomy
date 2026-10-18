@@ -80,29 +80,64 @@ lemma relItr_of_path {p : ℕ → F.World} (hp : ∀ i < n, p i ≺ p (i + 1)) {
     · rw [show j + 1 - i = (j - i) + 1 by omega];
       exact relItr_tail (ih (by omega) (by omega)) (hp j (by omega));
 
-/-- If `x ≺^[Nat.card F.World] y`, then some `z` reachable from `x` has `z ≺^[k] z` for some
-`k > 0`. -/
-lemma exists_cycle_of_relItr_card [Finite F.World] (Rxy : x ≺^[Nat.card F.World] y) :
-    ∃ z ∈ F.Reach x, ∃ k, 0 < k ∧ z ≺^[k] z := by
-  obtain ⟨p, hp₀, -, hp⟩ := exists_path Rxy;
-  have hni : ¬Function.Injective (fun i : Fin (Nat.card F.World + 1) => p i) := by
+/-- A path of length at least `Nat.card F.World` passes through some point `z` twice. -/
+private lemma exists_relItr_self_of_card_le [Finite F.World] (Rxy : x ≺^[n] y)
+    (hn : Nat.card F.World ≤ n) :
+    ∃ z i j, i < j ∧ j ≤ n ∧ (x ≺^[i] z) ∧ (z ≺^[j - i] z) ∧ (z ≺^[n - j] y) := by
+  obtain ⟨p, hp₀, hpn, hp⟩ := exists_path Rxy;
+  have hni : ¬Function.Injective (fun i : Fin (n + 1) => p i) := by
     intro hi;
     have := Nat.card_le_card_of_injective _ hi;
     simp at this;
+    omega;
   obtain ⟨i, j, hij, hne⟩ := Function.not_injective_iff.mp hni;
   have hne' : (i : ℕ) ≠ j := Fin.val_ne_of_ne hne;
   wlog hlt : (i : ℕ) < j generalizing i j;
   · exact this j i hij.symm hne.symm hne'.symm <| by omega;
-  use p i;
-  and_intros;
-  · have := relItr_of_path hp (Nat.zero_le i) (by omega);
-    rw [hp₀] at this;
-    exact mem_reach_of_relItr this;
-  · use j - i;
-    and_intros;
-    · omega;
-    · have := relItr_of_path hp hlt.le (by omega);
-      rwa [← hij] at this;
+  have h₁ := relItr_of_path hp (Nat.zero_le i) (by omega);
+  have h₂ := relItr_of_path hp hlt.le (by omega);
+  have h₃ := relItr_of_path hp (i := j) (by omega) le_rfl;
+  rw [hp₀] at h₁;
+  rw [← hij] at h₂ h₃;
+  rw [hpn] at h₃;
+  exact ⟨p i, i, j, hlt, by omega, h₁, h₂, h₃⟩;
+
+/-- If `x ≺^[Nat.card F.World] y`, then some `z` reachable from `x` has `z ≺^[k] z` for some
+`k > 0`. -/
+lemma exists_cycle_of_relItr_card [Finite F.World] (Rxy : x ≺^[Nat.card F.World] y) :
+    ∃ z ∈ F.Reach x, ∃ k > 0, z ≺^[k] z := by
+  obtain ⟨z, i, j, hij, -, Rxz, Rzz, -⟩ := exists_relItr_self_of_card_le Rxy le_rfl;
+  exact ⟨z, mem_reach_of_relItr Rxz, j - i, by omega, Rzz⟩;
+
+/-- On a finite frame, a reachable point is reachable in fewer than `Nat.card F.World` steps. -/
+lemma exists_relItr_lt_card_of_mem_reach [Finite F.World] (h : y ∈ F.Reach x) :
+    ∃ n < Nat.card F.World, x ≺^[n] y := by
+  obtain ⟨n, Rxy⟩ := h;
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    by_cases hlt : n < Nat.card F.World;
+    · exact ⟨n, hlt, Rxy⟩;
+    · obtain ⟨z, i, j, hij, hj, Rxz, -, Rzy⟩ := exists_relItr_self_of_card_le Rxy (by omega);
+      exact ih (i + (n - j)) (by omega) (relItr_trans Rxz Rzy);
+
+/-- A frame with a cycle has an infinite path `p 0 ≺ p 1 ≺ ⋯`. -/
+lemma HasCycle.exists_path (h : F.HasCycle) : ∃ p : ℕ → F.World, ∀ t, p t ≺ p (t + 1) := by
+  obtain ⟨x, k, hk, Rxx⟩ := h;
+  obtain ⟨p, hp₀, hpk, hp⟩ := Frame.exists_path Rxx;
+  use fun t => p (t % k);
+  intro t;
+  have hdm := Nat.div_add_mod t k;
+  have hlt := Nat.mod_lt t hk;
+  rcases Nat.lt_or_ge (t % k + 1) k with h | h;
+  · have he : (t + 1) % k = t % k + 1 := by
+      rw [show t + 1 = (t % k + 1) + k * (t / k) by omega, Nat.add_mul_mod_self_left];
+      exact Nat.mod_eq_of_lt h;
+    simpa only [he] using hp _ hlt;
+  · have he : (t + 1) % k = 0 := by
+      rw [show t + 1 = k * (t / k + 1) by rw [Nat.mul_succ]; omega, Nat.mul_mod_right];
+    have h' := hp (k - 1) (by omega);
+    rw [show k - 1 + 1 = k by omega, hpk, ← hp₀] at h';
+    simpa only [he, show t % k = k - 1 by omega] using h';
 
 /-- A finite frame is cycle-free iff `x ⊀^[n] y` for all `x y` and some `n`.
 - [CZ98, p. 362] -/
