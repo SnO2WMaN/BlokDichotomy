@@ -18,17 +18,17 @@ are exactly the reflexive transitive ones.
 
 universe u v
 
-variable {κ : Type u} {α : Type v} {F : Frame κ} {a : α} {φ : Formula α}
+variable {κ : Type u} {α : Type v} {F : Frame κ} {a : α} {A : Formula α}
 
 namespace Frame
 
 open Model.World
 
-lemma validates_T_of_refl [Std.Refl F.Rel'] : F ⊧ □φ 🡒 φ := by
+lemma validates_T_of_refl [Std.Refl F.Rel'] : F ⊧ □A 🡒 A := by
   rintro V x hx;
   exact forces_box.mp hx x <| refl x
 
-lemma validates_four_of_trans [IsTrans κ F.Rel'] {φ : Formula α} : F ⊧ □φ 🡒 □□φ := by
+lemma validates_four_of_trans [IsTrans κ F.Rel'] {A : Formula α} : F ⊧ □A 🡒 □□A := by
   rintro V x hx;
   exact forces_box.mpr fun y Rxy => forces_box.mpr fun z Ryz =>
     forces_box.mp hx z <| _root_.trans (r := F.Rel') Rxy Ryz
@@ -47,9 +47,9 @@ lemma trans_of_validates_four (h : F ⊧ (□#a 🡒 □□#a : Formula α)) : I
 - [CZ98, Proposition 3.31] -/
 lemma validates_logicS4 [Std.Refl F.Rel] [IsTrans κ F.Rel] : F ⊧ (𝐒𝟒 : NormalLogic α) := by
   refine validates_add (validates_add validates_logicK ?_) ?_
-  · rintro _ ⟨φ, rfl⟩
+  · rintro _ ⟨A, rfl⟩
     exact validates_four_of_trans
-  · rintro _ ⟨φ, rfl⟩
+  · rintro _ ⟨A, rfl⟩
     exact validates_T_of_refl
 
 /-- - [CZ98, Proposition 3.30]

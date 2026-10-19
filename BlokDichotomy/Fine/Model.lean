@@ -7,7 +7,7 @@ public import Mathlib.Data.Set.Finite.Basic
 /-!
 # Fine's model
 
-The countermodel `𝔄` of [Fin74a] witnessing `∼E ∉ Fine.logic`: a partial order on four families
+The countermodel `𝔄` of [Fin74a] witnessing `∼ε ∉ Fine.logic`: a partial order on four families
 of points `a_m`, `b_m`, `c_m`, `d_m`, in which only `d`-points start infinite strict chains. The
 involution `swap` exchanging the `b`- and `c`-families is an automorphism of the underlying frame.
 
@@ -110,9 +110,9 @@ section
 
 open Model.World
 
-variable {ψ : World → ℕ → Prop}
+variable {V : World → ℕ → Prop}
 
-@[simp] lemma forces_atom_frame {w : World} {a : ℕ} : w ⊩[⟨frame, ψ⟩] #a ↔ ψ w a := Iff.rfl
+@[simp] lemma forces_atom_frame {w : World} {a : ℕ} : w ⊩[⟨frame, V⟩] #a ↔ V w a := Iff.rfl
 
 @[simp] lemma forces_p0_iff {w : World} : w ⊩[model] p0 ↔ ∃ k, w = .d k ∧ k % 2 = 0 := by
   cases w <;> simp [p0];

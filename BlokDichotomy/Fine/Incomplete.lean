@@ -7,9 +7,9 @@ public import BlokDichotomy.Kripke.Degree
 /-!
 # Fine's logic is Kripke-incomplete
 
-Every frame validating Fine's logic validates `∼E`, yet `∼E` is not a theorem of Fine's logic:
-Fine's model strongly verifies the logic and forces `E` at `d_0`. So there is a Kripke-incomplete
-normal extension of `𝐒𝟒`, and hence of `𝐊𝟒`.
+Every frame validating Fine's logic validates `∼ε`, yet `∼ε` is not a theorem of Fine's logic:
+every formula of the logic is strongly valid in Fine's model, which forces `ε` at `d_0`. So there
+is a Kripke-incomplete normal extension of `𝐒𝟒`, and hence of `𝐊𝟒`.
 
 ## References
 
@@ -29,29 +29,29 @@ section Chain
 
 variable {κ : Type*} {M : Model κ ℕ} [IsTrans κ M.Rel'] {x y : M.World} {m : ℕ}
 
-/-- `D` persists to any successor that still forces `p₀ ⋎ p₁`. -/
-lemma forces_D_of_rel (hD : x ⊩ D) (Rxy : x ≺ y) (hp : y ⊩ p0 ⋎ p1) : y ⊩ D := by
-  obtain ⟨-, h₁, h₂, h₃⟩ := forces_D_iff.mp hD;
-  rw [forces_D_iff];
+/-- `δ` persists to any successor that still forces `p₀ ⋎ p₁`. -/
+lemma forces_δ_of_rel (hD : x ⊩ δ) (Rxy : x ≺ y) (hp : y ⊩ p0 ⋎ p1) : y ⊩ δ := by
+  obtain ⟨-, h₁, h₂, h₃⟩ := forces_δ_iff.mp hD;
+  rw [forces_δ_iff];
   and_intros;
   · exact hp;
   · exact forces_box_of_rel h₁ Rxy;
   · exact forces_box_of_rel h₂ Rxy;
   · exact forces_box_of_rel h₃ Rxy
 
-/-- If `M` strongly verifies `G` and `x` forces `E⟦σ_m⟧`, then some strict successor of `x`
-forces `E⟦σ_{m+1}⟧`.
+/-- If `θ` is strongly valid in `M` and `x` forces `ε⟦σ_m⟧`, then some strict successor of `x`
+forces `ε⟦σ_{m+1}⟧`.
 
 - [Fin74a, (3)] -/
-lemma chain_step (hG : G ∈ M.logic) (hx : x ⊩ E⟦shift m⟧) :
-    ∃ y : M.World, x ≺ y ∧ y ⊀ x ∧ y ⊩ E⟦shift (m + 1)⟧ := by
-  obtain ⟨y, Rxy, hy01, hyA, hyA'⟩ := forces_F_subst_shift.mp <| hG (shift m) x hx;
-  obtain ⟨hD, hAm, hK⟩ := forces_E_subst_shift.mp hx;
+lemma chain_step (hG : θ ∈ M.logic) (hx : x ⊩ ε⟦shift m⟧) :
+    ∃ y : M.World, x ≺ y ∧ y ⊀ x ∧ y ⊩ ε⟦shift (m + 1)⟧ := by
+  obtain ⟨y, Rxy, hy01, hyA, hyA'⟩ := forces_ψ_subst_shift.mp <| hG (shift m) x hx;
+  obtain ⟨hD, hAm, hK⟩ := forces_ε_subst_shift.mp hx;
   have hstrict : y ⊀ x := by
     by_contra Ryx;
     exact hyA <| forces_dia_of_rel hAm Ryx;
   exact ⟨y, Rxy, hstrict,
-    forces_E_subst_shift.mpr ⟨forces_D_of_rel hD Rxy hy01, hyA', forces_K_succ hK Rxy⟩⟩
+    forces_ε_subst_shift.mpr ⟨forces_δ_of_rel hD Rxy hy01, hyA', forces_ι_succ hK Rxy⟩⟩
 
 end Chain
 
@@ -63,13 +63,13 @@ variable {κ : Type*} {F : Frame κ} {u : ℕ → F.World}
 those of index `3i+1`; all other atoms are false.
 
 - [Fin74a] -/
-def psiVal (u : ℕ → F.World) : F.World → ℕ → Prop
+def chainVal (u : ℕ → F.World) : F.World → ℕ → Prop
 | v, 6 => ∃ i, v = u (3 * i)
 | v, 7 => ∃ i, v = u (3 * i + 1)
 | _, _ => False
 
 lemma forces_s_iff (hinj : Function.Injective u) (n : ℕ) :
-    u n ⊩[⟨F, psiVal u⟩] s ↔ ∃ i, n = 3 * i := by
+    u n ⊩[⟨F, chainVal u⟩] s ↔ ∃ i, n = 3 * i := by
   constructor;
   · rintro ⟨i, hi⟩;
     exact ⟨i, hinj hi⟩;
@@ -77,19 +77,19 @@ lemma forces_s_iff (hinj : Function.Injective u) (n : ℕ) :
     use i;
 
 lemma forces_t_iff (hinj : Function.Injective u) (n : ℕ) :
-    u n ⊩[⟨F, psiVal u⟩] t ↔ ∃ i, n = 3 * i + 1 := by
+    u n ⊩[⟨F, chainVal u⟩] t ↔ ∃ i, n = 3 * i + 1 := by
   constructor;
   · rintro ⟨i, hi⟩;
     exact ⟨i, hinj hi⟩;
   · rintro ⟨i, rfl⟩;
     use i;
 
-/-- Along an injective ascending chain in a transitive frame, `psiVal` refutes `H` at the
+/-- Along an injective ascending chain in a transitive frame, `chainVal` refutes `χ` at the
 chain's origin. -/
-lemma psi_forces_neg_H [IsTrans κ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
-    (hinj : Function.Injective u) : u 0 ⊩[⟨F, psiVal u⟩] ∼H := by
+lemma chainVal_forces_neg_χ [IsTrans κ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
+    (hinj : Function.Injective u) : u 0 ⊩[⟨F, chainVal u⟩] ∼χ := by
   have hlt : ∀ {i j}, i < j → u i ≺ u j := fun h => Nat.rel_of_forall_rel_succ_of_lt F.Rel' hR h;
-  unfold H;
+  unfold χ;
   rw [forces_neg, not_forces_neg, forces_and];
   and_intros;
   · exact (forces_s_iff hinj 0).mpr ⟨0, rfl⟩;
@@ -121,55 +121,55 @@ end Psi
 
 variable {κ : Type*} {F : Frame κ}
 
-/-- Every frame validating Fine's logic validates `∼E`.
+/-- Every frame validating Fine's logic validates `∼ε`.
 
 - [Fin74a, Lemma 1]
 - [Lit04, p. 332] -/
-theorem validates_neg_E_of_validates (hL : F ⊧ logic) : F ⊧ ∼E := by
+theorem validates_neg_ε_of_validates (hL : F ⊧ logic) : F ⊧ ∼ε := by
   obtain ⟨_, _⟩ :=
-    Frame.validates_logicS4_iff.mp fun φ h => hL φ <| NormalLogic.mem_add_of_mem h;
+    Frame.validates_logicS4_iff.mp fun A h => hL A <| NormalLogic.mem_add_of_mem h;
   intro V x hxE;
-  have hG : G ∈ (Model.mk F V).logic :=
-    Frame.logic_le_model_logic <| hL G <| NormalLogic.mem_add <| by simp;
+  have hG : θ ∈ (Model.mk F V).logic :=
+    Frame.logic_le_model_logic <| hL θ <| NormalLogic.mem_add <| by simp;
   obtain ⟨u, -, hu⟩ := exists_seq_of_forall_exists_rel (r := fun y v => y ≺ v ∧ v ⊀ y)
-    (P := fun m y => y ⊩[⟨F, V⟩] E⟦shift m⟧)
-    (forces_E_subst_shift.mpr <| forces_E_iff.mp hxE) fun m y hy => by
+    (P := fun m y => y ⊩[⟨F, V⟩] ε⟦shift m⟧)
+    (forces_ε_subst_shift.mpr <| forces_ε_iff.mp hxE) fun m y hy => by
       obtain ⟨v, Ryv, Rvy, hv⟩ := chain_step hG hy;
       exact ⟨v, ⟨Ryv, Rvy⟩, hv⟩;
   have hR : ∀ m, u m ≺ u (m + 1) := fun m => (hu m).2.1;
   have hinj := injective_of_forall_rel_succ (r := F.Rel') hR fun m => (hu m).2.2;
-  exact psi_forces_neg_H hR hinj <| hL H (NormalLogic.mem_add <| by simp) (psiVal u) (u 0)
+  exact chainVal_forces_neg_χ hR hinj <| hL χ (NormalLogic.mem_add <| by simp) (chainVal u) (u 0)
 
-/-- Fine's model strongly verifies every theorem of Fine's logic.
+/-- Every theorem of Fine's logic is strongly valid in Fine's model.
 
 - [Fin74a, Lemma 2] -/
 lemma logic_le_model_logic : logic ≤ model.logic :=
   NormalLogic.add_le (fun _ h => Frame.logic_le_model_logic <| Frame.validates_logicS4 _ h) <| by
     rintro _ (rfl | rfl);
-    · exact Frame.logic_le_model_logic validates_G;
-    · exact H_mem_model_logic
+    · exact Frame.logic_le_model_logic validates_θ;
+    · exact χ_mem_model_logic
 
-/-- `∼E` is not a theorem of Fine's logic.
+/-- `∼ε` is not a theorem of Fine's logic.
 
 - [Fin74a, Lemma 2] -/
-lemma neg_E_not_mem : ∼E ∉ logic := by
+lemma neg_ε_not_mem : ∼ε ∉ logic := by
   by_contra h;
-  exact Model.validates_of_mem_logic (logic_le_model_logic h) (World.d 0) forces_E_d0
+  exact Model.validates_of_mem_logic (logic_le_model_logic h) (World.d 0) forces_ε_d0
 
-/-- `∼E` lies in the logic of the frames validating Fine's logic.
+/-- `∼ε` lies in the logic of the frames validating Fine's logic.
 
 - [Fin74a, Lemma 1] -/
-lemma neg_E_mem_frameLogic : ∼E ∈ logic.frameLogic.{u} fun _ _ => True :=
-  fun _ _ _ hL => validates_neg_E_of_validates hL
+lemma neg_ε_mem_frameLogic : ∼ε ∈ logic.frameLogic.{u} fun _ _ => True :=
+  fun _ _ _ hL => validates_neg_ε_of_validates hL
 
-/-- Fine's logic, a normal extension of `𝐒𝟒` and so of `𝐊𝟒`, is Kripke-incomplete: `∼E` is
-valid in every frame validating the logic, yet `∼E` is not a theorem of it.
+/-- Fine's logic, a normal extension of `𝐒𝟒` and so of `𝐊𝟒`, is Kripke-incomplete: `∼ε` is
+valid in every frame validating the logic, yet `∼ε` is not a theorem of it.
 
 - [Fin74a]
 - [Lit04, p. 332] -/
 theorem not_kripkeComplete : ¬logic.KripkeComplete.{u} fun _ _ => True := by
   by_contra h;
-  exact neg_E_not_mem <| h neg_E_mem_frameLogic
+  exact neg_ε_not_mem <| h neg_ε_mem_frameLogic
 
 end Fine
 

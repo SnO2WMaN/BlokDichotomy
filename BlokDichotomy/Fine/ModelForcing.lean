@@ -5,9 +5,9 @@ public import BlokDichotomy.Fine.Model
 /-!
 # Forcing in Fine's model
 
-Fine's model forces `E` at `d_0` and strongly verifies `H`. The mirror valuation `mirrorVal`,
+Fine's model forces `ε` at `d_0`, and `χ` is strongly valid in it. The mirror valuation `mirrorVal`,
 built from the `b`/`c` involution `swap` and the atom substitution `tau`, transports every
-`B`-side lemma about a valuation to its `C`-side twin.
+`β`-side lemma about a valuation to its `γ`-side twin.
 
 ## References
 
@@ -21,23 +21,23 @@ namespace Fine
 
 open Model.World
 
-/-- `B_2` is forced exactly at `b_2`. -/
-lemma forces_B2_iff (w : World) : w ⊩[model] B 2 ↔ w = .b 2 := by
-  rw [B_add_two, forces_and, forces_and, forces_neg];
-  simp only [Nat.zero_add, B_one, C_zero, C_one, forces_dia, forces_q1_iff, forces_r0_iff,
+/-- `β_2` is forced exactly at `b_2`. -/
+lemma forces_β₂_iff (w : World) : w ⊩[model] β 2 ↔ w = .b 2 := by
+  rw [β_add_two, forces_and, forces_and, forces_neg];
+  simp only [Nat.zero_add, β_one, γ_zero, γ_one, forces_dia, forces_q1_iff, forces_r0_iff,
     forces_r1_iff, NotForces, rel_frame, exists_eq_right];
   cases w <;> simp <;> omega
 
-/-- `C_2` is forced exactly at `c_2`. -/
-lemma forces_C2_iff (w : World) : w ⊩[model] C 2 ↔ w = .c 2 := by
-  rw [C_add_two, forces_and, forces_and, forces_neg];
-  simp only [Nat.zero_add, B_zero, B_one, C_one, forces_dia, forces_q0_iff, forces_q1_iff,
+/-- `γ_2` is forced exactly at `c_2`. -/
+lemma forces_γ₂_iff (w : World) : w ⊩[model] γ 2 ↔ w = .c 2 := by
+  rw [γ_add_two, forces_and, forces_and, forces_neg];
+  simp only [Nat.zero_add, β_zero, β_one, γ_one, forces_dia, forces_q0_iff, forces_q1_iff,
     forces_r1_iff, NotForces, rel_frame, exists_eq_right];
   cases w <;> simp <;> omega
 
-/-- `d_0` forces `D`. -/
-lemma forces_D_d0 : World.d 0 ⊩[model] D := by
-  rw [D, forces_and, forces_and, forces_and, forces_box, forces_box, forces_box];
+/-- `d_0` forces `δ`. -/
+lemma forces_δ_d0 : World.d 0 ⊩[model] δ := by
+  rw [δ, forces_and, forces_and, forces_and, forces_box, forces_box, forces_box];
   and_intros;
   · rw [forces_or];
     simp;
@@ -72,61 +72,61 @@ lemma forces_D_d0 : World.d 0 ⊩[model] D := by
       simp;
       omega
 
-/-- `A_0` is forced at `a_0`. -/
-lemma forces_A0_a0 : World.a 0 ⊩[model] A 0 := by
-  rw [A, forces_and, forces_and, forces_and, forces_neg, forces_neg];
-  simp only [Nat.zero_add, B_one, C_one, forces_dia, forces_q1_iff, forces_r1_iff,
-    forces_B2_iff, forces_C2_iff, NotForces, rel_frame, exists_eq_right];
+/-- `α_0` is forced at `a_0`. -/
+lemma forces_α₀_a0 : World.a 0 ⊩[model] α 0 := by
+  rw [α, forces_and, forces_and, forces_and, forces_neg, forces_neg];
+  simp only [Nat.zero_add, β_one, γ_one, forces_dia, forces_q1_iff, forces_r1_iff,
+    forces_β₂_iff, forces_γ₂_iff, NotForces, rel_frame, exists_eq_right];
   simp
 
-/-- `◇(A_0)` is forced at `d_0`. -/
-lemma forces_dia_A0_d0 : World.d 0 ⊩[model] ◇(A 0) :=
-  forces_dia.mpr ⟨.a 0, by simp, forces_A0_a0⟩
+/-- `◇(α_0)` is forced at `d_0`. -/
+lemma forces_dia_α₀_d0 : World.d 0 ⊩[model] ◇(α 0) :=
+  forces_dia.mpr ⟨.a 0, by simp, forces_α₀_a0⟩
 
-/-- `d_0` forces `K 0` (the block `K1 0 ⋏ K2 0 ⋏ K3 0 ⋏ K4 0`). -/
-lemma forces_K0_d0 : World.d 0 ⊩[model] K 0 := by
-  rw [K, forces_and, forces_and, forces_and];
+/-- `d_0` forces `ι 0` (the block `ι₁ 0 ⋏ ι₂ 0 ⋏ ι₃ 0 ⋏ ι₄ 0`). -/
+lemma forces_ι₀_d0 : World.d 0 ⊩[model] ι 0 := by
+  rw [ι, forces_and, forces_and, forces_and];
   and_intros;
-  · rw [K1, forces_box];
+  · rw [ι₁, forces_box];
     rintro y - hy;
-    simp only [Nat.zero_add, B_one, forces_q1_iff] at hy;
+    simp only [Nat.zero_add, β_one, forces_q1_iff] at hy;
     subst hy;
     rw [forces_and, forces_neg];
     simp [forces_dia, NotForces];
-  · rw [K2, forces_box];
+  · rw [ι₂, forces_box];
     rintro y - hy;
-    simp only [Nat.zero_add, C_one, forces_r1_iff] at hy;
+    simp only [Nat.zero_add, γ_one, forces_r1_iff] at hy;
     subst hy;
     rw [forces_and, forces_neg];
     simp [forces_dia, NotForces];
-  · rw [K3, forces_box];
+  · rw [ι₃, forces_box];
     rintro y - hy;
-    simp only [B_zero, forces_q0_iff] at hy;
+    simp only [β_zero, forces_q0_iff] at hy;
     subst hy;
     rw [forces_neg];
     simp [forces_dia, NotForces];
-  · rw [K4, forces_box];
+  · rw [ι₄, forces_box];
     rintro y - hy;
-    simp only [C_zero, forces_r0_iff] at hy;
+    simp only [γ_zero, forces_r0_iff] at hy;
     subst hy;
     rw [forces_neg];
     simp [forces_dia, NotForces]
 
-/-- `d_0` forces `E`. -/
-lemma forces_E_d0 : World.d 0 ⊩[model] E :=
-  forces_E_iff.mpr ⟨forces_D_d0, forces_dia_A0_d0, forces_K0_d0⟩
+/-- `d_0` forces `ε`. -/
+lemma forces_ε_d0 : World.d 0 ⊩[model] ε :=
+  forces_ε_iff.mpr ⟨forces_δ_d0, forces_dia_α₀_d0, forces_ι₀_d0⟩
 
-/-! ### Fine's model strongly verifies `H` -/
+/-! ### `χ` is strongly valid in Fine's model -/
 
-/-- Along the `d`-chain, the truth of any fixed formula `C` is *eventually periodic with
-period (dividing) 2*: past some threshold `N`, `d_i ⊩ C` depends only on the parity of `i`.
+/-- Along the `d`-chain, the truth of any fixed formula `A` is *eventually periodic with
+period (dividing) 2*: past some threshold `N`, `d_i ⊩ A` depends only on the parity of `i`.
 
 - [Fin74a, p.\ 28]
 -/
-lemma d_eventually_period_two (C : Formula ℕ) :
+lemma d_eventually_period_two (A : Formula ℕ) :
     ∃ N : ℕ, ∀ i j : ℕ, N ≤ i → N ≤ j → i % 2 = j % 2 →
-      ((World.d i ⊩[model] C) ↔ (World.d j ⊩[model] C)) := by
-  induction C with
+      ((World.d i ⊩[model] A) ↔ (World.d j ⊩[model] A)) := by
+  induction A with
   | atom a =>
     use 0;
     intro i j _ _ hij;
@@ -135,17 +135,17 @@ lemma d_eventually_period_two (C : Formula ℕ) :
     use 0;
     intro i j _ _ _;
     simp [Forces]
-  | imp A B ihA ihB =>
-    obtain ⟨NA, hNA⟩ := ihA;
-    obtain ⟨NB, hNB⟩ := ihB;
+  | imp B C ihB ihC =>
+    obtain ⟨NA, hNA⟩ := ihB;
+    obtain ⟨NB, hNB⟩ := ihC;
     use max NA NB;
     intro i j hi hj hij;
     simp only [forces_imp, NotForces, hNA i j (by omega) (by omega) hij,
       hNB i j (by omega) (by omega) hij]
-  | dia A ih =>
-    have hdia : ∀ i : ℕ, (World.d i ⊩[model] ◇A) ↔
-        (∃ k, i ≤ k ∧ (World.d k ⊩[model] A)) ∨ (∃ m, i ≤ m ∧ (World.a m ⊩[model] A)) ∨
-        (∃ k, (World.b k ⊩[model] A)) ∨ (∃ k, (World.c k ⊩[model] A)) := by
+  | dia B ih =>
+    have hdia : ∀ i : ℕ, (World.d i ⊩[model] ◇B) ↔
+        (∃ k, i ≤ k ∧ (World.d k ⊩[model] B)) ∨ (∃ m, i ≤ m ∧ (World.a m ⊩[model] B)) ∨
+        (∃ k, (World.b k ⊩[model] B)) ∨ (∃ k, (World.c k ⊩[model] B)) := by
       intro i;
       rw [forces_dia];
       constructor;
@@ -160,13 +160,13 @@ lemma d_eventually_period_two (C : Formula ℕ) :
         · exact ⟨World.a m, hm, hA⟩;
         · exact ⟨World.b k, trivial, hA⟩;
         · exact ⟨World.c k, trivial, hA⟩;
-    obtain ⟨N1, hN1⟩ := exists_ge_eventually_const (fun k => World.d k ⊩[model] A);
-    obtain ⟨N2, hN2⟩ := exists_ge_eventually_const (fun m => World.a m ⊩[model] A);
+    obtain ⟨N1, hN1⟩ := exists_ge_eventually_const (fun k => World.d k ⊩[model] B);
+    obtain ⟨N2, hN2⟩ := exists_ge_eventually_const (fun m => World.a m ⊩[model] B);
     use max N1 N2;
     intro i j hi hj _;
     rw [hdia i, hdia j, hN1 i j (by omega) (by omega), hN2 i j (by omega) (by omega)]
 
-/-- The three pairwise-incompatible phases that a refutation point of `H` cycles through under a
+/-- The three pairwise-incompatible phases that a refutation point of `χ` cycles through under a
 substitution `σ`. -/
 def phase (σ : Formula.Substitution ℕ ℕ) (r : ℕ) : Formula ℕ :=
   match r with
@@ -217,7 +217,7 @@ private lemma Y_imp_phase {σ : Formula.Substitution ℕ ℕ} {w : World} {r : �
   · exact (forces_and.mp h).1;
   · exact (forces_and.mp h).1
 
-/-- One step of the phase chain: `H`'s box hypothesis `hbox` at `x` produces, from `w` forcing
+/-- One step of the phase chain: `χ`'s box hypothesis `hbox` at `x` produces, from `w` forcing
 `Y σ (m % 3)` (with `x ≺ w`), a strict successor `v` forcing `Y σ ((m + 1) % 3)`. -/
 private lemma Y_step {σ : Formula.Substitution ℕ ℕ} {x w : World}
     (hbox : x ⊩[model] □(phase σ 0 🡒 ◇(Y σ 1))) (m : ℕ)
@@ -244,13 +244,13 @@ private lemma Y_step {σ : Formula.Substitution ℕ ℕ} {x w : World}
   · exact R_trans hxw hwv;
   · exact hv
 
-/-- If Fine's model does not strongly verify `H`, some refutation point `x` of `H⟦σ⟧` starts an
+/-- If `χ` is not strongly valid in Fine's model, some refutation point `x` of `χ⟦σ⟧` starts an
 infinite *strict* chain along `R` whose points cycle through the three
 pairwise-incompatible phases `phase σ 0`, `phase σ 1`, `phase σ 2` in order.
 
 - [Fin74a, p.\ 28]
 -/
-lemma exists_phase_chain (h : ∃ σ x, x ⊮[model] H⟦σ⟧) :
+lemma exists_phase_chain (h : ∃ σ x, x ⊮[model] χ⟦σ⟧) :
     ∃ (σ : Formula.Substitution ℕ ℕ) (u : ℕ → World),
       (∀ m, R (u m) (u (m + 1))) ∧ (∀ m, ¬ R (u (m + 1)) (u m)) ∧
       ∀ m, u m ⊩[model] phase σ (m % 3) := by
@@ -273,11 +273,11 @@ lemma exists_phase_chain (h : ∃ σ x, x ⊮[model] H⟦σ⟧) :
   · intro m;
     exact Y_imp_phase (hu m).1.2
 
-/-- Fine's model strongly verifies `H`.
+/-- `χ` is strongly valid in Fine's model.
 
 - [Fin74a, p.\ 28]
 -/
-theorem H_mem_model_logic : H ∈ model.logic := by
+theorem χ_mem_model_logic : χ ∈ model.logic := by
   apply Model.mem_logic.mpr;
   intro σ x;
   by_contra hx;
@@ -313,13 +313,13 @@ theorem H_mem_model_logic : H ∈ model.logic := by
 
 /-- Forcing is invariant under simultaneously permuting the points of Fine's model by `swap`
 and permuting the valuation along `swap`. -/
-lemma forces_swap_iff {ψ : World → ℕ → Prop} {x : World} {X : Formula ℕ} :
-    x ⊩[⟨frame, ψ⟩] X ↔ swap x ⊩[⟨frame, ψ ∘ swap⟩] X := by
-  induction X generalizing x with
+lemma forces_swap_iff {V : World → ℕ → Prop} {x : World} {A : Formula ℕ} :
+    x ⊩[⟨frame, V⟩] A ↔ swap x ⊩[⟨frame, V ∘ swap⟩] A := by
+  induction A generalizing x with
   | atom a => simp [Function.comp]
   | falsum => simp [Model.World.Forces]
-  | imp A B ihA ihB => simp [Model.World.Forces, ihA, ihB]
-  | dia A ih =>
+  | imp B C ihB ihC => simp [Model.World.Forces, ihB, ihC]
+  | dia B ih =>
     simp only [Model.World.Forces];
     constructor;
     · rintro ⟨y, hxy, hy⟩;
@@ -330,12 +330,12 @@ lemma forces_swap_iff {ψ : World → ℕ → Prop} {x : World} {X : Formula ℕ
       · exact R_swap.mp (by simpa using hxy);
       · exact ih.mpr (by simpa using hy)
 
-/-- The valuation whose forcing relation is that of `ψ` seen through `swap` and `tau`. -/
-def mirrorVal (ψ : World → ℕ → Prop) : World → ℕ → Prop :=
-  fun w a => swap w ⊩[⟨frame, ψ⟩] tau a
+/-- The valuation whose forcing relation is that of `V` seen through `swap` and `tau`. -/
+def mirrorVal (V : World → ℕ → Prop) : World → ℕ → Prop :=
+  fun w a => swap w ⊩[⟨frame, V⟩] tau a
 
-lemma forces_mirror {ψ : World → ℕ → Prop} {x : World} {φ : Formula ℕ} :
-    x ⊩[⟨frame, mirrorVal ψ⟩] φ ↔ swap x ⊩[⟨frame, ψ⟩] φ⟦tau⟧ := by
+lemma forces_mirror {V : World → ℕ → Prop} {x : World} {A : Formula ℕ} :
+    x ⊩[⟨frame, mirrorVal V⟩] A ↔ swap x ⊩[⟨frame, V⟩] A⟦tau⟧ := by
   rw [forces_subst, forces_swap_iff (x := swap x), swap_swap];
   exact Iff.rfl
 

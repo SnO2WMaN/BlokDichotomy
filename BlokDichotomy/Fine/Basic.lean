@@ -5,8 +5,8 @@ public import BlokDichotomy.Kripke.Basic
 /-!
 # Fine's logic
 
-The formulas `A`, `B`, `C`, `D`, `E`, `F`, `G`, `H` of Fine's incomplete logic `𝐒𝟒 ⊕ G ⊕ H`, the
-`K`-block that climbs one level along the accessibility relation of a transitive model, and the
+The formulas `α`, `β`, `γ`, `δ`, `ε`, `ψ`, `θ`, `χ` of Fine's incomplete logic `𝐒𝟒 ⊕ θ ⊕ χ`, the
+`ι`-block that climbs one level along the accessibility relation of a transitive model, and the
 shift substitution `σ_m` that moves the formulas up by `m` levels.
 
 ## References
@@ -33,97 +33,97 @@ def t : Formula ℕ := #7
 
 mutual
 
-/-- `B_m`.
+/-- `β_m`.
 
 - [Fin74a] -/
-def B : ℕ → Formula ℕ
+def β : ℕ → Formula ℕ
 | 0     => q0
 | 1     => q1
-| m + 2 => ◇(B (m + 1)) ⋏ ◇(C m) ⋏ ∼◇(C (m + 1))
+| m + 2 => ◇(β (m + 1)) ⋏ ◇(γ m) ⋏ ∼◇(γ (m + 1))
 
-/-- `C_m`, a mirror image of `B`; the recursive clause here corrects a typo in the original
-(which has `∼◇(B (m + 2))` instead).
+/-- `γ_m`, a mirror image of `β`; the recursive clause here corrects a typo in the original
+(which has `∼◇(β (m + 2))` instead).
 
 - [Fin74a]
 - [Lit04, p. 332] -/
-def C : ℕ → Formula ℕ
+def γ : ℕ → Formula ℕ
 | 0     => r0
 | 1     => r1
-| m + 2 => ◇(C (m + 1)) ⋏ ◇(B m) ⋏ ∼◇(B (m + 1))
+| m + 2 => ◇(γ (m + 1)) ⋏ ◇(β m) ⋏ ∼◇(β (m + 1))
 
 end
 
-@[simp, grind =] lemma B_zero : B 0 = q0 := by simp [B]
-@[simp, grind =] lemma B_one : B 1 = q1 := by simp [B]
+@[simp, grind =] lemma β_zero : β 0 = q0 := by simp [β]
+@[simp, grind =] lemma β_one : β 1 = q1 := by simp [β]
 @[simp, grind =]
-lemma B_add_two (m : ℕ) : B (m + 2) = ◇(B (m + 1)) ⋏ ◇(C m) ⋏ ∼◇(C (m + 1)) := by simp [B]
+lemma β_add_two (m : ℕ) : β (m + 2) = ◇(β (m + 1)) ⋏ ◇(γ m) ⋏ ∼◇(γ (m + 1)) := by simp [β]
 
-@[simp, grind =] lemma C_zero : C 0 = r0 := by simp [C]
-@[simp, grind =] lemma C_one : C 1 = r1 := by simp [C]
+@[simp, grind =] lemma γ_zero : γ 0 = r0 := by simp [γ]
+@[simp, grind =] lemma γ_one : γ 1 = r1 := by simp [γ]
 @[simp, grind =]
-lemma C_add_two (m : ℕ) : C (m + 2) = ◇(C (m + 1)) ⋏ ◇(B m) ⋏ ∼◇(B (m + 1)) := by simp [C]
+lemma γ_add_two (m : ℕ) : γ (m + 2) = ◇(γ (m + 1)) ⋏ ◇(β m) ⋏ ∼◇(β (m + 1)) := by simp [γ]
 
-/-- `A_m`, with a fourth conjunct `∼◇(C (m + 2))` mirroring the third; the original has only
+/-- `α_m`, with a fourth conjunct `∼◇(γ (m + 2))` mirroring the third; the original has only
 three conjuncts.
 
 - [Fin74a]
 - [Lit04, p. 332] -/
-def A (m : ℕ) : Formula ℕ := ◇(B (m + 1)) ⋏ ◇(C (m + 1)) ⋏ ∼◇(B (m + 2)) ⋏ ∼◇(C (m + 2))
+def α (m : ℕ) : Formula ℕ := ◇(β (m + 1)) ⋏ ◇(γ (m + 1)) ⋏ ∼◇(β (m + 2)) ⋏ ∼◇(γ (m + 2))
 
-/-- `D`, with the guard on `p₁` stated in both directions; the original states only one
+/-- `δ`, with the guard on `p₁` stated in both directions; the original states only one
 direction.
 
 - [Fin74a]
 - [Lit04, p. 332] -/
-def D : Formula ℕ :=
+def δ : Formula ℕ :=
   (p0 ⋎ p1) ⋏ □(p0 🡒 (∼p1 ⋏ ◇p1)) ⋏ □(p1 🡒 (∼p0 ⋏ ◇p0)) ⋏ □(∼(p0 ⋎ p1) 🡒 □(∼(p0 ⋎ p1)))
 
-/-- The first conjunct of `K` at level `m`. -/
-def K1 (m : ℕ) : Formula ℕ := □(B (m + 1) 🡒 (◇(B m) ⋏ ∼◇(C m)))
+/-- The first conjunct of `ι` at level `m`. -/
+def ι₁ (m : ℕ) : Formula ℕ := □(β (m + 1) 🡒 (◇(β m) ⋏ ∼◇(γ m)))
 
-/-- The second conjunct of `K` at level `m`. -/
-def K2 (m : ℕ) : Formula ℕ := □(C (m + 1) 🡒 (◇(C m) ⋏ ∼◇(B m)))
+/-- The second conjunct of `ι` at level `m`. -/
+def ι₂ (m : ℕ) : Formula ℕ := □(γ (m + 1) 🡒 (◇(γ m) ⋏ ∼◇(β m)))
 
-/-- The third conjunct of `K` at level `m`. -/
-def K3 (m : ℕ) : Formula ℕ := □(B m 🡒 ∼◇(B (m + 1)))
+/-- The third conjunct of `ι` at level `m`. -/
+def ι₃ (m : ℕ) : Formula ℕ := □(β m 🡒 ∼◇(β (m + 1)))
 
-/-- The fourth conjunct of `K` at level `m`. -/
-def K4 (m : ℕ) : Formula ℕ := □(C m 🡒 ∼◇(C (m + 1)))
+/-- The fourth conjunct of `ι` at level `m`. -/
+def ι₄ (m : ℕ) : Formula ℕ := □(γ m 🡒 ∼◇(γ (m + 1)))
 
-/-- `K^m`: the conjunction of `K1`–`K4` at level `m`, indexed by `ℕ` rather than inlined at
+/-- `ι^m`: the conjunction of `ι₁`–`ι₄` at level `m`, indexed by `ℕ` rather than inlined at
 level `0` as in the original.
 
 - [Fin74a] -/
-def K (m : ℕ) : Formula ℕ := K1 m ⋏ K2 m ⋏ K3 m ⋏ K4 m
+def ι (m : ℕ) : Formula ℕ := ι₁ m ⋏ ι₂ m ⋏ ι₃ m ⋏ ι₄ m
 
-/-- `E`.
-
-- [Fin74a] -/
-def E : Formula ℕ := D ⋏ ◇(A 0) ⋏ K 0
-
-/-- `F`.
+/-- `ε`.
 
 - [Fin74a] -/
-def F : Formula ℕ := ◇((p0 ⋎ p1) ⋏ ∼◇(A 0) ⋏ ◇(A 1))
+def ε : Formula ℕ := δ ⋏ ◇(α 0) ⋏ ι 0
 
-/-- `G`.
-
-- [Fin74a] -/
-def G : Formula ℕ := E 🡒 F
-
-/-- `H`.
+/-- `ψ`.
 
 - [Fin74a] -/
-def H : Formula ℕ := ∼(s ⋏ □(s 🡒 ◇((∼s ⋏ t) ⋏ ◇((∼s ⋏ ∼t) ⋏ ◇s))))
+def ψ : Formula ℕ := ◇((p0 ⋎ p1) ⋏ ∼◇(α 0) ⋏ ◇(α 1))
 
-/-- Fine's logic `𝐒𝟒 ⊕ G ⊕ H`.
+/-- `θ`.
+
+- [Fin74a] -/
+def θ : Formula ℕ := ε 🡒 ψ
+
+/-- `χ`.
+
+- [Fin74a] -/
+def χ : Formula ℕ := ∼(s ⋏ □(s 🡒 ◇((∼s ⋏ t) ⋏ ◇((∼s ⋏ ∼t) ⋏ ◇s))))
+
+/-- Fine's logic `𝐒𝟒 ⊕ θ ⊕ χ`.
 
 - [Fin74a]
 - [Ger75, §4]
 - [Lit04, p. 332] -/
-abbrev logic : NormalLogic ℕ := (𝐒𝟒 : NormalLogic ℕ) + ({G, H} : FormulaSet ℕ)
+abbrev logic : NormalLogic ℕ := (𝐒𝟒 : NormalLogic ℕ) + ({θ, χ} : FormulaSet ℕ)
 
-/-! ### The `K`-block climbs one level along the accessibility relation -/
+/-! ### The `ι`-block climbs one level along the accessibility relation -/
 
 open Model.World
 
@@ -131,11 +131,11 @@ variable {κ : Type*} {M : Model κ ℕ} {x y : M.World} {m n : ℕ}
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
-lemma forces_K1_succ : x ⊩ K1 (m + 1) := by grind [K1]
+lemma forces_ι₁_succ : x ⊩ ι₁ (m + 1) := by grind [ι₁]
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
-lemma forces_K2_succ : x ⊩ K2 (m + 1) := by grind [K2]
+lemma forces_ι₂_succ : x ⊩ ι₂ (m + 1) := by grind [ι₂]
 
 section
 
@@ -143,111 +143,111 @@ variable [IsTrans κ M.Rel']
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
-lemma forces_K3_succ_of_K1 (h1 : x ⊩ K1 m) (Rxy : x ≺ y) : y ⊩ K3 (m + 1) := by
-  rw [K3, forces_box];
+lemma forces_ι₃_succ_of_ι₁ (h1 : x ⊩ ι₁ m) (Rxy : x ≺ y) : y ⊩ ι₃ (m + 1) := by
+  rw [ι₃, forces_box];
   rintro z Ryz hz ⟨w, Rzw, hw⟩;
-  rw [K1, forces_box] at h1;
-  rw [B_add_two, forces_and, forces_and] at hw;
+  rw [ι₁, forces_box] at h1;
+  rw [β_add_two, forces_and, forces_and] at hw;
   exact (forces_and.mp <| h1 z (Frame.rel_trans Rxy Ryz) hz).2 <| forces_dia_of_rel hw.2.1 Rzw
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
-lemma forces_K4_succ_of_K2 (h2 : x ⊩ K2 m) (Rxy : x ≺ y) : y ⊩ K4 (m + 1) := by
-  rw [K4, forces_box];
+lemma forces_ι₄_succ_of_ι₂ (h2 : x ⊩ ι₂ m) (Rxy : x ≺ y) : y ⊩ ι₄ (m + 1) := by
+  rw [ι₄, forces_box];
   rintro z Ryz hz ⟨w, Rzw, hw⟩;
-  rw [K2, forces_box] at h2;
-  rw [C_add_two, forces_and, forces_and] at hw;
+  rw [ι₂, forces_box] at h2;
+  rw [γ_add_two, forces_and, forces_and] at hw;
   exact (forces_and.mp <| h2 z (Frame.rel_trans Rxy Ryz) hz).2 <| forces_dia_of_rel hw.2.1 Rzw
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
-lemma forces_K_succ (hK : x ⊩ K m) (Rxy : x ≺ y) : y ⊩ K (m + 1) := by
-  simp only [K, forces_and] at hK ⊢;
-  exact ⟨forces_K1_succ, forces_K2_succ, forces_K3_succ_of_K1 hK.1 Rxy,
-    forces_K4_succ_of_K2 hK.2.1 Rxy⟩
+lemma forces_ι_succ (hK : x ⊩ ι m) (Rxy : x ≺ y) : y ⊩ ι (m + 1) := by
+  simp only [ι, forces_and] at hK ⊢;
+  exact ⟨forces_ι₁_succ, forces_ι₂_succ, forces_ι₃_succ_of_ι₁ hK.1 Rxy,
+    forces_ι₄_succ_of_ι₂ hK.2.1 Rxy⟩
 
 variable [Std.Refl M.Rel']
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
-lemma forces_K_succ' (hK : x ⊩ K m) : x ⊩ K (m + 1) := forces_K_succ hK <| Frame.rel_refl x
+lemma forces_ι_succ' (hK : x ⊩ ι m) : x ⊩ ι (m + 1) := forces_ι_succ hK <| Frame.rel_refl x
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
-theorem forces_K_mono (hnm : n ≤ m) (hK : x ⊩ K n) : x ⊩ K m := by
+theorem forces_ι_mono (hnm : n ≤ m) (hK : x ⊩ ι n) : x ⊩ ι m := by
   induction m, hnm using Nat.le_induction with
   | base => exact hK
-  | succ m _ ih => exact forces_K_succ' ih
+  | succ m _ ih => exact forces_ι_succ' ih
 
 end
 
 /-! ### The shift substitution `σ_m` -/
 
-/-- The substitution `σ_m`: `q₀ ↦ B m`, `q₁ ↦ B (m+1)`, `r₀ ↦ C m`, `r₁ ↦ C (m+1)`, identity
+/-- The substitution `σ_m`: `q₀ ↦ β m`, `q₁ ↦ β (m+1)`, `r₀ ↦ γ m`, `r₁ ↦ γ (m+1)`, identity
 elsewhere.
 
 - [Fin74a] -/
 def shift (m : ℕ) : Substitution ℕ ℕ
-| 2 => B m
-| 3 => B (m + 1)
-| 4 => C m
-| 5 => C (m + 1)
+| 2 => β m
+| 3 => β (m + 1)
+| 4 => γ m
+| 5 => γ (m + 1)
 | a => #a
 
 @[simp, grind =] lemma shift_p0 (m : ℕ) : p0⟦shift m⟧ = p0 := rfl
 @[simp, grind =] lemma shift_p1 (m : ℕ) : p1⟦shift m⟧ = p1 := rfl
-@[simp, grind =] lemma shift_q0 (m : ℕ) : q0⟦shift m⟧ = B m := rfl
-@[simp, grind =] lemma shift_q1 (m : ℕ) : q1⟦shift m⟧ = B (m + 1) := rfl
-@[simp, grind =] lemma shift_r0 (m : ℕ) : r0⟦shift m⟧ = C m := rfl
-@[simp, grind =] lemma shift_r1 (m : ℕ) : r1⟦shift m⟧ = C (m + 1) := rfl
+@[simp, grind =] lemma shift_q0 (m : ℕ) : q0⟦shift m⟧ = β m := rfl
+@[simp, grind =] lemma shift_q1 (m : ℕ) : q1⟦shift m⟧ = β (m + 1) := rfl
+@[simp, grind =] lemma shift_r0 (m : ℕ) : r0⟦shift m⟧ = γ m := rfl
+@[simp, grind =] lemma shift_r1 (m : ℕ) : r1⟦shift m⟧ = γ (m + 1) := rfl
 @[simp, grind =] lemma shift_s (m : ℕ) : s⟦shift m⟧ = s := rfl
 @[simp, grind =] lemma shift_t (m : ℕ) : t⟦shift m⟧ = t := rfl
 
-lemma B_C_subst_shift (m n : ℕ) : (B n)⟦shift m⟧ = B (m + n) ∧ (C n)⟦shift m⟧ = C (m + n) :=
+lemma β_γ_subst_shift (m n : ℕ) : (β n)⟦shift m⟧ = β (m + n) ∧ (γ n)⟦shift m⟧ = γ (m + n) :=
   match n with
   | 0 => by simp
   | 1 => by simp
   | n + 2 => by
-    obtain ⟨ihB1, ihC1⟩ := B_C_subst_shift m (n + 1);
-    obtain ⟨ihB0, ihC0⟩ := B_C_subst_shift m n;
+    obtain ⟨ihB1, ihC1⟩ := β_γ_subst_shift m (n + 1);
+    obtain ⟨ihB0, ihC0⟩ := β_γ_subst_shift m n;
     have : m + (n + 1) = m + n + 1 := by omega;
     have : m + (n + 2) = m + n + 2 := by omega;
     constructor <;> simp_all
 
-lemma B_subst_shift (m n : ℕ) : (B n)⟦shift m⟧ = B (m + n) := (B_C_subst_shift m n).1
-lemma C_subst_shift (m n : ℕ) : (C n)⟦shift m⟧ = C (m + n) := (B_C_subst_shift m n).2
+lemma β_subst_shift (m n : ℕ) : (β n)⟦shift m⟧ = β (m + n) := (β_γ_subst_shift m n).1
+lemma γ_subst_shift (m n : ℕ) : (γ n)⟦shift m⟧ = γ (m + n) := (β_γ_subst_shift m n).2
 
 @[simp, grind =]
-lemma A_subst_shift (m n : ℕ) : (A n)⟦shift m⟧ = A (m + n) := by
-  simp [A, B_subst_shift, C_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+lemma α_subst_shift (m n : ℕ) : (α n)⟦shift m⟧ = α (m + n) := by
+  simp [α, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
 
 @[simp, grind =]
-lemma D_subst_shift (m : ℕ) : D⟦shift m⟧ = D := by
-  simp [D]
+lemma δ_subst_shift (m : ℕ) : δ⟦shift m⟧ = δ := by
+  simp [δ]
 
 @[simp, grind =]
-lemma K1_subst_shift (m n : ℕ) : (K1 n)⟦shift m⟧ = K1 (m + n) := by
-  simp [K1, B_subst_shift, C_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+lemma ι₁_subst_shift (m n : ℕ) : (ι₁ n)⟦shift m⟧ = ι₁ (m + n) := by
+  simp [ι₁, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
 
 @[simp, grind =]
-lemma K2_subst_shift (m n : ℕ) : (K2 n)⟦shift m⟧ = K2 (m + n) := by
-  simp [K2, B_subst_shift, C_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+lemma ι₂_subst_shift (m n : ℕ) : (ι₂ n)⟦shift m⟧ = ι₂ (m + n) := by
+  simp [ι₂, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
 
 @[simp, grind =]
-lemma K3_subst_shift (m n : ℕ) : (K3 n)⟦shift m⟧ = K3 (m + n) := by
-  simp [K3, B_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+lemma ι₃_subst_shift (m n : ℕ) : (ι₃ n)⟦shift m⟧ = ι₃ (m + n) := by
+  simp [ι₃, β_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
 
 @[simp, grind =]
-lemma K4_subst_shift (m n : ℕ) : (K4 n)⟦shift m⟧ = K4 (m + n) := by
-  simp [K4, C_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+lemma ι₄_subst_shift (m n : ℕ) : (ι₄ n)⟦shift m⟧ = ι₄ (m + n) := by
+  simp [ι₄, γ_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
 
 @[simp, grind =]
-lemma K_subst_shift (m n : ℕ) : (K n)⟦shift m⟧ = K (m + n) := by
-  simp [K]
+lemma ι_subst_shift (m n : ℕ) : (ι n)⟦shift m⟧ = ι (m + n) := by
+  simp [ι]
 
 /-! ### The mirror substitution `tau` -/
 
-/-- The substitution exchanging the atoms underlying `B` (`q0`, `q1`) with those underlying `C`
+/-- The substitution exchanging the atoms underlying `β` (`q0`, `q1`) with those underlying `γ`
 (`r0`, `r1`), fixing every other atom. -/
 def tau : Substitution ℕ ℕ
 | 2 => r0
@@ -265,47 +265,47 @@ def tau : Substitution ℕ ℕ
 @[simp, grind =] lemma tau_s : s⟦tau⟧ = s := rfl
 @[simp, grind =] lemma tau_t : t⟦tau⟧ = t := rfl
 
-/-- Substituting `tau` exchanges `B` and `C` at every index. -/
-lemma B_C_subst_tau (n : ℕ) : (B n)⟦tau⟧ = C n ∧ (C n)⟦tau⟧ = B n :=
+/-- Substituting `tau` exchanges `β` and `γ` at every index. -/
+lemma β_γ_subst_tau (n : ℕ) : (β n)⟦tau⟧ = γ n ∧ (γ n)⟦tau⟧ = β n :=
   match n with
   | 0 => by simp
   | 1 => by simp
   | n + 2 => by
-    obtain ⟨ihB1, ihC1⟩ := B_C_subst_tau (n + 1);
-    obtain ⟨ihB0, ihC0⟩ := B_C_subst_tau n;
+    obtain ⟨ihB1, ihC1⟩ := β_γ_subst_tau (n + 1);
+    obtain ⟨ihB0, ihC0⟩ := β_γ_subst_tau n;
     constructor <;> simp_all
 
-@[simp] lemma B_subst_tau (n : ℕ) : (B n)⟦tau⟧ = C n := (B_C_subst_tau n).1
-@[simp] lemma C_subst_tau (n : ℕ) : (C n)⟦tau⟧ = B n := (B_C_subst_tau n).2
+@[simp] lemma β_subst_tau (n : ℕ) : (β n)⟦tau⟧ = γ n := (β_γ_subst_tau n).1
+@[simp] lemma γ_subst_tau (n : ℕ) : (γ n)⟦tau⟧ = β n := (β_γ_subst_tau n).2
 
-lemma K_subst_tau (m : ℕ) : (K m)⟦tau⟧ = K2 m ⋏ K1 m ⋏ K4 m ⋏ K3 m := by
-  simp [K, K1, K2, K3, K4]
+lemma ι_subst_tau (m : ℕ) : (ι m)⟦tau⟧ = ι₂ m ⋏ ι₁ m ⋏ ι₄ m ⋏ ι₃ m := by
+  simp [ι, ι₁, ι₂, ι₃, ι₄]
 
-lemma forces_K_subst_tau_iff {x : M.World} {m : ℕ} : x ⊩ (K m)⟦tau⟧ ↔ x ⊩ K m := by
-  rw [K_subst_tau];
-  simp only [K, forces_and];
+lemma forces_ι_subst_tau_iff {x : M.World} {m : ℕ} : x ⊩ (ι m)⟦tau⟧ ↔ x ⊩ ι m := by
+  rw [ι_subst_tau];
+  simp only [ι, forces_and];
   tauto
 
-lemma forces_A_iff : x ⊩ A m ↔
-    x ⊩ ◇(B (m + 1)) ∧ x ⊩ ◇(C (m + 1)) ∧ x ⊩ ∼◇(B (m + 2)) ∧ x ⊩ ∼◇(C (m + 2)) := by
-  simp only [A, forces_and]
+lemma forces_α_iff : x ⊩ α m ↔
+    x ⊩ ◇(β (m + 1)) ∧ x ⊩ ◇(γ (m + 1)) ∧ x ⊩ ∼◇(β (m + 2)) ∧ x ⊩ ∼◇(γ (m + 2)) := by
+  simp only [α, forces_and]
 
-lemma forces_D_iff : x ⊩ D ↔ x ⊩ p0 ⋎ p1 ∧ x ⊩ □(p0 🡒 (∼p1 ⋏ ◇p1)) ∧
+lemma forces_δ_iff : x ⊩ δ ↔ x ⊩ p0 ⋎ p1 ∧ x ⊩ □(p0 🡒 (∼p1 ⋏ ◇p1)) ∧
     x ⊩ □(p1 🡒 (∼p0 ⋏ ◇p0)) ∧ x ⊩ □(∼(p0 ⋎ p1) 🡒 □(∼(p0 ⋎ p1))) := by
-  simp only [D, forces_and]
+  simp only [δ, forces_and]
 
-lemma forces_K_iff : x ⊩ K m ↔ x ⊩ K1 m ∧ x ⊩ K2 m ∧ x ⊩ K3 m ∧ x ⊩ K4 m := by
-  simp only [K, forces_and]
+lemma forces_ι_iff : x ⊩ ι m ↔ x ⊩ ι₁ m ∧ x ⊩ ι₂ m ∧ x ⊩ ι₃ m ∧ x ⊩ ι₄ m := by
+  simp only [ι, forces_and]
 
-lemma forces_E_iff : x ⊩ E ↔ x ⊩ D ∧ x ⊩ ◇(A 0) ∧ x ⊩ K 0 := by
-  simp only [E, forces_and]
+lemma forces_ε_iff : x ⊩ ε ↔ x ⊩ δ ∧ x ⊩ ◇(α 0) ∧ x ⊩ ι 0 := by
+  simp only [ε, forces_and]
 
-lemma forces_E_subst_shift : x ⊩ E⟦shift m⟧ ↔ x ⊩ D ∧ x ⊩ ◇(A m) ∧ x ⊩ K m := by
-  simp [E, forces_and]
+lemma forces_ε_subst_shift : x ⊩ ε⟦shift m⟧ ↔ x ⊩ δ ∧ x ⊩ ◇(α m) ∧ x ⊩ ι m := by
+  simp [ε, forces_and]
 
-lemma forces_F_subst_shift :
-    x ⊩ F⟦shift m⟧ ↔ ∃ y, x ≺ y ∧ y ⊩ p0 ⋎ p1 ∧ y ⊩ ∼◇(A m) ∧ y ⊩ ◇(A (m + 1)) := by
-  simp [F, forces_dia, forces_and]
+lemma forces_ψ_subst_shift :
+    x ⊩ ψ⟦shift m⟧ ↔ ∃ y, x ≺ y ∧ y ⊩ p0 ⋎ p1 ∧ y ⊩ ∼◇(α m) ∧ y ⊩ ◇(α (m + 1)) := by
+  simp [ψ, forces_dia, forces_and]
 
 end Fine
 
