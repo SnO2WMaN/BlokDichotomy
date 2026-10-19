@@ -10,7 +10,7 @@ transports the mirror-image case of the `G`-validity argument to the upright one
 
 ## References
 
-- [Fin74, Lemma 2]
+- [Fin74a, Lemma 2]
 - [Lit04, p. 332]
 -/
 
@@ -299,7 +299,7 @@ private lemma exists_ge_eventually_const (P : ℕ → Prop) :
 /-- Along the `d`-chain, the truth of any fixed formula `C` is *eventually periodic with
 period (dividing) 2*: past some threshold `N`, `d_i ⊩ C` depends only on the parity of `i`.
 
-- [Fin74, p.\ 28]
+- [Fin74a, p.\ 28]
 -/
 lemma d_eventually_period_two (C : Formula ℕ) :
     ∃ N : ℕ, ∀ i j : ℕ, N ≤ i → N ≤ j → i % 2 = j % 2 →
@@ -443,7 +443,7 @@ private lemma Y_step {σ : Formula.Substitution ℕ ℕ} {x : World}
 infinite *strict* chain along `R` whose points cycle through the three
 pairwise-incompatible phases `phase σ 0`, `phase σ 1`, `phase σ 2` in order.
 
-- [Fin74, p.\ 28]
+- [Fin74a, p.\ 28]
 -/
 lemma exists_phase_chain (h : ∃ σ x, x ⊮[model] H⟦σ⟧) :
     ∃ (σ : Formula.Substitution ℕ ℕ) (u : ℕ → World),
@@ -481,7 +481,7 @@ lemma exists_same_parity_pair (k : ℕ → ℕ) (j : ℕ) :
 
 /-- Fine's model strongly verifies `H`.
 
-- [Fin74, p.\ 28]
+- [Fin74a, p.\ 28]
 -/
 theorem H_mem_model_logic : H ∈ model.logic := by
   -- If some substitution instance `H⟦σ⟧` were refuted, `exists_phase_chain` would produce an

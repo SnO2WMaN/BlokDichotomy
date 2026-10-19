@@ -7,12 +7,12 @@ public import Mathlib.Data.Set.Finite.Basic
 /-!
 # Fine's model
 
-The countermodel `𝔄` of [Fin74] witnessing `∼E ∉ Fine.logic`: a partial order on four families
+The countermodel `𝔄` of [Fin74a] witnessing `∼E ∉ Fine.logic`: a partial order on four families
 of points `a_m`, `b_m`, `c_m`, `d_m`, in which only `d`-points start infinite strict chains.
 
 ## References
 
-- [Fin74, p. 25]
+- [Fin74a, p. 25]
 -/
 
 @[expose] public section
@@ -21,7 +21,7 @@ namespace Fine
 
 /-- The points of Fine's model.
 
-- [Fin74, p. 25] -/
+- [Fin74a, p. 25] -/
 inductive World
 | a (m : ℕ)
 | b (m : ℕ)
@@ -30,7 +30,7 @@ inductive World
 deriving DecidableEq
 
 /-- The accessibility relation of Fine's model, given in closed form (no transitive closure),
-reconstructed from [Fin74]'s (partly missing) definition. -/
+reconstructed from [Fin74a]'s (partly missing) definition. -/
 @[grind =]
 def R : World → World → Prop
 | .b m, .b k => k ≤ m
@@ -62,7 +62,7 @@ instance : IsTrans World R := ⟨fun _ _ _ => R_trans⟩
 
 abbrev frame : Frame World := ⟨R⟩
 
-/-- The valuation of Fine's model, reconstructed from [Fin74]: `V(q₀) = {b₀}`, `V(q₁) = {b₁}`,
+/-- The valuation of Fine's model, reconstructed from [Fin74a]: `V(q₀) = {b₀}`, `V(q₁) = {b₁}`,
 `V(r₀) = {c₀}`, `V(r₁) = {c₁}`, `V(p₀) = {d_{2k} : k ≥ 0}`, `V(p₁) = {d_{2k+1} : k ≥ 0}`, and
 all other atoms are valuated `∅`. Atom indices follow `Fine.p0, .p1, .q0, .q1, .r0, .r1, .s, .t`
 (`#0`–`#7`). -/

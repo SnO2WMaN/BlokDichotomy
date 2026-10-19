@@ -10,7 +10,7 @@ pinned (up to the `b`/`c` mirror `swap`) to an apex `a_n`, and `d_{n+1}` witness
 
 ## References
 
-- [Fin74, Lemma 2]
+- [Fin74a, Lemma 2]
 - [Lit04, p. 332]
 -/
 
@@ -877,7 +877,7 @@ lemma forces_F_of_shapeAndApex (hs : ShapeData m n ψ) {t : World}
 
 /-- Fine's frame validates `G`: for every valuation and every point, `E → F` holds.
 
-- [Fin74, Lemma 2]
+- [Fin74a, Lemma 2]
 - [Lit04, p. 332] -/
 theorem validates_G : frame ⊧ G := by
   intro ψ w

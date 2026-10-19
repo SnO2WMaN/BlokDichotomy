@@ -11,7 +11,7 @@ shift substitution `σ_m` that moves the formulas up by `m` levels.
 
 ## References
 
-- [Fin74]
+- [Fin74a]
 - [Ger75, §4]
 - [Lit04, p. 332]
 -/
@@ -35,7 +35,7 @@ mutual
 
 /-- `B_m`.
 
-- [Fin74] -/
+- [Fin74a] -/
 def B : ℕ → Formula ℕ
 | 0     => q0
 | 1     => q1
@@ -44,7 +44,7 @@ def B : ℕ → Formula ℕ
 /-- `C_m`, a mirror image of `B`; the recursive clause here corrects a typo in the original
 (which has `∼◇(B (m + 2))` instead).
 
-- [Fin74]
+- [Fin74a]
 - [Lit04, p. 332] -/
 def C : ℕ → Formula ℕ
 | 0     => r0
@@ -66,14 +66,14 @@ lemma C_add_two (m : ℕ) : C (m + 2) = ◇(C (m + 1)) ⋏ ◇(B m) ⋏ ∼◇(B
 /-- `A_m`, with a fourth conjunct `∼◇(C (m + 2))` mirroring the third; the original has only
 three conjuncts.
 
-- [Fin74]
+- [Fin74a]
 - [Lit04, p. 332] -/
 def A (m : ℕ) : Formula ℕ := ◇(B (m + 1)) ⋏ ◇(C (m + 1)) ⋏ ∼◇(B (m + 2)) ⋏ ∼◇(C (m + 2))
 
 /-- `D`, with the guard on `p₁` stated in both directions; the original states only one
 direction.
 
-- [Fin74]
+- [Fin74a]
 - [Lit04, p. 332] -/
 def D : Formula ℕ :=
   (p0 ⋎ p1) ⋏ □(p0 🡒 (∼p1 ⋏ ◇p1)) ⋏ □(p1 🡒 (∼p0 ⋏ ◇p0)) ⋏ □(∼(p0 ⋎ p1) 🡒 □(∼(p0 ⋎ p1)))
@@ -93,32 +93,32 @@ def K4 (m : ℕ) : Formula ℕ := □(C m 🡒 ∼◇(C (m + 1)))
 /-- `K^m`: the conjunction of `K1`–`K4` at level `m`, indexed by `ℕ` rather than inlined at
 level `0` as in the original.
 
-- [Fin74] -/
+- [Fin74a] -/
 def K (m : ℕ) : Formula ℕ := K1 m ⋏ K2 m ⋏ K3 m ⋏ K4 m
 
 /-- `E`.
 
-- [Fin74] -/
+- [Fin74a] -/
 def E : Formula ℕ := D ⋏ ◇(A 0) ⋏ K 0
 
 /-- `F`.
 
-- [Fin74] -/
+- [Fin74a] -/
 def F : Formula ℕ := ◇((p0 ⋎ p1) ⋏ ∼◇(A 0) ⋏ ◇(A 1))
 
 /-- `G`.
 
-- [Fin74] -/
+- [Fin74a] -/
 def G : Formula ℕ := E 🡒 F
 
 /-- `H`.
 
-- [Fin74] -/
+- [Fin74a] -/
 def H : Formula ℕ := ∼(s ⋏ □(s 🡒 ◇((∼s ⋏ t) ⋏ ◇((∼s ⋏ ∼t) ⋏ ◇s))))
 
 /-- Fine's logic `𝐒𝟒 ⊕ G ⊕ H`.
 
-- [Fin74]
+- [Fin74a]
 - [Ger75, §4]
 - [Lit04, p. 332] -/
 abbrev logic : NormalLogic ℕ := (𝐒𝟒 : NormalLogic ℕ) + ({G, H} : FormulaSet ℕ)
@@ -186,7 +186,7 @@ end
 /-- The substitution `σ_m`: `q₀ ↦ B m`, `q₁ ↦ B (m+1)`, `r₀ ↦ C m`, `r₁ ↦ C (m+1)`, identity
 elsewhere.
 
-- [Fin74] -/
+- [Fin74a] -/
 def shift (m : ℕ) : Substitution ℕ ℕ
 | 2 => B m
 | 3 => B (m + 1)

@@ -347,7 +347,7 @@ lemma not_validates_iff : ¬ M ⊧ φ ↔ ∃ x : M.World, x ⊮ φ := by
 /-- The formulas `M` strongly verifies, i.e. those all of whose substitution instances are valid
 in `M`, form a normal logic.
 
-- [Fin74] -/
+- [Fin74a] -/
 def logic (M : Model κ α) : NormalLogic α where
   carrier := {φ | ∀ s : Formula.Substitution α α, M ⊧ φ⟦s⟧}
   mdp hφ hφψ s x := hφψ s x <| hφ s x

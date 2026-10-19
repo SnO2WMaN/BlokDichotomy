@@ -2,6 +2,7 @@ module
 
 public import BlokDichotomy.Fine.ValidatesG
 public import BlokDichotomy.Kripke.Correspondence
+public import BlokDichotomy.Kripke.Degree
 
 /-!
 # Fine's logic is Kripke-incomplete
@@ -12,7 +13,7 @@ normal extension of `𝐒𝟒`, and hence of `𝐊𝟒`.
 
 ## References
 
-- [Fin74]
+- [Fin74a]
 - [Lit04, p. 332]
 -/
 
@@ -37,7 +38,7 @@ lemma forces_D_of_rel (hD : x ⊩ D) (Rxy : x ≺ y) (hp : y ⊩ p0 ⋎ p1) : y 
 /-- If `M` strongly verifies `G` and `x` forces `E⟦σ_m⟧`, then some strict successor of `x`
 forces `E⟦σ_{m+1}⟧`.
 
-- [Fin74, (3)] -/
+- [Fin74a, (3)] -/
 lemma chain_step (hG : G ∈ M.logic) (hx : x ⊩ E⟦shift m⟧) :
     ∃ y : M.World, x ≺ y ∧ y ⊀ x ∧ y ⊩ E⟦shift (m + 1)⟧ := by
   obtain ⟨y, Rxy, hy01, hyA, hyA'⟩ := forces_F_subst_shift.mp <| hG (shift m) x hx;
@@ -57,7 +58,7 @@ variable {κ : Type*} {F : Frame κ} {u : ℕ → F.World}
 /-- The valuation along a chain `u`: `s` holds exactly at the points of index `3i`, `t` exactly at
 those of index `3i+1`; all other atoms are false.
 
-- [Fin74] -/
+- [Fin74a] -/
 def psiVal (u : ℕ → F.World) : F.World → ℕ → Prop
 | v, 6 => ∃ i, v = u (3 * i)
 | v, 7 => ∃ i, v = u (3 * i + 1)
@@ -118,7 +119,7 @@ variable {κ : Type*} {F : Frame κ}
 
 /-- Every frame validating Fine's logic validates `∼E`.
 
-- [Fin74, Lemma 1]
+- [Fin74a, Lemma 1]
 - [Lit04, p. 332] -/
 theorem validates_neg_E_of_validates (hL : F ⊧ logic) : F ⊧ ∼E := by
   obtain ⟨_, _⟩ :=
@@ -137,7 +138,7 @@ theorem validates_neg_E_of_validates (hL : F ⊧ logic) : F ⊧ ∼E := by
 
 /-- Fine's model strongly verifies every theorem of Fine's logic.
 
-- [Fin74, Lemma 2] -/
+- [Fin74a, Lemma 2] -/
 lemma logic_le_model_logic : logic ≤ model.logic :=
   NormalLogic.add_le (fun _ h => Frame.logic_le_model_logic <| Frame.validates_logicS4 _ h) <| by
     rintro _ (rfl | rfl);
@@ -146,24 +147,25 @@ lemma logic_le_model_logic : logic ≤ model.logic :=
 
 /-- `∼E` is not a theorem of Fine's logic.
 
-- [Fin74, Lemma 2] -/
+- [Fin74a, Lemma 2] -/
 lemma neg_E_not_mem : ∼E ∉ logic := by
   by_contra h;
   exact Model.validates_of_mem_logic (logic_le_model_logic h) (World.d 0) forces_E_d0
 
-/-- Fine's logic is Kripke-incomplete, witnessed by `∼E`: every frame validating the logic
-validates `∼E`, yet `∼E` is not a theorem of it.
+/-- `∼E` lies in the logic of the frames validating Fine's logic.
 
-- [Fin74]
+- [Fin74a, Lemma 1] -/
+lemma neg_E_mem_frameLogic : ∼E ∈ logic.frameLogic.{u} fun _ _ => True :=
+  fun _ _ _ hL => validates_neg_E_of_validates hL
+
+/-- Fine's logic, a normal extension of `𝐒𝟒` and so of `𝐊𝟒`, is Kripke-incomplete: `∼E` is
+valid in every frame validating the logic, yet `∼E` is not a theorem of it.
+
+- [Fin74a]
 - [Lit04, p. 332] -/
-theorem incompleteBy : Logic.IncompleteBy.{u} (fun _ => True) logic (∼E) where
-  model _ _ _ := validates_neg_E_of_validates
-  unprov := neg_E_not_mem
-
-/-- Fine's logic is a Kripke-incomplete normal extension of `𝐒𝟒`, and so of `𝐊𝟒`.
-
-- [Fin74] -/
-theorem incomplete : Logic.Incomplete.{u} (fun _ => True) logic := ⟨∼E, incompleteBy⟩
+theorem not_kripkeComplete : ¬logic.KripkeComplete.{u} fun _ _ => True := by
+  by_contra h;
+  exact neg_E_not_mem <| h neg_E_mem_frameLogic
 
 end Fine
 
