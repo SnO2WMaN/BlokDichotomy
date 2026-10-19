@@ -45,7 +45,7 @@ lemma trans_of_validates_four (h : F ⊧ (□#a 🡒 □□#a : Formula α)) : I
 
 /-- - [CZ98, Proposition 3.30]
 - [CZ98, Proposition 3.31] -/
-lemma validates_logicS4 [Std.Refl F.Rel'] [IsTrans κ F.Rel'] : F ⊧ (𝐒𝟒 : NormalLogic α) := by
+lemma validates_logicS4 [Std.Refl F.Rel] [IsTrans κ F.Rel] : F ⊧ (𝐒𝟒 : NormalLogic α) := by
   refine validates_add (validates_add validates_logicK ?_) ?_
   · rintro _ ⟨φ, rfl⟩
     exact validates_four_of_trans
@@ -56,10 +56,14 @@ lemma validates_logicS4 [Std.Refl F.Rel'] [IsTrans κ F.Rel'] : F ⊧ (𝐒𝟒 
 - [CZ98, Proposition 3.31] -/
 lemma validates_logicS4_iff [Inhabited α] :
     F ⊧ (𝐒𝟒 : NormalLogic α) ↔ Std.Refl F.Rel' ∧ IsTrans κ F.Rel' := by
-  refine ⟨fun h => ⟨?_, ?_⟩, fun ⟨_, _⟩ => validates_logicS4⟩
-  · exact refl_of_validates_T (a := (default : α)) <| h _ <| NormalLogic.mem_add ⟨#default, rfl⟩
-  · exact trans_of_validates_four (a := (default : α)) <|
-      h _ <| NormalLogic.mem_add_of_mem <| NormalLogic.mem_add ⟨#default, rfl⟩
+  constructor;
+  · intro h;
+    constructor;
+    · exact refl_of_validates_T (a := (default : α)) <| h _ <| NormalLogic.mem_add ⟨#default, rfl⟩;
+    · exact trans_of_validates_four (a := (default : α)) <|
+        h _ <| NormalLogic.mem_add_of_mem <| NormalLogic.mem_add ⟨#default, rfl⟩;
+  · rintro ⟨_, _⟩;
+    exact validates_logicS4
 
 end Frame
 
