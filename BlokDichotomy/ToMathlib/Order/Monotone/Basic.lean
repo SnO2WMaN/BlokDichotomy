@@ -6,7 +6,8 @@ public import Mathlib.Order.Monotone.Basic
 # Chains along a relation indexed by `ℕ`
 
 Dependent choice of a chain whose `m`-th point satisfies a stage-indexed invariant, and
-injectivity of a chain along a transitive relation none of whose steps can be reversed.
+injectivity of a chain along a transitive relation none of whose steps can be reversed, and
+eventual constancy of a shrinking existential `∃ k ≥ i, P k`.
 -/
 
 @[expose] public section
@@ -31,3 +32,24 @@ theorem injective_of_forall_rel_succ [IsTrans α r] {f : ℕ → α}
   · have : f (i + 1) = f i := (congrArg f hj).trans heq.symm;
     simpa [this] using h i;
   · exact heq ▸ Nat.rel_of_forall_rel_succ_of_lt r h hj
+
+/-- A shrinking-domain existential `∃ k ≥ i, P k` is eventually constant in `i`. -/
+theorem exists_ge_eventually_const (P : ℕ → Prop) :
+    ∃ N : ℕ, ∀ i j : ℕ, N ≤ i → N ≤ j → ((∃ k, i ≤ k ∧ P k) ↔ (∃ k, j ≤ k ∧ P k)) := by
+  by_cases h : ∀ B : ℕ, ∃ k, B ≤ k ∧ P k;
+  · use 0;
+    intro i j _ _;
+    constructor;
+    · intro _;
+      exact h j;
+    · intro _;
+      exact h i;
+  · push Not at h;
+    obtain ⟨B, hB⟩ := h;
+    use B;
+    intro i j hi hj;
+    constructor;
+    · rintro ⟨k, hik, hPk⟩;
+      exact absurd hPk (hB k (le_trans hi hik));
+    · rintro ⟨k, hjk, hPk⟩;
+      exact absurd hPk (hB k (le_trans hj hjk));

@@ -8,7 +8,8 @@ public import Mathlib.Data.Set.Finite.Basic
 # Fine's model
 
 The countermodel `𝔄` of [Fin74a] witnessing `∼E ∉ Fine.logic`: a partial order on four families
-of points `a_m`, `b_m`, `c_m`, `d_m`, in which only `d`-points start infinite strict chains.
+of points `a_m`, `b_m`, `c_m`, `d_m`, in which only `d`-points start infinite strict chains. The
+involution `swap` exchanging the `b`- and `c`-families is an automorphism of the underlying frame.
 
 ## References
 
@@ -46,15 +47,32 @@ def R : World → World → Prop
 | .d _, .c _ => True
 | _, _ => False
 
-@[grind .] lemma R_refl (w : World) : R w w := by cases w <;> simp [R]
+@[simp] lemma R_a_a {m k : ℕ} : R (.a m) (.a k) ↔ k = m := by simp [R];
+@[simp] lemma R_a_b {m k : ℕ} : R (.a m) (.b k) ↔ k ≤ m + 1 := by simp [R];
+@[simp] lemma R_a_c {m k : ℕ} : R (.a m) (.c k) ↔ k ≤ m + 1 := by simp [R];
+@[simp] lemma R_a_d {m k : ℕ} : ¬ R (.a m) (.d k) := by simp [R];
+@[simp] lemma R_b_a {m k : ℕ} : ¬ R (.b m) (.a k) := by simp [R];
+@[simp] lemma R_b_b {m k : ℕ} : R (.b m) (.b k) ↔ k ≤ m := by simp [R];
+@[simp] lemma R_b_c {m k : ℕ} : R (.b m) (.c k) ↔ k + 2 ≤ m := by simp [R];
+@[simp] lemma R_b_d {m k : ℕ} : ¬ R (.b m) (.d k) := by simp [R];
+@[simp] lemma R_c_a {m k : ℕ} : ¬ R (.c m) (.a k) := by simp [R];
+@[simp] lemma R_c_b {m k : ℕ} : R (.c m) (.b k) ↔ k + 2 ≤ m := by simp [R];
+@[simp] lemma R_c_c {m k : ℕ} : R (.c m) (.c k) ↔ k ≤ m := by simp [R];
+@[simp] lemma R_c_d {m k : ℕ} : ¬ R (.c m) (.d k) := by simp [R];
+@[simp] lemma R_d_a {n m : ℕ} : R (.d n) (.a m) ↔ n ≤ m := by simp [R];
+@[simp] lemma R_d_b {n k : ℕ} : R (.d n) (.b k) := by simp [R];
+@[simp] lemma R_d_c {n k : ℕ} : R (.d n) (.c k) := by simp [R];
+@[simp] lemma R_d_d {n k : ℕ} : R (.d n) (.d k) ↔ n ≤ k := by simp [R];
+
+@[grind .] lemma R_refl (w : World) : R w w := by cases w <;> simp;
 
 @[grind →]
 lemma R_trans {x y z : World} (hxy : R x y) (hyz : R y z) : R x z := by
-  cases x <;> cases y <;> cases z <;> simp_all [R] <;> omega
+  cases x <;> cases y <;> cases z <;> simp_all <;> omega;
 
 /-- `R` is antisymmetric, so `(World, R)` is a partial order. -/
 lemma R_antisymm {x y : World} (hxy : R x y) (hyx : R y x) : x = y := by
-  cases x <;> cases y <;> simp_all [R] <;> omega
+  cases x <;> cases y <;> simp_all <;> omega;
 
 instance : Std.Refl R := ⟨R_refl⟩
 
@@ -76,84 +94,86 @@ def val : World → ℕ → Prop
 | .d n, 1 => n % 2 = 1
 | _, _ => False
 
-def model : Model World ℕ := ⟨frame, val⟩
+abbrev model : Model World ℕ := ⟨frame, val⟩
 
-/-! ### Cone finiteness and confinement to the `d`-points -/
+@[simp] lemma val_a {m a : ℕ} : ¬ val (.a m) a := by simp [val];
+@[simp] lemma val_b_iff {m a : ℕ} : val (.b m) a ↔ (m = 0 ∧ a = 2) ∨ (m = 1 ∧ a = 3) := by
+  rcases m with _ | _ | m <;> rcases a with _ | _ | _ | _ | a <;> simp [val];
+@[simp] lemma val_c_iff {m a : ℕ} : val (.c m) a ↔ (m = 0 ∧ a = 4) ∨ (m = 1 ∧ a = 5) := by
+  rcases m with _ | _ | m <;> rcases a with _ | _ | _ | _ | _ | _ | a <;> simp [val];
+@[simp] lemma val_d_iff {n a : ℕ} : val (.d n) a ↔ (a = 0 ∧ n % 2 = 0) ∨ (a = 1 ∧ n % 2 = 1) := by
+  rcases a with _ | _ | a <;> simp [val];
 
-/-- The `R`-cone of a `b`-point is finite. -/
-lemma cone_b_finite (m : ℕ) : {z | R (.b m) z}.Finite := by
-  apply Set.Finite.subset (Finset.image World.b (Finset.range (m + 1)) ∪
-    Finset.image World.c (Finset.range (m + 1))).finite_toSet;
-  rintro z hz;
-  cases z with
-  | b k =>
-    simp [R] at hz;
-    simp only [Finset.coe_union, Finset.coe_image, Finset.coe_range, Set.mem_union,
-      Set.mem_image, Set.mem_Iio];
-    left; exact ⟨k, by omega, rfl⟩
-  | c k =>
-    simp [R] at hz;
-    simp only [Finset.coe_union, Finset.coe_image, Finset.coe_range, Set.mem_union,
-      Set.mem_image, Set.mem_Iio];
-    right; exact ⟨k, by omega, rfl⟩
-  | a k => simp [R] at hz
-  | d k => simp [R] at hz
+@[simp] lemma rel_frame {x y : World} : Frame.Rel (F := frame) x y ↔ R x y := Iff.rfl
 
-/-- The `R`-cone of a `c`-point is finite. -/
-lemma cone_c_finite (m : ℕ) : {z | R (.c m) z}.Finite := by
-  apply Set.Finite.subset (Finset.image World.b (Finset.range (m + 1)) ∪
-    Finset.image World.c (Finset.range (m + 1))).finite_toSet;
-  rintro z hz;
-  cases z with
-  | b k =>
-    simp [R] at hz;
-    simp only [Finset.coe_union, Finset.coe_image, Finset.coe_range, Set.mem_union,
-      Set.mem_image, Set.mem_Iio];
-    left; exact ⟨k, by omega, rfl⟩
-  | c k =>
-    simp [R] at hz;
-    simp only [Finset.coe_union, Finset.coe_image, Finset.coe_range, Set.mem_union,
-      Set.mem_image, Set.mem_Iio];
-    right; exact ⟨k, by omega, rfl⟩
-  | a k => simp [R] at hz
-  | d k => simp [R] at hz
+section
 
-/-- The `R`-cone of an `a`-point is finite. -/
-lemma cone_a_finite (m : ℕ) : {z | R (.a m) z}.Finite := by
-  apply Set.Finite.subset ({World.a m} ∪ Finset.image World.b (Finset.range (m + 2)) ∪
-    Finset.image World.c (Finset.range (m + 2)) : Finset World).finite_toSet;
-  rintro z hz;
-  cases z with
-  | a k => simp [R] at hz; simp [hz]
-  | b k =>
-    simp [R] at hz;
-    simp only [Finset.coe_union, Finset.coe_singleton, Finset.coe_image, Finset.coe_range,
-      Set.mem_union, Set.mem_singleton_iff, Set.mem_image, Set.mem_Iio];
-    exact Or.inl (Or.inr ⟨k, by omega, rfl⟩)
-  | c k =>
-    simp [R] at hz;
-    simp only [Finset.coe_union, Finset.coe_singleton, Finset.coe_image, Finset.coe_range,
-      Set.mem_union, Set.mem_singleton_iff, Set.mem_image, Set.mem_Iio];
-    exact Or.inr ⟨k, by omega, rfl⟩
-  | d k => simp [R] at hz
+open Model.World
+
+variable {ψ : World → ℕ → Prop}
+
+@[simp] lemma forces_atom_frame {w : World} {a : ℕ} : w ⊩[⟨frame, ψ⟩] #a ↔ ψ w a := Iff.rfl
+
+@[simp] lemma forces_p0_iff {w : World} : w ⊩[model] p0 ↔ ∃ k, w = .d k ∧ k % 2 = 0 := by
+  cases w <;> simp [p0];
+@[simp] lemma forces_p1_iff {w : World} : w ⊩[model] p1 ↔ ∃ k, w = .d k ∧ k % 2 = 1 := by
+  cases w <;> simp [p1];
+@[simp] lemma forces_q0_iff {w : World} : w ⊩[model] q0 ↔ w = .b 0 := by cases w <;> simp [q0];
+@[simp] lemma forces_q1_iff {w : World} : w ⊩[model] q1 ↔ w = .b 1 := by cases w <;> simp [q1];
+@[simp] lemma forces_r0_iff {w : World} : w ⊩[model] r0 ↔ w = .c 0 := by cases w <;> simp [r0];
+@[simp] lemma forces_r1_iff {w : World} : w ⊩[model] r1 ↔ w = .c 1 := by cases w <;> simp [r1];
+
+end
+
+/-- The `R`-cone of a point other than a `d`-point is finite. -/
+lemma cone_finite {w : World} (hw : ∀ k, w ≠ .d k) : {z | R w z}.Finite := by
+  obtain ⟨m, hm⟩ : ∃ m, ∀ z, R w z → ∃ k ≤ m, z = .a k ∨ z = .b k ∨ z = .c k := by
+    cases w with
+    | d k => exact absurd rfl (hw k);
+    | a m => exact ⟨m + 1, fun z hz => by cases z <;> simp_all⟩;
+    | b m => exact ⟨m + 1, fun z hz => by cases z <;> simp_all <;> omega⟩;
+    | c m => exact ⟨m + 1, fun z hz => by cases z <;> simp_all <;> omega⟩;
+  apply ((Finset.range (m + 1)).image World.a ∪ (Finset.range (m + 1)).image World.b ∪
+    (Finset.range (m + 1)).image World.c).finite_toSet.subset;
+  intro z hz;
+  obtain ⟨k, hk, rfl | rfl | rfl⟩ := hm z hz <;> simp [Nat.lt_succ_iff, hk];
 
 /-- Every infinite strict `R`-chain consists entirely of `d`-points. -/
 lemma strict_chain_all_d {u : ℕ → World} (hR : ∀ m, R (u m) (u (m + 1)))
     (hs : ∀ m, ¬R (u (m + 1)) (u m)) (i : ℕ) : ∃ k, u i = .d k := by
   have hinj : Function.Injective u := injective_of_forall_rel_succ (r := R) hR hs;
   have hchain : ∀ n, R (u i) (u (i + n)) := by
-    intro n; induction n with
-    | zero => simpa using R_refl (u i)
-    | succ n ih => exact R_trans ih (hR (i + n))
-  have hmem : ∀ n, u (i + n) ∈ {z | R (u i) z} := hchain
-  have hfinj : Function.Injective (fun n => u (i + n)) :=
-    fun a b hab => by have := hinj hab; omega
-  have hinf : {z | R (u i) z}.Infinite := Set.infinite_of_injective_forall_mem hfinj hmem
-  cases hui : u i with
-  | d k => exact ⟨k, rfl⟩
-  | b m => exact absurd (hui ▸ hinf) (cone_b_finite m).not_infinite
-  | c m => exact absurd (hui ▸ hinf) (cone_c_finite m).not_infinite
-  | a m => exact absurd (hui ▸ hinf) (cone_a_finite m).not_infinite
+    intro n;
+    induction n with
+    | zero => simpa using R_refl (u i);
+    | succ n ih => exact R_trans ih (hR (i + n));
+  have hinf : {z | R (u i) z}.Infinite :=
+    Set.infinite_of_injective_forall_mem (fun a b hab => by have := hinj hab; omega) hchain;
+  by_contra h;
+  push Not at h;
+  exact (cone_finite h).not_infinite hinf
+
+/-! ### The `b`/`c` mirror involution -/
+
+/-- The involution on Fine's model's worlds exchanging the `b`- and `c`-families and fixing
+the `a`- and `d`-families. -/
+def swap : World → World
+| .a m => .a m
+| .b m => .c m
+| .c m => .b m
+| .d m => .d m
+
+@[simp] lemma swap_a {m : ℕ} : swap (.a m) = .a m := rfl
+@[simp] lemma swap_b {m : ℕ} : swap (.b m) = .c m := rfl
+@[simp] lemma swap_c {m : ℕ} : swap (.c m) = .b m := rfl
+@[simp] lemma swap_d {m : ℕ} : swap (.d m) = .d m := rfl
+
+lemma swap_involutive : Function.Involutive swap := by intro x; cases x <;> rfl;
+
+@[simp] lemma swap_swap (w : World) : swap (swap w) = w := swap_involutive w
+
+/-- `R` does not distinguish the `b`- and `c`-families, only their indices. -/
+lemma R_swap {x y : World} : R (swap x) (swap y) ↔ R x y := by cases x <;> cases y <;> simp;
 
 end Fine
 

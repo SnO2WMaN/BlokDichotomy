@@ -245,10 +245,52 @@ lemma K4_subst_shift (m n : ℕ) : (K4 n)⟦shift m⟧ = K4 (m + n) := by
 lemma K_subst_shift (m n : ℕ) : (K n)⟦shift m⟧ = K (m + n) := by
   simp [K]
 
+/-! ### The mirror substitution `tau` -/
+
+/-- The substitution exchanging the atoms underlying `B` (`q0`, `q1`) with those underlying `C`
+(`r0`, `r1`), fixing every other atom. -/
+def tau : Substitution ℕ ℕ
+| 2 => r0
+| 3 => r1
+| 4 => q0
+| 5 => q1
+| a => #a
+
+@[simp, grind =] lemma tau_p0 : p0⟦tau⟧ = p0 := rfl
+@[simp, grind =] lemma tau_p1 : p1⟦tau⟧ = p1 := rfl
+@[simp, grind =] lemma tau_q0 : q0⟦tau⟧ = r0 := rfl
+@[simp, grind =] lemma tau_q1 : q1⟦tau⟧ = r1 := rfl
+@[simp, grind =] lemma tau_r0 : r0⟦tau⟧ = q0 := rfl
+@[simp, grind =] lemma tau_r1 : r1⟦tau⟧ = q1 := rfl
+@[simp, grind =] lemma tau_s : s⟦tau⟧ = s := rfl
+@[simp, grind =] lemma tau_t : t⟦tau⟧ = t := rfl
+
+/-- Substituting `tau` exchanges `B` and `C` at every index. -/
+lemma B_C_subst_tau (n : ℕ) : (B n)⟦tau⟧ = C n ∧ (C n)⟦tau⟧ = B n :=
+  match n with
+  | 0 => by simp
+  | 1 => by simp
+  | n + 2 => by
+    obtain ⟨ihB1, ihC1⟩ := B_C_subst_tau (n + 1);
+    obtain ⟨ihB0, ihC0⟩ := B_C_subst_tau n;
+    constructor <;> simp_all
+
+@[simp] lemma B_subst_tau (n : ℕ) : (B n)⟦tau⟧ = C n := (B_C_subst_tau n).1
+@[simp] lemma C_subst_tau (n : ℕ) : (C n)⟦tau⟧ = B n := (B_C_subst_tau n).2
+
+lemma K_subst_tau (m : ℕ) : (K m)⟦tau⟧ = K2 m ⋏ K1 m ⋏ K4 m ⋏ K3 m := by
+  simp [K, K1, K2, K3, K4]
+
+lemma forces_K_subst_tau_iff {x : M.World} {m : ℕ} : x ⊩ (K m)⟦tau⟧ ↔ x ⊩ K m := by
+  rw [K_subst_tau];
+  simp only [K, forces_and];
+  tauto
+
+lemma D_subst_tau : D⟦tau⟧ = D := by simp [D]
+
 lemma forces_E_iff : x ⊩ E ↔ x ⊩ D ∧ x ⊩ ◇(A 0) ∧ x ⊩ K 0 := by
   simp only [E, forces_and]
 
-/-- Do not unfold `E` directly beyond this point; use this lemma instead. -/
 lemma forces_E_subst_shift : x ⊩ E⟦shift m⟧ ↔ x ⊩ D ∧ x ⊩ ◇(A m) ∧ x ⊩ K m := by
   simp [E, forces_and]
 
