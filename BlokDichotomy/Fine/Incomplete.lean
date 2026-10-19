@@ -159,7 +159,7 @@ lemma logicS4Fine_le_fineModel_logic : logicS4Fine ≤ fineModel.logic :=
 - [Fin74a, Lemma 2] -/
 lemma neg_ε_not_mem_logicS4Fine : ∼ε ∉ logicS4Fine := by
   by_contra h;
-  exact Model.validates_of_mem_logic (logicS4Fine_le_fineModel_logic h) (FinePoint.d 0)
+  exact Model.validates_of_mem_logic (logicS4Fine_le_fineModel_logic h) (fineFrame.World.d 0)
     fineModel.forces_ε_d0
 
 /-- `∼ε` lies in the logic of the frames validating Fine's logic.

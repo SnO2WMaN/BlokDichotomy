@@ -20,24 +20,24 @@ namespace `fineModel`, those about `fineFrame` with an arbitrary valuation in `f
 
 namespace fineModel
 
-open Fine FinePoint Model.World
+open Fine fineFrame Model.World
 
 /-- `β_2` is forced exactly at `b_2`. -/
-lemma forces_β₂_iff (w : FinePoint) : w ⊩[fineModel] β 2 ↔ w = .b 2 := by
+lemma forces_β₂_iff (w : fineFrame.World) : w ⊩[fineModel] β 2 ↔ w = .b 2 := by
   rw [β_add_two, forces_and, forces_and, forces_neg];
   simp only [Nat.zero_add, β_one, γ_zero, γ_one, forces_dia, forces_atom_3_iff, forces_atom_4_iff,
     forces_atom_5_iff, NotForces, fineFrame.rel_iff, exists_eq_right];
   cases w <;> simp <;> omega
 
 /-- `γ_2` is forced exactly at `c_2`. -/
-lemma forces_γ₂_iff (w : FinePoint) : w ⊩[fineModel] γ 2 ↔ w = .c 2 := by
+lemma forces_γ₂_iff (w : fineFrame.World) : w ⊩[fineModel] γ 2 ↔ w = .c 2 := by
   rw [γ_add_two, forces_and, forces_and, forces_neg];
   simp only [Nat.zero_add, β_zero, β_one, γ_one, forces_dia, forces_atom_2_iff, forces_atom_3_iff,
     forces_atom_5_iff, NotForces, fineFrame.rel_iff, exists_eq_right];
   cases w <;> simp <;> omega
 
 /-- `d_0` forces `δ`. -/
-lemma forces_δ_d0 : FinePoint.d 0 ⊩[fineModel] δ := by
+lemma forces_δ_d0 : World.d 0 ⊩[fineModel] δ := by
   rw [δ, forces_and, forces_and, forces_and, forces_box, forces_box, forces_box];
   and_intros;
   · rw [forces_or];
@@ -47,7 +47,7 @@ lemma forces_δ_d0 : FinePoint.d 0 ⊩[fineModel] δ := by
     rcases w with _ | _ | _ | k;
     iterate 3 simp [NotForces];
     simp only [NotForces, forces_atom_0_iff, forces_atom_1_iff, fineFrame.rel_iff,
-      ↓existsAndEq, R_d_d, true_and, FinePoint.d.injEq];
+      ↓existsAndEq, R_d_d, true_and, World.d.injEq];
     rcases Nat.mod_two_eq_zero_or_one k with hk | hk;
     · exact Or.inr ⟨by omega, k + 1, by omega, by omega⟩;
     · exact Or.inl (by omega);
@@ -56,7 +56,7 @@ lemma forces_δ_d0 : FinePoint.d 0 ⊩[fineModel] δ := by
     rcases w with _ | _ | _ | k;
     iterate 3 simp [NotForces];
     simp only [NotForces, forces_atom_0_iff, forces_atom_1_iff, fineFrame.rel_iff,
-      ↓existsAndEq, R_d_d, true_and, FinePoint.d.injEq];
+      ↓existsAndEq, R_d_d, true_and, World.d.injEq];
     rcases Nat.mod_two_eq_zero_or_one k with hk | hk;
     · exact Or.inl (by omega);
     · exact Or.inr ⟨by omega, k + 1, by omega, by omega⟩;
@@ -74,18 +74,18 @@ lemma forces_δ_d0 : FinePoint.d 0 ⊩[fineModel] δ := by
       omega
 
 /-- `α_0` is forced at `a_0`. -/
-lemma forces_α₀_a0 : FinePoint.a 0 ⊩[fineModel] α 0 := by
+lemma forces_α₀_a0 : World.a 0 ⊩[fineModel] α 0 := by
   rw [α, forces_and, forces_and, forces_and, forces_neg, forces_neg];
   simp only [Nat.zero_add, β_one, γ_one, forces_dia, forces_atom_3_iff, forces_atom_5_iff,
     forces_β₂_iff, forces_γ₂_iff, NotForces, fineFrame.rel_iff, exists_eq_right];
   simp
 
 /-- `◇(α_0)` is forced at `d_0`. -/
-lemma forces_dia_α₀_d0 : FinePoint.d 0 ⊩[fineModel] ◇(α 0) :=
+lemma forces_dia_α₀_d0 : World.d 0 ⊩[fineModel] ◇(α 0) :=
   forces_dia.mpr ⟨.a 0, by simp, forces_α₀_a0⟩
 
 /-- `d_0` forces `ι 0` (the block `ι₁ 0 ⋏ ι₂ 0 ⋏ ι₃ 0 ⋏ ι₄ 0`). -/
-lemma forces_ι₀_d0 : FinePoint.d 0 ⊩[fineModel] ι 0 := by
+lemma forces_ι₀_d0 : World.d 0 ⊩[fineModel] ι 0 := by
   rw [ι, forces_and, forces_and, forces_and];
   and_intros;
   · rw [ι₁, forces_box];
@@ -114,7 +114,7 @@ lemma forces_ι₀_d0 : FinePoint.d 0 ⊩[fineModel] ι 0 := by
     simp [forces_dia, NotForces]
 
 /-- `d_0` forces `ε`. -/
-lemma forces_ε_d0 : FinePoint.d 0 ⊩[fineModel] ε :=
+lemma forces_ε_d0 : World.d 0 ⊩[fineModel] ε :=
   forces_ε_iff.mpr ⟨forces_δ_d0, forces_dia_α₀_d0, forces_ι₀_d0⟩
 
 /-! ### `χ` is strongly valid in Fine's model -/
@@ -126,7 +126,7 @@ period (dividing) 2*: past some threshold `N`, `d_i ⊩ A` depends only on the p
 -/
 lemma d_eventually_period_two (A : Formula ℕ) :
     ∃ N : ℕ, ∀ i j : ℕ, N ≤ i → N ≤ j → i % 2 = j % 2 →
-      ((FinePoint.d i ⊩[fineModel] A) ↔ (FinePoint.d j ⊩[fineModel] A)) := by
+      ((World.d i ⊩[fineModel] A) ↔ (World.d j ⊩[fineModel] A)) := by
   induction A with
   | atom a =>
     use 0;
@@ -144,10 +144,10 @@ lemma d_eventually_period_two (A : Formula ℕ) :
     simp only [forces_imp, NotForces, hNA i j (by omega) (by omega) hij,
       hNB i j (by omega) (by omega) hij]
   | dia B ih =>
-    have hdia : ∀ i : ℕ, (FinePoint.d i ⊩[fineModel] ◇B) ↔
-        (∃ k, i ≤ k ∧ (FinePoint.d k ⊩[fineModel] B)) ∨
-        (∃ m, i ≤ m ∧ (FinePoint.a m ⊩[fineModel] B)) ∨
-        (∃ k, (FinePoint.b k ⊩[fineModel] B)) ∨ (∃ k, (FinePoint.c k ⊩[fineModel] B)) := by
+    have hdia : ∀ i : ℕ, (World.d i ⊩[fineModel] ◇B) ↔
+        (∃ k, i ≤ k ∧ (World.d k ⊩[fineModel] B)) ∨
+        (∃ m, i ≤ m ∧ (World.a m ⊩[fineModel] B)) ∨
+        (∃ k, (World.b k ⊩[fineModel] B)) ∨ (∃ k, (World.c k ⊩[fineModel] B)) := by
       intro i;
       rw [forces_dia];
       constructor;
@@ -158,12 +158,12 @@ lemma d_eventually_period_two (A : Formula ℕ) :
         | b k => exact Or.inr <| Or.inr <| Or.inl ⟨k, hyA⟩;
         | c k => exact Or.inr <| Or.inr <| Or.inr ⟨k, hyA⟩;
       · rintro (⟨k, hk, hA⟩ | ⟨m, hm, hA⟩ | ⟨k, hA⟩ | ⟨k, hA⟩);
-        · exact ⟨FinePoint.d k, hk, hA⟩;
-        · exact ⟨FinePoint.a m, hm, hA⟩;
-        · exact ⟨FinePoint.b k, trivial, hA⟩;
-        · exact ⟨FinePoint.c k, trivial, hA⟩;
-    obtain ⟨N1, hN1⟩ := exists_ge_eventually_const (fun k => FinePoint.d k ⊩[fineModel] B);
-    obtain ⟨N2, hN2⟩ := exists_ge_eventually_const (fun m => FinePoint.a m ⊩[fineModel] B);
+        · exact ⟨World.d k, hk, hA⟩;
+        · exact ⟨World.a m, hm, hA⟩;
+        · exact ⟨World.b k, trivial, hA⟩;
+        · exact ⟨World.c k, trivial, hA⟩;
+    obtain ⟨N1, hN1⟩ := exists_ge_eventually_const (fun k => World.d k ⊩[fineModel] B);
+    obtain ⟨N2, hN2⟩ := exists_ge_eventually_const (fun m => World.a m ⊩[fineModel] B);
     use max N1 N2;
     intro i j hi hj _;
     rw [hdia i, hdia j, hN1 i j (by omega) (by omega), hN2 i j (by omega) (by omega)]
@@ -186,7 +186,7 @@ lemma phase_zero (σ : Formula.Substitution ℕ ℕ) : phase σ 0 = (#6 : Formul
 /-- `d_eventually_period_two` for the three phases simultaneously. -/
 private lemma d_eventually_period_two_phase (σ : Formula.Substitution ℕ ℕ) :
     ∃ N : ℕ, ∀ r < 3, ∀ i j : ℕ, N ≤ i → N ≤ j → i % 2 = j % 2 →
-      (FinePoint.d i ⊩[fineModel] phase σ r ↔ FinePoint.d j ⊩[fineModel] phase σ r) := by
+      (World.d i ⊩[fineModel] phase σ r ↔ World.d j ⊩[fineModel] phase σ r) := by
   obtain ⟨N0, h0⟩ := d_eventually_period_two (phase σ 0);
   obtain ⟨N1, h1⟩ := d_eventually_period_two (phase σ 1);
   obtain ⟨N2, h2⟩ := d_eventually_period_two (phase σ 2);
@@ -199,7 +199,7 @@ private lemma d_eventually_period_two_phase (σ : Formula.Substitution ℕ ℕ) 
   · omega
 
 /-- No world forces two distinct phases (among residues `< 3`) at once. -/
-private lemma phase_incompatible {σ : Formula.Substitution ℕ ℕ} {w : FinePoint} {i j : ℕ}
+private lemma phase_incompatible {σ : Formula.Substitution ℕ ℕ} {w : fineFrame.World} {i j : ℕ}
     (hi3 : i < 3) (hj3 : j < 3) (hij : i ≠ j)
     (hi : w ⊩[fineModel] phase σ i) (hj : w ⊩[fineModel] phase σ j) : False := by
   have hi' : i = 0 ∨ i = 1 ∨ i = 2 := by omega;
@@ -213,7 +213,7 @@ private def Y (σ : Formula.Substitution ℕ ℕ) : ℕ → Formula ℕ
 | 1 => phase σ 1 ⋏ ◇(phase σ 2 ⋏ ◇(phase σ 0))
 | _ => phase σ 2 ⋏ ◇(phase σ 0)
 
-private lemma Y_imp_phase {σ : Formula.Substitution ℕ ℕ} {w : FinePoint} {r : ℕ}
+private lemma Y_imp_phase {σ : Formula.Substitution ℕ ℕ} {w : fineFrame.World} {r : ℕ}
     (h : w ⊩[fineModel] Y σ r) : w ⊩[fineModel] phase σ r := by
   rcases r with _ | _ | r;
   · exact h;
@@ -222,7 +222,7 @@ private lemma Y_imp_phase {σ : Formula.Substitution ℕ ℕ} {w : FinePoint} {r
 
 /-- One step of the phase chain: `χ`'s box hypothesis `hbox` at `x` produces, from `w` forcing
 `Y σ (m % 3)` (with `x ≺ w`), a strict successor `v` forcing `Y σ ((m + 1) % 3)`. -/
-private lemma Y_step {σ : Formula.Substitution ℕ ℕ} {x w : FinePoint}
+private lemma Y_step {σ : Formula.Substitution ℕ ℕ} {x w : fineFrame.World}
     (hbox : x ⊩[fineModel] □(phase σ 0 🡒 ◇(Y σ 1))) (m : ℕ)
     (hxw : R x w) (hw : w ⊩[fineModel] Y σ (m % 3)) :
     ∃ v, R w v ∧ ¬ R v w ∧ R x v ∧ v ⊩[fineModel] Y σ ((m + 1) % 3) := by
@@ -254,7 +254,7 @@ pairwise-incompatible phases `phase σ 0`, `phase σ 1`, `phase σ 2` in order.
 - [Fin74a, p.\ 28]
 -/
 lemma exists_phase_chain (h : ∃ σ x, x ⊮[fineModel] χ⟦σ⟧) :
-    ∃ (σ : Formula.Substitution ℕ ℕ) (u : ℕ → FinePoint),
+    ∃ (σ : Formula.Substitution ℕ ℕ) (u : ℕ → fineFrame.World),
       (∀ m, R (u m) (u (m + 1))) ∧ (∀ m, ¬ R (u (m + 1)) (u m)) ∧
       ∀ m, u m ⊩[fineModel] phase σ (m % 3) := by
   obtain ⟨σ, x, hx⟩ := h;
@@ -295,7 +295,7 @@ theorem χ_mem_logic : χ ∈ fineModel.logic := by
     simp at h₁ h₂;
     omega;
   obtain ⟨N, hN⟩ := d_eventually_period_two_phase σ;
-  have hphase' : ∀ i, FinePoint.d (k i) ⊩[fineModel] phase σ (i % 3) := by
+  have hphase' : ∀ i, World.d (k i) ⊩[fineModel] phase σ (i % 3) := by
     intro i;
     rw [← hk i];
     exact hphase i;
@@ -316,9 +316,9 @@ end fineModel
 
 namespace fineFrame
 
-open Fine FinePoint Model.World
+open Fine Model.World
 
-variable {V : FinePoint → ℕ → Prop} {x : FinePoint} {A : Formula ℕ}
+variable {V : fineFrame.World → ℕ → Prop} {x : fineFrame.World} {A : Formula ℕ}
 
 /-! ### The mirror valuation -/
 
@@ -342,7 +342,7 @@ lemma forces_swap_iff :
       · exact ih.mpr (by simpa using hy)
 
 /-- The valuation whose forcing relation is that of `V` seen through `swap` and `tau`. -/
-def mirrorVal (V : FinePoint → ℕ → Prop) : FinePoint → ℕ → Prop :=
+def mirrorVal (V : fineFrame.World → ℕ → Prop) : fineFrame.World → ℕ → Prop :=
   fun w a => swap w ⊩[⟨fineFrame, V⟩] tau a
 
 lemma forces_mirror :
