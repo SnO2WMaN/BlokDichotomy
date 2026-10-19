@@ -7,6 +7,7 @@ public import BlokDichotomy.Fine.ModelForcing
 
 Given any valuation and a point forcing `ε`, the point is some `d_m`, the "V-shape" below it is
 pinned (up to the `b`/`c` mirror `swap`) to an apex `a_n`, and `d_{n+1}` witnesses `ψ`.
+Everything here lives in the namespace `FineFrame`.
 
 ## References
 
@@ -16,7 +17,9 @@ pinned (up to the `b`/`c` mirror `swap`) to an apex `a_n`, and `d_{n+1}` witness
 
 @[expose] public section
 
-namespace Fine
+namespace FineFrame
+
+open Fine
 
 open Model.World
 
@@ -78,14 +81,14 @@ private lemma exists_rel_of_guard {y : World} {A B : Formula ℕ}
   · exact hz
 
 /-- `δ`'s two guard conjuncts drive an infinite, strictly ascending chain of points forced
-into the cone of `w`, alternating between `p0` and `p1`. -/
+into the cone of `w`, alternating between `#0` and `#1`. -/
 private lemma exists_p01_chain {w : World} (hD : w ⊩[⟨frame, V⟩] δ) :
     ∃ u : ℕ → World, u 0 = w ∧
       ∀ i, R (u i) (u (i + 1)) ∧ ¬ R (u (i + 1)) (u i) ∧
-        R w (u i) ∧ u i ⊩[⟨frame, V⟩] (p0 ⋎ p1) := by
+        R w (u i) ∧ u i ⊩[⟨frame, V⟩] (#0 ⋎ #1) := by
   obtain ⟨hp01, hbox₁, hbox₂, -⟩ := forces_δ_iff.mp hD;
-  have step : ∀ y : World, R w y → y ⊩[⟨frame, V⟩] (p0 ⋎ p1) →
-      ∃ v, R y v ∧ ¬ R v y ∧ R w v ∧ v ⊩[⟨frame, V⟩] (p0 ⋎ p1) := by
+  have step : ∀ y : World, R w y → y ⊩[⟨frame, V⟩] (#0 ⋎ #1) →
+      ∃ v, R y v ∧ ¬ R v y ∧ R w v ∧ v ⊩[⟨frame, V⟩] (#0 ⋎ #1) := by
     intro y hwy hy;
     rcases forces_or.mp hy with hy₀ | hy₁;
     · obtain ⟨z, hyz, hzy, hz⟩ := exists_rel_of_guard (forces_box.mp hbox₁ y hwy) hy₀;
@@ -93,7 +96,7 @@ private lemma exists_p01_chain {w : World} (hD : w ⊩[⟨frame, V⟩] δ) :
     · obtain ⟨z, hyz, hzy, hz⟩ := exists_rel_of_guard (forces_box.mp hbox₂ y hwy) hy₁;
       exact ⟨z, hyz, hzy, R_trans hwy hyz, forces_or.mpr (Or.inl hz)⟩;
   obtain ⟨u, hu₀, hu⟩ := exists_seq_of_forall_exists_rel (r := fun y v => R y v ∧ ¬ R v y)
-    (P := fun _ y => R w y ∧ y ⊩[⟨frame, V⟩] (p0 ⋎ p1)) ⟨R_refl w, hp01⟩ <| by
+    (P := fun _ y => R w y ∧ y ⊩[⟨frame, V⟩] (#0 ⋎ #1)) ⟨R_refl w, hp01⟩ <| by
       rintro - y ⟨hwy, hy⟩;
       obtain ⟨v, hyv, hvy, hwv, hv⟩ := step y hwy hy;
       exact ⟨v, ⟨hyv, hvy⟩, hwv, hv⟩;
@@ -109,11 +112,11 @@ lemma exists_d_of_forces_δ {w : World} (hD : w ⊩[⟨frame, V⟩] δ) : ∃ m,
   obtain ⟨m, hm⟩ := strict_chain_all_d (fun i => (hu i).1) (fun i => (hu i).2.1) 0;
   exact ⟨m, hu₀ ▸ hm⟩
 
-/-- A `d`-point forcing `δ` forces `p0 ⋎ p1` at every `d`-point at or above its index: the fourth
-conjunct of `δ` makes `∼(p0 ⋎ p1)` upward-closed, so `p0 ⋎ p1` is inherited downward from the
-strict `p0 ⋎ p1`-chain, which reaches every `d`-point index from above. -/
+/-- A `d`-point forcing `δ` forces `#0 ⋎ #1` at every `d`-point at or above its index: the fourth
+conjunct of `δ` makes `∼(#0 ⋎ #1)` upward-closed, so `#0 ⋎ #1` is inherited downward from the
+strict `#0 ⋎ #1`-chain, which reaches every `d`-point index from above. -/
 lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨frame, V⟩] δ) {k : ℕ} (hk : m ≤ k) :
-    World.d k ⊩[⟨frame, V⟩] p0 ⋎ p1 := by
+    World.d k ⊩[⟨frame, V⟩] #0 ⋎ #1 := by
   obtain ⟨u, hu₀, hu⟩ := exists_p01_chain hD;
   have hd : ∀ i, ∃ k, u i = World.d k := by
     intro i;
@@ -125,7 +128,7 @@ lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨frame, V⟩] δ) {k : ℕ} 
     have h := (hu i).2.1;
     rw [hkf i, hkf (i + 1)] at h;
     simpa using h;
-  have h₁ : World.d (kf k) ⊩[⟨frame, V⟩] p0 ⋎ p1 := by
+  have h₁ : World.d (kf k) ⊩[⟨frame, V⟩] #0 ⋎ #1 := by
     rw [← hkf k];
     exact (hu k).2.2.2;
   by_contra hcon;
@@ -189,10 +192,10 @@ lemma ShapeData.ι₄_at (y : World) (hy : R (World.d m) y) (h : y ⊩[⟨frame,
 lemma ShapeData.mirror : ShapeData m n (mirrorVal V) where
   hwδ := by simpa [forces_mirror, δ] using hs.hwδ
   hwι₀ := by rw [forces_mirror, forces_ι_subst_tau_iff]; exact hs.hwι₀
-  hbnβ₀ := by simpa [forces_mirror] using hs.hcnγ₀
-  hbn1β₁ := by simpa [forces_mirror] using hs.hcn1γ₁
-  hcnγ₀ := by simpa [forces_mirror] using hs.hbnβ₀
-  hcn1γ₁ := by simpa [forces_mirror] using hs.hbn1β₁
+  hbnβ₀ := by simpa [forces_mirror, mirrorVal] using hs.hcnγ₀
+  hbn1β₁ := by simpa [forces_mirror, mirrorVal] using hs.hcn1γ₁
+  hcnγ₀ := by simpa [forces_mirror, mirrorVal] using hs.hbnβ₀
+  hcn1γ₁ := by simpa [forces_mirror, mirrorVal] using hs.hbn1β₁
 
 /-! ### The `β`-side facts on the cone of `a_n` -/
 
@@ -325,7 +328,7 @@ lemma forces_γ₂_at : World.c (n + 2) ⊩[⟨frame, V⟩] γ 2 := by
 lemma eq_cn1_of_forces_γ₁ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨frame, V⟩] γ 1) :
     z = .c (n + 1) := by
   have := eq_bn1_of_forces_β₁ hs.mirror hmn (z := swap z) (by simpa using R_swap.mpr hRz)
-    (by simpa [forces_mirror] using h);
+    (by simpa [forces_mirror, mirrorVal] using h);
   simpa [swap_involutive.eq_iff] using this
 
 /-- On the cone of `d_{n+1}`, `γ 2` is forced only at `c_{n+2}`. -/
@@ -462,6 +465,6 @@ theorem validates_θ : frame ⊧ θ := by
       (by simpa using R_swap.mpr htv1);
     exact forces_swap_iff.mpr (by simpa using hF)
 
-end Fine
+end FineFrame
 
 end

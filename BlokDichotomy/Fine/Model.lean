@@ -7,9 +7,10 @@ public import Mathlib.Data.Set.Finite.Basic
 /-!
 # Fine's model
 
-The countermodel `𝔄` of [Fin74a] witnessing `∼ε ∉ Fine.logic`: a partial order on four families
+The countermodel `𝔄` of [Fin74a] witnessing `∼ε ∉ logicS4Fine`: a partial order on four families
 of points `a_m`, `b_m`, `c_m`, `d_m`, in which only `d`-points start infinite strict chains. The
 involution `swap` exchanging the `b`- and `c`-families is an automorphism of the underlying frame.
+Everything here lives in the namespace `FineFrame`.
 
 ## References
 
@@ -18,7 +19,9 @@ involution `swap` exchanging the `b`- and `c`-families is an automorphism of the
 
 @[expose] public section
 
-namespace Fine
+namespace FineFrame
+
+open Fine
 
 /-- The points of Fine's model.
 
@@ -82,7 +85,7 @@ abbrev frame : Frame World := ⟨R⟩
 
 /-- The valuation of Fine's model, reconstructed from [Fin74a]: `V(q₀) = {b₀}`, `V(q₁) = {b₁}`,
 `V(r₀) = {c₀}`, `V(r₁) = {c₁}`, `V(p₀) = {d_{2k} : k ≥ 0}`, `V(p₁) = {d_{2k+1} : k ≥ 0}`, and
-all other atoms are valuated `∅`. Atom indices follow `Fine.p0, .p1, .q0, .q1, .r0, .r1, .s, .t`
+all other atoms are valuated `∅`. Atom indices follow Fine's `p₀, p₁, q₀, q₁, r₀, r₁, s, t`
 (`#0`–`#7`). -/
 @[grind =]
 def val : World → ℕ → Prop
@@ -114,14 +117,14 @@ variable {V : World → ℕ → Prop}
 
 @[simp] lemma forces_atom_frame {w : World} {a : ℕ} : w ⊩[⟨frame, V⟩] #a ↔ V w a := Iff.rfl
 
-@[simp] lemma forces_p0_iff {w : World} : w ⊩[model] p0 ↔ ∃ k, w = .d k ∧ k % 2 = 0 := by
-  cases w <;> simp [p0];
-@[simp] lemma forces_p1_iff {w : World} : w ⊩[model] p1 ↔ ∃ k, w = .d k ∧ k % 2 = 1 := by
-  cases w <;> simp [p1];
-@[simp] lemma forces_q0_iff {w : World} : w ⊩[model] q0 ↔ w = .b 0 := by cases w <;> simp [q0];
-@[simp] lemma forces_q1_iff {w : World} : w ⊩[model] q1 ↔ w = .b 1 := by cases w <;> simp [q1];
-@[simp] lemma forces_r0_iff {w : World} : w ⊩[model] r0 ↔ w = .c 0 := by cases w <;> simp [r0];
-@[simp] lemma forces_r1_iff {w : World} : w ⊩[model] r1 ↔ w = .c 1 := by cases w <;> simp [r1];
+@[simp high] lemma forces_atom_0_iff {w : World} : w ⊩[model] #0 ↔ ∃ k, w = .d k ∧ k % 2 = 0 := by
+  cases w <;> simp
+@[simp high] lemma forces_atom_1_iff {w : World} : w ⊩[model] #1 ↔ ∃ k, w = .d k ∧ k % 2 = 1 := by
+  cases w <;> simp
+@[simp high] lemma forces_atom_2_iff {w : World} : w ⊩[model] #2 ↔ w = .b 0 := by cases w <;> simp
+@[simp high] lemma forces_atom_3_iff {w : World} : w ⊩[model] #3 ↔ w = .b 1 := by cases w <;> simp
+@[simp high] lemma forces_atom_4_iff {w : World} : w ⊩[model] #4 ↔ w = .c 0 := by cases w <;> simp
+@[simp high] lemma forces_atom_5_iff {w : World} : w ⊩[model] #5 ↔ w = .c 1 := by cases w <;> simp
 
 end
 
@@ -187,6 +190,6 @@ lemma swap_involutive : Function.Involutive swap := by intro x; cases x <;> rfl;
 /-- `R` does not distinguish the `b`- and `c`-families, only their indices. -/
 lemma R_swap {x y : World} : R (swap x) (swap y) ↔ R x y := by cases x <;> cases y <;> simp;
 
-end Fine
+end FineFrame
 
 end

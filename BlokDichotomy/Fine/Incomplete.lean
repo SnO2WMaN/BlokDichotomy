@@ -9,7 +9,8 @@ public import BlokDichotomy.Kripke.Degree
 
 Every frame validating Fine's logic validates `∼ε`, yet `∼ε` is not a theorem of Fine's logic:
 every formula of the logic is strongly valid in Fine's model, which forces `ε` at `d_0`. So there
-is a Kripke-incomplete normal extension of `𝐒𝟒`, and hence of `𝐊𝟒`.
+is a Kripke-incomplete normal extension of `𝐒𝟒`, and hence of `𝐊𝟒`. The model-independent
+steps live in the namespace `Fine`; the results about `logicS4Fine` are in the root namespace.
 
 ## References
 
@@ -30,7 +31,7 @@ section Chain
 variable {κ : Type*} {M : Model κ ℕ} [IsTrans κ M.Rel'] {x y : M.World} {m : ℕ}
 
 /-- `δ` persists to any successor that still forces `p₀ ⋎ p₁`. -/
-lemma forces_δ_of_rel (hD : x ⊩ δ) (Rxy : x ≺ y) (hp : y ⊩ p0 ⋎ p1) : y ⊩ δ := by
+lemma forces_δ_of_rel (hD : x ⊩ δ) (Rxy : x ≺ y) (hp : y ⊩ #0 ⋎ #1) : y ⊩ δ := by
   obtain ⟨-, h₁, h₂, h₃⟩ := forces_δ_iff.mp hD;
   rw [forces_δ_iff];
   and_intros;
@@ -59,7 +60,7 @@ section Psi
 
 variable {κ : Type*} {F : Frame κ} {u : ℕ → F.World}
 
-/-- The valuation along a chain `u`: `s` holds exactly at the points of index `3i`, `t` exactly at
+/-- The valuation along a chain `u`: `#6` holds exactly at the points of index `3i`, `#7` exactly at
 those of index `3i+1`; all other atoms are false.
 
 - [Fin74a] -/
@@ -68,16 +69,16 @@ def chainVal (u : ℕ → F.World) : F.World → ℕ → Prop
 | v, 7 => ∃ i, v = u (3 * i + 1)
 | _, _ => False
 
-lemma forces_s_iff (hinj : Function.Injective u) (n : ℕ) :
-    u n ⊩[⟨F, chainVal u⟩] s ↔ ∃ i, n = 3 * i := by
+lemma forces_chainVal_6_iff (hinj : Function.Injective u) (n : ℕ) :
+    u n ⊩[⟨F, chainVal u⟩] #6 ↔ ∃ i, n = 3 * i := by
   constructor;
   · rintro ⟨i, hi⟩;
     exact ⟨i, hinj hi⟩;
   · rintro ⟨i, rfl⟩;
     use i;
 
-lemma forces_t_iff (hinj : Function.Injective u) (n : ℕ) :
-    u n ⊩[⟨F, chainVal u⟩] t ↔ ∃ i, n = 3 * i + 1 := by
+lemma forces_chainVal_7_iff (hinj : Function.Injective u) (n : ℕ) :
+    u n ⊩[⟨F, chainVal u⟩] #7 ↔ ∃ i, n = 3 * i + 1 := by
   constructor;
   · rintro ⟨i, hi⟩;
     exact ⟨i, hinj hi⟩;
@@ -92,7 +93,7 @@ lemma chainVal_forces_neg_χ [IsTrans κ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
   unfold χ;
   rw [forces_neg, not_forces_neg, forces_and];
   and_intros;
-  · exact (forces_s_iff hinj 0).mpr ⟨0, rfl⟩;
+  · exact (forces_chainVal_6_iff hinj 0).mpr ⟨0, rfl⟩;
   · rw [forces_box];
     rintro y - ⟨i, rfl⟩;
     use u (3 * i + 1);
@@ -100,24 +101,28 @@ lemma chainVal_forces_neg_χ [IsTrans κ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
     · exact hlt <| by omega;
     · simp only [forces_and];
       and_intros;
-      · apply forces_s_iff hinj _ |>.not.mpr;
+      · apply forces_chainVal_6_iff hinj _ |>.not.mpr;
         omega;
-      · exact (forces_t_iff hinj (3 * i + 1)).mpr ⟨i, rfl⟩;
+      · exact (forces_chainVal_7_iff hinj (3 * i + 1)).mpr ⟨i, rfl⟩;
       · use u (3 * i + 2);
         constructor;
         · exact hlt <| by omega;
         · simp only [forces_and];
           and_intros;
-          · apply forces_s_iff hinj _ |>.not.mpr;
+          · apply forces_chainVal_6_iff hinj _ |>.not.mpr;
             omega;
-          · apply forces_t_iff hinj _ |>.not.mpr;
+          · apply forces_chainVal_7_iff hinj _ |>.not.mpr;
             omega;
           · use u (3 * (i + 1));
             constructor;
             · exact hlt <| by omega;
-            · exact (forces_s_iff hinj (3 * (i + 1))).mpr ⟨i + 1, rfl⟩;
+            · exact (forces_chainVal_6_iff hinj (3 * (i + 1))).mpr ⟨i + 1, rfl⟩;
 
 end Psi
+
+end Fine
+
+open Fine
 
 variable {κ : Type*} {F : Frame κ}
 
@@ -125,7 +130,7 @@ variable {κ : Type*} {F : Frame κ}
 
 - [Fin74a, Lemma 1]
 - [Lit04, p. 332] -/
-theorem validates_neg_ε_of_validates (hL : F ⊧ logic) : F ⊧ ∼ε := by
+theorem validates_neg_ε_of_validates_logicS4Fine (hL : F ⊧ logicS4Fine) : F ⊧ ∼ε := by
   obtain ⟨_, _⟩ :=
     Frame.validates_logicS4_iff.mp fun A h => hL A <| NormalLogic.mem_add_of_mem h;
   intro V x hxE;
@@ -143,34 +148,33 @@ theorem validates_neg_ε_of_validates (hL : F ⊧ logic) : F ⊧ ∼ε := by
 /-- Every theorem of Fine's logic is strongly valid in Fine's model.
 
 - [Fin74a, Lemma 2] -/
-lemma logic_le_model_logic : logic ≤ model.logic :=
+lemma logicS4Fine_le_model_logic : logicS4Fine ≤ FineFrame.model.logic :=
   NormalLogic.add_le (fun _ h => Frame.logic_le_model_logic <| Frame.validates_logicS4 _ h) <| by
     rintro _ (rfl | rfl);
-    · exact Frame.logic_le_model_logic validates_θ;
-    · exact χ_mem_model_logic
+    · exact Frame.logic_le_model_logic FineFrame.validates_θ;
+    · exact FineFrame.χ_mem_model_logic
 
 /-- `∼ε` is not a theorem of Fine's logic.
 
 - [Fin74a, Lemma 2] -/
-lemma neg_ε_not_mem : ∼ε ∉ logic := by
+lemma neg_ε_not_mem_logicS4Fine : ∼ε ∉ logicS4Fine := by
   by_contra h;
-  exact Model.validates_of_mem_logic (logic_le_model_logic h) (World.d 0) forces_ε_d0
+  exact Model.validates_of_mem_logic (logicS4Fine_le_model_logic h) (FineFrame.World.d 0)
+    FineFrame.forces_ε_d0
 
 /-- `∼ε` lies in the logic of the frames validating Fine's logic.
 
 - [Fin74a, Lemma 1] -/
-lemma neg_ε_mem_frameLogic : ∼ε ∈ logic.frameLogic.{u} fun _ _ => True :=
-  fun _ _ _ hL => validates_neg_ε_of_validates hL
+lemma neg_ε_mem_frameLogic_logicS4Fine : ∼ε ∈ logicS4Fine.frameLogic.{u} fun _ _ => True :=
+  fun _ _ _ hL => validates_neg_ε_of_validates_logicS4Fine hL
 
 /-- Fine's logic, a normal extension of `𝐒𝟒` and so of `𝐊𝟒`, is Kripke-incomplete: `∼ε` is
 valid in every frame validating the logic, yet `∼ε` is not a theorem of it.
 
 - [Fin74a]
 - [Lit04, p. 332] -/
-theorem not_kripkeComplete : ¬logic.KripkeComplete.{u} fun _ _ => True := by
+theorem not_kripkeComplete_logicS4Fine : ¬logicS4Fine.KripkeComplete.{u} fun _ _ => True := by
   by_contra h;
-  exact neg_ε_not_mem <| h neg_ε_mem_frameLogic
-
-end Fine
+  exact neg_ε_not_mem_logicS4Fine <| h neg_ε_mem_frameLogic_logicS4Fine
 
 end

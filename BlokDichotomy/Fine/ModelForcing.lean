@@ -7,7 +7,8 @@ public import BlokDichotomy.Fine.Model
 
 Fine's model forces `ε` at `d_0`, and `χ` is strongly valid in it. The mirror valuation `mirrorVal`,
 built from the `b`/`c` involution `swap` and the atom substitution `tau`, transports every
-`β`-side lemma about a valuation to its `γ`-side twin.
+`β`-side lemma about a valuation to its `γ`-side twin. Everything here lives in the namespace
+`FineFrame`.
 
 ## References
 
@@ -17,22 +18,24 @@ built from the `b`/`c` involution `swap` and the atom substitution `tau`, transp
 
 @[expose] public section
 
-namespace Fine
+namespace FineFrame
+
+open Fine
 
 open Model.World
 
 /-- `β_2` is forced exactly at `b_2`. -/
 lemma forces_β₂_iff (w : World) : w ⊩[model] β 2 ↔ w = .b 2 := by
   rw [β_add_two, forces_and, forces_and, forces_neg];
-  simp only [Nat.zero_add, β_one, γ_zero, γ_one, forces_dia, forces_q1_iff, forces_r0_iff,
-    forces_r1_iff, NotForces, rel_frame, exists_eq_right];
+  simp only [Nat.zero_add, β_one, γ_zero, γ_one, forces_dia, forces_atom_3_iff, forces_atom_4_iff,
+    forces_atom_5_iff, NotForces, rel_frame, exists_eq_right];
   cases w <;> simp <;> omega
 
 /-- `γ_2` is forced exactly at `c_2`. -/
 lemma forces_γ₂_iff (w : World) : w ⊩[model] γ 2 ↔ w = .c 2 := by
   rw [γ_add_two, forces_and, forces_and, forces_neg];
-  simp only [Nat.zero_add, β_zero, β_one, γ_one, forces_dia, forces_q0_iff, forces_q1_iff,
-    forces_r1_iff, NotForces, rel_frame, exists_eq_right];
+  simp only [Nat.zero_add, β_zero, β_one, γ_one, forces_dia, forces_atom_2_iff, forces_atom_3_iff,
+    forces_atom_5_iff, NotForces, rel_frame, exists_eq_right];
   cases w <;> simp <;> omega
 
 /-- `d_0` forces `δ`. -/
@@ -45,8 +48,8 @@ lemma forces_δ_d0 : World.d 0 ⊩[model] δ := by
     rw [forces_imp, forces_and, forces_neg, forces_dia];
     rcases w with _ | _ | _ | k;
     iterate 3 simp [NotForces];
-    simp only [NotForces, forces_p0_iff, forces_p1_iff, rel_frame, ↓existsAndEq, R_d_d, true_and,
-      World.d.injEq];
+    simp only [NotForces, forces_atom_0_iff, forces_atom_1_iff, rel_frame, ↓existsAndEq, R_d_d,
+      true_and, World.d.injEq];
     rcases Nat.mod_two_eq_zero_or_one k with hk | hk;
     · exact Or.inr ⟨by omega, k + 1, by omega, by omega⟩;
     · exact Or.inl (by omega);
@@ -54,8 +57,8 @@ lemma forces_δ_d0 : World.d 0 ⊩[model] δ := by
     rw [forces_imp, forces_and, forces_neg, forces_dia];
     rcases w with _ | _ | _ | k;
     iterate 3 simp [NotForces];
-    simp only [NotForces, forces_p0_iff, forces_p1_iff, rel_frame, ↓existsAndEq, R_d_d, true_and,
-      World.d.injEq];
+    simp only [NotForces, forces_atom_0_iff, forces_atom_1_iff, rel_frame, ↓existsAndEq, R_d_d,
+      true_and, World.d.injEq];
     rcases Nat.mod_two_eq_zero_or_one k with hk | hk;
     · exact Or.inl (by omega);
     · exact Or.inr ⟨by omega, k + 1, by omega, by omega⟩;
@@ -75,7 +78,7 @@ lemma forces_δ_d0 : World.d 0 ⊩[model] δ := by
 /-- `α_0` is forced at `a_0`. -/
 lemma forces_α₀_a0 : World.a 0 ⊩[model] α 0 := by
   rw [α, forces_and, forces_and, forces_and, forces_neg, forces_neg];
-  simp only [Nat.zero_add, β_one, γ_one, forces_dia, forces_q1_iff, forces_r1_iff,
+  simp only [Nat.zero_add, β_one, γ_one, forces_dia, forces_atom_3_iff, forces_atom_5_iff,
     forces_β₂_iff, forces_γ₂_iff, NotForces, rel_frame, exists_eq_right];
   simp
 
@@ -89,25 +92,25 @@ lemma forces_ι₀_d0 : World.d 0 ⊩[model] ι 0 := by
   and_intros;
   · rw [ι₁, forces_box];
     rintro y - hy;
-    simp only [Nat.zero_add, β_one, forces_q1_iff] at hy;
+    simp only [Nat.zero_add, β_one, forces_atom_3_iff] at hy;
     subst hy;
     rw [forces_and, forces_neg];
     simp [forces_dia, NotForces];
   · rw [ι₂, forces_box];
     rintro y - hy;
-    simp only [Nat.zero_add, γ_one, forces_r1_iff] at hy;
+    simp only [Nat.zero_add, γ_one, forces_atom_5_iff] at hy;
     subst hy;
     rw [forces_and, forces_neg];
     simp [forces_dia, NotForces];
   · rw [ι₃, forces_box];
     rintro y - hy;
-    simp only [β_zero, forces_q0_iff] at hy;
+    simp only [β_zero, forces_atom_2_iff] at hy;
     subst hy;
     rw [forces_neg];
     simp [forces_dia, NotForces];
   · rw [ι₄, forces_box];
     rintro y - hy;
-    simp only [γ_zero, forces_r0_iff] at hy;
+    simp only [γ_zero, forces_atom_4_iff] at hy;
     subst hy;
     rw [forces_neg];
     simp [forces_dia, NotForces]
@@ -170,15 +173,16 @@ lemma d_eventually_period_two (A : Formula ℕ) :
 substitution `σ`. -/
 def phase (σ : Formula.Substitution ℕ ℕ) (r : ℕ) : Formula ℕ :=
   match r with
-  | 0 => s⟦σ⟧
-  | 1 => ∼(s⟦σ⟧) ⋏ t⟦σ⟧
-  | _ => ∼(s⟦σ⟧) ⋏ ∼(t⟦σ⟧)
+  | 0 => (#6 : Formula ℕ)⟦σ⟧
+  | 1 => ∼((#6 : Formula ℕ)⟦σ⟧) ⋏ (#7 : Formula ℕ)⟦σ⟧
+  | _ => ∼((#6 : Formula ℕ)⟦σ⟧) ⋏ ∼((#7 : Formula ℕ)⟦σ⟧)
 
-@[simp, grind =] lemma phase_zero (σ : Formula.Substitution ℕ ℕ) : phase σ 0 = s⟦σ⟧ := rfl
+@[simp, grind =]
+lemma phase_zero (σ : Formula.Substitution ℕ ℕ) : phase σ 0 = (#6 : Formula ℕ)⟦σ⟧ := rfl
 @[simp, grind =] lemma phase_one (σ : Formula.Substitution ℕ ℕ) :
-    phase σ 1 = ∼(s⟦σ⟧) ⋏ t⟦σ⟧ := rfl
+    phase σ 1 = ∼((#6 : Formula ℕ)⟦σ⟧) ⋏ (#7 : Formula ℕ)⟦σ⟧ := rfl
 @[simp, grind =] lemma phase_add_two (σ : Formula.Substitution ℕ ℕ) (r : ℕ) :
-    phase σ (r + 2) = ∼(s⟦σ⟧) ⋏ ∼(t⟦σ⟧) := rfl
+    phase σ (r + 2) = ∼((#6 : Formula ℕ)⟦σ⟧) ⋏ ∼((#7 : Formula ℕ)⟦σ⟧) := rfl
 
 /-- `d_eventually_period_two` for the three phases simultaneously. -/
 private lemma d_eventually_period_two_phase (σ : Formula.Substitution ℕ ℕ) :
@@ -339,6 +343,6 @@ lemma forces_mirror {V : World → ℕ → Prop} {x : World} {A : Formula ℕ} :
   rw [forces_subst, forces_swap_iff (x := swap x), swap_swap];
   exact Iff.rfl
 
-end Fine
+end FineFrame
 
 end
