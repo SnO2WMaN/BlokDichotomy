@@ -19,11 +19,9 @@ The normal extension `𝐒𝟒 ⊕ θ ⊕ χ` of `𝐒𝟒` (`logicS4Fine`), its
 
 @[expose] public section
 
-/-! ### The formulas -/
-
 namespace Fine
 
-open Formula
+open Formula Model.World
 
 mutual
 
@@ -103,29 +101,9 @@ def θ : Formula ℕ := ε 🡒 ψ
 - [Fin74a] -/
 def χ : Formula ℕ := ∼(#6 ⋏ □(#6 🡒 ◇((∼#6 ⋏ #7) ⋏ ◇((∼#6 ⋏ ∼#7) ⋏ ◇#6))))
 
-end Fine
 
-/-! ### The logic -/
-
-open Fine in
-/-- Fine's logic `𝐒𝟒 ⊕ θ ⊕ χ`.
-
-- [Fin74a]
-- [Ger75, §4]
-- [Lit04, p. 332] -/
-abbrev logicS4Fine : NormalLogic ℕ := (𝐒𝟒 : NormalLogic ℕ) + ({θ, χ} : FormulaSet ℕ)
-
-namespace Fine
-
-open Formula
-
-/-! ### The `ι`-block climbs one level along the accessibility relation -/
-
-section Climb
-
-open Model.World
-
-variable {κ : Type*} {M : Model κ ℕ} {x y : M.World} {m n : ℕ}
+variable {κ : Type*} {M : Model κ ℕ} {x y : M.World} {m n : ℕ} {F : Frame κ}
+  {u : ℕ → F.World}
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
@@ -134,54 +112,6 @@ lemma forces_ι₁_succ : x ⊩ ι₁ (m + 1) := by grind [ι₁]
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
 lemma forces_ι₂_succ : x ⊩ ι₂ (m + 1) := by grind [ι₂]
-
-section
-
-variable [IsTrans κ M.Rel']
-
-/-- - [Ger75, Claim 2]
-- [Lit04, Lemma 2.2] -/
-lemma forces_ι₃_succ_of_ι₁ (h1 : x ⊩ ι₁ m) (Rxy : x ≺ y) : y ⊩ ι₃ (m + 1) := by
-  rw [ι₃, forces_box];
-  rintro z Ryz hz ⟨w, Rzw, hw⟩;
-  rw [ι₁, forces_box] at h1;
-  rw [β_add_two, forces_and, forces_and] at hw;
-  exact (forces_and.mp <| h1 z (Frame.rel_trans Rxy Ryz) hz).2 <| forces_dia_of_rel hw.2.1 Rzw
-
-/-- - [Ger75, Claim 2]
-- [Lit04, Lemma 2.2] -/
-lemma forces_ι₄_succ_of_ι₂ (h2 : x ⊩ ι₂ m) (Rxy : x ≺ y) : y ⊩ ι₄ (m + 1) := by
-  rw [ι₄, forces_box];
-  rintro z Ryz hz ⟨w, Rzw, hw⟩;
-  rw [ι₂, forces_box] at h2;
-  rw [γ_add_two, forces_and, forces_and] at hw;
-  exact (forces_and.mp <| h2 z (Frame.rel_trans Rxy Ryz) hz).2 <| forces_dia_of_rel hw.2.1 Rzw
-
-/-- - [Ger75, Claim 2]
-- [Lit04, Lemma 2.2] -/
-lemma forces_ι_succ (hK : x ⊩ ι m) (Rxy : x ≺ y) : y ⊩ ι (m + 1) := by
-  simp only [ι, forces_and] at hK ⊢;
-  exact ⟨forces_ι₁_succ, forces_ι₂_succ, forces_ι₃_succ_of_ι₁ hK.1 Rxy,
-    forces_ι₄_succ_of_ι₂ hK.2.1 Rxy⟩
-
-variable [Std.Refl M.Rel']
-
-/-- - [Ger75, Claim 2]
-- [Lit04, Lemma 2.2] -/
-lemma forces_ι_succ' (hK : x ⊩ ι m) : x ⊩ ι (m + 1) := forces_ι_succ hK <| Frame.rel_refl x
-
-/-- - [Ger75, Claim 2]
-- [Lit04, Lemma 2.2] -/
-theorem forces_ι_mono (hnm : n ≤ m) (hK : x ⊩ ι n) : x ⊩ ι m := by
-  induction m, hnm using Nat.le_induction with
-  | base => exact hK
-  | succ m _ ih => exact forces_ι_succ' ih
-
-end
-
-end Climb
-
-/-! ### The shift substitution `σ_m` -/
 
 /-- The substitution `σ_m`, sending `q₀, q₁, r₀, r₁` to `β m, β (m + 1), γ m, γ (m + 1)`.
 
@@ -245,8 +175,6 @@ lemma ι₄_subst_shift (m n : ℕ) : (ι₄ n)⟦shift m⟧ = ι₄ (m + n) := 
 lemma ι_subst_shift (m n : ℕ) : (ι n)⟦shift m⟧ = ι (m + n) := by
   simp [ι]
 
-/-! ### The mirror substitution `tau` -/
-
 /-- The substitution exchanging the atoms of `β` and `γ`. -/
 def tau : Substitution ℕ ℕ
 | 2 => #4
@@ -280,14 +208,6 @@ lemma β_γ_subst_tau (n : ℕ) : (β n)⟦tau⟧ = γ n ∧ (γ n)⟦tau⟧ = �
 lemma ι_subst_tau (m : ℕ) : (ι m)⟦tau⟧ = ι₂ m ⋏ ι₁ m ⋏ ι₄ m ⋏ ι₃ m := by
   simp [ι, ι₁, ι₂, ι₃, ι₄]
 
-/-! ### Unfolding the forcing of the formulas -/
-
-section Forces
-
-open Model.World
-
-variable {κ : Type*} {M : Model κ ℕ} {x : M.World} {m : ℕ}
-
 lemma forces_ι_subst_tau_iff : x ⊩ (ι m)⟦tau⟧ ↔ x ⊩ ι m := by
   rw [ι_subst_tau];
   simp only [ι, forces_and];
@@ -314,13 +234,138 @@ lemma forces_ψ_subst_shift :
     x ⊩ ψ⟦shift m⟧ ↔ ∃ y, x ≺ y ∧ y ⊩ #0 ⋎ #1 ∧ y ⊩ ∼◇(α m) ∧ y ⊩ ◇(α (m + 1)) := by
   simp [ψ, forces_dia, forces_and]
 
-end Forces
+section
+
+variable [IsTrans κ M.Rel']
+
+/-- - [Ger75, Claim 2]
+- [Lit04, Lemma 2.2] -/
+lemma forces_ι₃_succ_of_ι₁ (h1 : x ⊩ ι₁ m) (Rxy : x ≺ y) : y ⊩ ι₃ (m + 1) := by
+  rw [ι₃, forces_box];
+  rintro z Ryz hz ⟨w, Rzw, hw⟩;
+  rw [ι₁, forces_box] at h1;
+  rw [β_add_two, forces_and, forces_and] at hw;
+  exact (forces_and.mp <| h1 z (Frame.rel_trans Rxy Ryz) hz).2 <| forces_dia_of_rel hw.2.1 Rzw
+
+/-- - [Ger75, Claim 2]
+- [Lit04, Lemma 2.2] -/
+lemma forces_ι₄_succ_of_ι₂ (h2 : x ⊩ ι₂ m) (Rxy : x ≺ y) : y ⊩ ι₄ (m + 1) := by
+  rw [ι₄, forces_box];
+  rintro z Ryz hz ⟨w, Rzw, hw⟩;
+  rw [ι₂, forces_box] at h2;
+  rw [γ_add_two, forces_and, forces_and] at hw;
+  exact (forces_and.mp <| h2 z (Frame.rel_trans Rxy Ryz) hz).2 <| forces_dia_of_rel hw.2.1 Rzw
+
+/-- - [Ger75, Claim 2]
+- [Lit04, Lemma 2.2] -/
+lemma forces_ι_succ (hK : x ⊩ ι m) (Rxy : x ≺ y) : y ⊩ ι (m + 1) := by
+  simp only [ι, forces_and] at hK ⊢;
+  exact ⟨forces_ι₁_succ, forces_ι₂_succ, forces_ι₃_succ_of_ι₁ hK.1 Rxy,
+    forces_ι₄_succ_of_ι₂ hK.2.1 Rxy⟩
+
+lemma forces_δ_of_rel (hD : x ⊩ δ) (Rxy : x ≺ y) (hp : y ⊩ #0 ⋎ #1) : y ⊩ δ := by
+  obtain ⟨-, h₁, h₂, h₃⟩ := forces_δ_iff.mp hD;
+  rw [forces_δ_iff];
+  and_intros;
+  · exact hp;
+  · exact forces_box_of_rel h₁ Rxy;
+  · exact forces_box_of_rel h₂ Rxy;
+  · exact forces_box_of_rel h₃ Rxy
+
+/-- If `θ` is strongly valid and `x` forces `ε⟦σ_m⟧`, a strict successor forces `ε⟦σ_{m+1}⟧`.
+
+- [Fin74a, (3)] -/
+lemma chain_step (hG : θ ∈ M.logic) (hx : x ⊩ ε⟦shift m⟧) :
+    ∃ y : M.World, x ≺ y ∧ y ⊀ x ∧ y ⊩ ε⟦shift (m + 1)⟧ := by
+  obtain ⟨y, Rxy, hy01, hyA, hyA'⟩ := forces_ψ_subst_shift.mp <| hG (shift m) x hx;
+  obtain ⟨hD, hAm, hK⟩ := forces_ε_subst_shift.mp hx;
+  have hstrict : y ⊀ x := by
+    by_contra Ryx;
+    exact hyA <| forces_dia_of_rel hAm Ryx;
+  exact ⟨y, Rxy, hstrict,
+    forces_ε_subst_shift.mpr ⟨forces_δ_of_rel hD Rxy hy01, hyA', forces_ι_succ hK Rxy⟩⟩
+
+variable [Std.Refl M.Rel']
+
+/-- - [Ger75, Claim 2]
+- [Lit04, Lemma 2.2] -/
+lemma forces_ι_succ' (hK : x ⊩ ι m) : x ⊩ ι (m + 1) := forces_ι_succ hK <| Frame.rel_refl x
+
+/-- - [Ger75, Claim 2]
+- [Lit04, Lemma 2.2] -/
+theorem forces_ι_mono (hnm : n ≤ m) (hK : x ⊩ ι n) : x ⊩ ι m := by
+  induction m, hnm using Nat.le_induction with
+  | base => exact hK
+  | succ m _ ih => exact forces_ι_succ' ih
+
+end
+
+/-- The valuation making `#6` true at `u (3i)` and `#7` at `u (3i + 1)`.
+
+- [Fin74a] -/
+def chainVal (u : ℕ → F.World) : F.World → ℕ → Prop
+| v, 6 => ∃ i, v = u (3 * i)
+| v, 7 => ∃ i, v = u (3 * i + 1)
+| _, _ => False
+
+lemma forces_chainVal_6_iff (hinj : Function.Injective u) (n : ℕ) :
+    u n ⊩[⟨F, chainVal u⟩] #6 ↔ ∃ i, n = 3 * i := by
+  constructor;
+  · rintro ⟨i, hi⟩;
+    exact ⟨i, hinj hi⟩;
+  · rintro ⟨i, rfl⟩;
+    use i;
+
+lemma forces_chainVal_7_iff (hinj : Function.Injective u) (n : ℕ) :
+    u n ⊩[⟨F, chainVal u⟩] #7 ↔ ∃ i, n = 3 * i + 1 := by
+  constructor;
+  · rintro ⟨i, hi⟩;
+    exact ⟨i, hinj hi⟩;
+  · rintro ⟨i, rfl⟩;
+    use i;
+
+lemma chainVal_forces_neg_χ [IsTrans κ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
+    (hinj : Function.Injective u) : u 0 ⊩[⟨F, chainVal u⟩] ∼χ := by
+  have hlt : ∀ {i j}, i < j → u i ≺ u j := fun h => Nat.rel_of_forall_rel_succ_of_lt F.Rel' hR h;
+  unfold χ;
+  rw [forces_neg, not_forces_neg, forces_and];
+  and_intros;
+  · exact (forces_chainVal_6_iff hinj 0).mpr ⟨0, rfl⟩;
+  · rw [forces_box];
+    rintro y - ⟨i, rfl⟩;
+    use u (3 * i + 1);
+    constructor;
+    · exact hlt <| by omega;
+    · simp only [forces_and];
+      and_intros;
+      · apply forces_chainVal_6_iff hinj _ |>.not.mpr;
+        omega;
+      · exact (forces_chainVal_7_iff hinj (3 * i + 1)).mpr ⟨i, rfl⟩;
+      · use u (3 * i + 2);
+        constructor;
+        · exact hlt <| by omega;
+        · simp only [forces_and];
+          and_intros;
+          · apply forces_chainVal_6_iff hinj _ |>.not.mpr;
+            omega;
+          · apply forces_chainVal_7_iff hinj _ |>.not.mpr;
+            omega;
+          · use u (3 * (i + 1));
+            constructor;
+            · exact hlt <| by omega;
+            · exact (forces_chainVal_6_iff hinj (3 * (i + 1))).mpr ⟨i + 1, rfl⟩;
 
 end Fine
 
-/-! ### The countermodel -/
+universe u
 
-section Countermodel
+open Fine in
+/-- Fine's logic `𝐒𝟒 ⊕ θ ⊕ χ`.
+
+- [Fin74a]
+- [Ger75, §4]
+- [Lit04, p. 332] -/
+abbrev logicS4Fine : NormalLogic ℕ := (𝐒𝟒 : NormalLogic ℕ) + ({θ, χ} : FormulaSet ℕ)
 
 /-- Fine's frame, on the points `(0, m) = a_m`, `(1, m) = b_m`, `(2, m) = c_m` and
 `(3, m) = d_m`.
@@ -343,6 +388,10 @@ abbrev fineFrame : Frame (Fin 4 × ℕ) where
 
 namespace fineFrame
 
+open Fine Model.World
+
+variable {x y z : fineFrame.World} {m k n : ℕ} {V : fineFrame.World → ℕ → Prop}
+
 /-- The four families of points of Fine's model.
 
 - [Fin74a, p. 25] -/
@@ -362,18 +411,6 @@ theorem casesOn {P : fineFrame.World → Prop} (x : fineFrame.World) (a : ∀ m,
   · exact c m
   · exact d m
   · omega
-
-end fineFrame
-
-/-! ### The accessibility relation -/
-
-namespace fineFrame
-
-open Fine
-
-section Rel
-
-variable {x y z : fineFrame.World} {m k n : ℕ}
 
 @[simp] lemma not_rel_iff : x ⊀ y ↔ ¬ x ≺ y := Iff.rfl
 
@@ -404,8 +441,6 @@ instance : IsTrans fineFrame.World fineFrame.Rel' where
 
 lemma rel_antisymm (hxy : x ≺ y) (hyx : y ≺ x) : x = y := by
   cases x using casesOn <;> cases y using casesOn <;> simp_all <;> omega
-
-end Rel
 
 /-- The cone above a point other than a `d`-point is finite. -/
 lemma cone_finite {w : fineFrame.World} (hw : ∀ k, w ≠ d k) : {z | w ≺ z}.Finite := by
@@ -468,6 +503,8 @@ lemma swap_involutive : Function.Involutive swap := by
 lemma rel_swap {x y : fineFrame.World} : (swap x ≺ swap y) ↔ x ≺ y := by
   cases x using casesOn <;> cases y using casesOn <;> simp
 
+@[simp] lemma forces_atom {n : ℕ} : x ⊩[⟨fineFrame, V⟩] #n ↔ V x n := Iff.rfl
+
 end fineFrame
 
 namespace fineModel
@@ -503,19 +540,9 @@ end fineModel
 - [Fin74a, p. 25] -/
 abbrev fineModel : Model fineFrame.World ℕ := ⟨fineFrame, fineModel.val⟩
 
-namespace fineFrame
-
-open Fine fineFrame
-
-variable {V : fineFrame.World → ℕ → Prop} {x y : fineFrame.World}
-
-@[simp] lemma forces_atom {n : ℕ} : x ⊩[⟨fineFrame, V⟩] #n ↔ V x n := Iff.rfl
-
-end fineFrame
-
 namespace fineModel
 
-open Fine fineFrame
+open Fine fineFrame Model.World
 
 variable {x : fineFrame.World}
 
@@ -531,14 +558,6 @@ variable {x : fineFrame.World}
   cases x using casesOn <;> simp
 @[simp high] lemma forces_atom_5_iff : x ⊩[fineModel] #5 ↔ x = c 1 := by
   cases x using casesOn <;> simp
-
-end fineModel
-
-/-! ### Forcing in the countermodel -/
-
-namespace fineModel
-
-open Fine fineFrame Model.World
 
 /-- `β_2` is forced exactly at `b_2`. -/
 lemma forces_β₂_iff (w : fineFrame.World) : w ⊩[fineModel] β 2 ↔ w = b 2 := by
@@ -637,8 +656,6 @@ lemma forces_ι₀_d0 : d 0 ⊩[fineModel] ι 0 := by
 /-- `d_0` forces `ε`. -/
 lemma forces_ε_d0 : d 0 ⊩[fineModel] ε :=
   forces_ε_iff.mpr ⟨forces_δ_d0, forces_dia_α₀_d0, forces_ι₀_d0⟩
-
-/-! ### `χ` is strongly valid in Fine's model -/
 
 /-- Past some threshold, the truth of `A` at `d_i` depends only on the parity of `i`.
 
@@ -826,9 +843,8 @@ namespace fineFrame
 
 open Fine Model.World
 
-variable {V : fineFrame.World → ℕ → Prop} {x : fineFrame.World} {A : Formula ℕ}
-
-/-! ### The mirror valuation -/
+variable {V : fineFrame.World → ℕ → Prop} {w x y z : fineFrame.World} {A B : Formula ℕ}
+  {m n : ℕ}
 
 lemma forces_swap_iff :
     x ⊩[⟨fineFrame, V⟩] A ↔ swap x ⊩[⟨fineFrame, V ∘ swap⟩] A := by
@@ -855,18 +871,6 @@ lemma forces_mirror :
     x ⊩[⟨fineFrame, mirrorVal V⟩] A ↔ swap x ⊩[⟨fineFrame, V⟩] A⟦tau⟧ := by
   rw [forces_subst, forces_swap_iff (x := swap x), swap_swap];
   exact Iff.rfl
-
-end fineFrame
-
-namespace fineFrame
-
-open Fine Model.World
-
-section Extraction
-
-variable {V : fineFrame.World → ℕ → Prop} {w x y : fineFrame.World} {A B : Formula ℕ}
-
-/-! ### The V-shape extracted from `w ⊩ ε` -/
 
 /-- The `V`-shape below a point forcing `ε`. -/
 lemma exists_V_shape (hE : w ⊩[⟨fineFrame, V⟩] ε) :
@@ -904,8 +908,6 @@ lemma exists_V_shape (hE : w ⊩[⟨fineFrame, V⟩] ε) :
 private lemma false_of_neg_dia (hn : x ⊩[⟨fineFrame, V⟩] ∼◇A)
     (hxy : x ≺ y) (hy : y ⊩[⟨fineFrame, V⟩] A) : False :=
   forces_neg.mp hn (forces_dia.mpr ⟨y, hxy, hy⟩)
-
-/-! ### Confinement of forced points to `d`-points -/
 
 private lemma exists_rel_of_guard
     (hg : y ⊩[⟨fineFrame, V⟩] A 🡒 (∼B ⋏ ◇B)) (hp : y ⊩[⟨fineFrame, V⟩] A) :
@@ -972,8 +974,6 @@ lemma forces_p01_at {m : ℕ} (hD : d m ⊩[⟨fineFrame, V⟩] δ) {k : ℕ} (h
   have h₂ := forces_box.mp hbox (d k) (by simp [hk]) (forces_neg.mpr hcon);
   exact forces_neg.mp (forces_box.mp h₂ (d (kf k)) (by simpa using hmono.le_apply)) h₁
 
-/-! ### Classification of the V-shape -/
-
 /-- A `V`-shape is, up to `swap`, of the form `(b_{n+1}, b_n, c_{n+1}, c_n)`. -/
 lemma v_shape_classify {t u₀ u₁ v₀ v₁ : fineFrame.World}
     (hRtu1 : t ≺ u₁) (hRu1u0 : u₁ ≺ u₀) (hRtv1 : t ≺ v₁) (hRv1v0 : v₁ ≺ v₀)
@@ -983,10 +983,6 @@ lemma v_shape_classify {t u₀ u₁ v₀ v₁ : fineFrame.World}
   cases u₁ using casesOn <;> cases u₀ using casesOn <;> cases v₁ using casesOn <;>
     cases v₀ using casesOn <;> simp at * <;> omega
 
-end Extraction
-
-/-! ### The reference points of the V-shape -/
-
 /-- The forcing data of an upright `V`-shape `(b_{n+1}, b_n, c_{n+1}, c_n)` below `d_m`. -/
 structure ShapeData (m n : ℕ) (V : fineFrame.World → ℕ → Prop) : Prop where
   hwδ : d m ⊩[⟨fineFrame, V⟩] δ
@@ -995,10 +991,6 @@ structure ShapeData (m n : ℕ) (V : fineFrame.World → ℕ → Prop) : Prop wh
   hbn1β₁ : b (n + 1) ⊩[⟨fineFrame, V⟩] β 1
   hcnγ₀ : c n ⊩[⟨fineFrame, V⟩] γ 0
   hcn1γ₁ : c (n + 1) ⊩[⟨fineFrame, V⟩] γ 1
-
-section Cone
-
-variable {V : fineFrame.World → ℕ → Prop} {m n : ℕ} {z : fineFrame.World}
 
 section
 
@@ -1030,8 +1022,6 @@ lemma ShapeData.mirror : ShapeData m n (mirrorVal V) where
   hbn1β₁ := by simpa [forces_mirror, mirrorVal] using hs.hcn1γ₁
   hcnγ₀ := by simpa [forces_mirror, mirrorVal] using hs.hbnβ₀
   hcn1γ₁ := by simpa [forces_mirror, mirrorVal] using hs.hbn1β₁
-
-/-! ### The `β`-side facts on the cone of `a_n` -/
 
 /-- On the cone of `a_n`, `β 0` is forced only at `b_n`. -/
 lemma eq_b_of_forces_β₀ (hmn : m ≤ n) (hRz : a n ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 0) :
@@ -1107,8 +1097,6 @@ lemma forces_β₂_at : b (n + 2) ⊩[⟨fineFrame, V⟩] β 2 := by
       · obtain rfl : k = n + 2 := by omega;
         exact false_of_neg_dia hkB0 (y := b n) (by simp) hs.hbnβ₀
 
-/-! ### The facts on the cone of `d_{n+1}` -/
-
 /-- On the cone of `d_{n+1}`, `β 1` is forced only at `b_{n+1}`. -/
 lemma eq_bn1_of_forces_β₁ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 1) :
     z = b (n + 1) := by
@@ -1151,8 +1139,6 @@ lemma eq_bn2_of_forces_β₂ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[
       · exact (forces_neg.mp h₄ h₂).elim;
       · rfl;
     · exact (false_of_neg_dia h₃ (y := c (n + 1)) (by simp; omega) hs.hcn1γ₁).elim
-
-/-! ### The `γ`-side facts, by the mirror -/
 
 /-- `c_{n+2}` forces `γ 2`, the mirror of `forces_β₂_at`. -/
 lemma forces_γ₂_at : c (n + 2) ⊩[⟨fineFrame, V⟩] γ 2 := by
@@ -1251,8 +1237,6 @@ lemma apex_eq (hzA0 : z ⊩[⟨fineFrame, V⟩] α 0) (hRzb : z ≺ b (n + 1)) (
 
 end
 
-/-! ### Assembly: the frame validates `θ` -/
-
 lemma forces_ψ_of_shapeAndApex (hs : ShapeData m n V) {t : fineFrame.World}
     (hwt : d m ≺ t) (htA0 : t ⊩[⟨fineFrame, V⟩] α 0)
     (hRtb : t ≺ b (n + 1)) (hRtc : t ≺ c (n + 1)) :
@@ -1267,8 +1251,6 @@ lemma forces_ψ_of_shapeAndApex (hs : ShapeData m n V) {t : fineFrame.World}
   · exact forces_p01_at hs.hwδ (by omega);
   · exact not_dia_α₀_at hs hmn;
   · exact forces_dia.mpr ⟨a (n + 1), by simp, forces_α₁_at hs hmn⟩
-
-end Cone
 
 /-- Fine's frame validates `θ`: for every valuation and every point, `ε → ψ` holds.
 
@@ -1298,118 +1280,14 @@ theorem validates_θ : fineFrame ⊧ θ := by
 
 end fineFrame
 
-end Countermodel
-
-/-! ### Kripke-incompleteness -/
-
-section Incomplete
-
-universe u
-
-variable {κ : Type*} {F : Frame κ}
-
-namespace Fine
-
-open Model.World
-
-section Chain
-
-variable {M : Model κ ℕ} [IsTrans κ M.Rel'] {x y : M.World} {m : ℕ}
-
-lemma forces_δ_of_rel (hD : x ⊩ δ) (Rxy : x ≺ y) (hp : y ⊩ #0 ⋎ #1) : y ⊩ δ := by
-  obtain ⟨-, h₁, h₂, h₃⟩ := forces_δ_iff.mp hD;
-  rw [forces_δ_iff];
-  and_intros;
-  · exact hp;
-  · exact forces_box_of_rel h₁ Rxy;
-  · exact forces_box_of_rel h₂ Rxy;
-  · exact forces_box_of_rel h₃ Rxy
-
-/-- If `θ` is strongly valid and `x` forces `ε⟦σ_m⟧`, a strict successor forces `ε⟦σ_{m+1}⟧`.
-
-- [Fin74a, (3)] -/
-lemma chain_step (hG : θ ∈ M.logic) (hx : x ⊩ ε⟦shift m⟧) :
-    ∃ y : M.World, x ≺ y ∧ y ⊀ x ∧ y ⊩ ε⟦shift (m + 1)⟧ := by
-  obtain ⟨y, Rxy, hy01, hyA, hyA'⟩ := forces_ψ_subst_shift.mp <| hG (shift m) x hx;
-  obtain ⟨hD, hAm, hK⟩ := forces_ε_subst_shift.mp hx;
-  have hstrict : y ⊀ x := by
-    by_contra Ryx;
-    exact hyA <| forces_dia_of_rel hAm Ryx;
-  exact ⟨y, Rxy, hstrict,
-    forces_ε_subst_shift.mpr ⟨forces_δ_of_rel hD Rxy hy01, hyA', forces_ι_succ hK Rxy⟩⟩
-
-end Chain
-
-section Psi
-
-variable {u : ℕ → F.World}
-
-/-- The valuation making `#6` true at `u (3i)` and `#7` at `u (3i + 1)`.
-
-- [Fin74a] -/
-def chainVal (u : ℕ → F.World) : F.World → ℕ → Prop
-| v, 6 => ∃ i, v = u (3 * i)
-| v, 7 => ∃ i, v = u (3 * i + 1)
-| _, _ => False
-
-lemma forces_chainVal_6_iff (hinj : Function.Injective u) (n : ℕ) :
-    u n ⊩[⟨F, chainVal u⟩] #6 ↔ ∃ i, n = 3 * i := by
-  constructor;
-  · rintro ⟨i, hi⟩;
-    exact ⟨i, hinj hi⟩;
-  · rintro ⟨i, rfl⟩;
-    use i;
-
-lemma forces_chainVal_7_iff (hinj : Function.Injective u) (n : ℕ) :
-    u n ⊩[⟨F, chainVal u⟩] #7 ↔ ∃ i, n = 3 * i + 1 := by
-  constructor;
-  · rintro ⟨i, hi⟩;
-    exact ⟨i, hinj hi⟩;
-  · rintro ⟨i, rfl⟩;
-    use i;
-
-lemma chainVal_forces_neg_χ [IsTrans κ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
-    (hinj : Function.Injective u) : u 0 ⊩[⟨F, chainVal u⟩] ∼χ := by
-  have hlt : ∀ {i j}, i < j → u i ≺ u j := fun h => Nat.rel_of_forall_rel_succ_of_lt F.Rel' hR h;
-  unfold χ;
-  rw [forces_neg, not_forces_neg, forces_and];
-  and_intros;
-  · exact (forces_chainVal_6_iff hinj 0).mpr ⟨0, rfl⟩;
-  · rw [forces_box];
-    rintro y - ⟨i, rfl⟩;
-    use u (3 * i + 1);
-    constructor;
-    · exact hlt <| by omega;
-    · simp only [forces_and];
-      and_intros;
-      · apply forces_chainVal_6_iff hinj _ |>.not.mpr;
-        omega;
-      · exact (forces_chainVal_7_iff hinj (3 * i + 1)).mpr ⟨i, rfl⟩;
-      · use u (3 * i + 2);
-        constructor;
-        · exact hlt <| by omega;
-        · simp only [forces_and];
-          and_intros;
-          · apply forces_chainVal_6_iff hinj _ |>.not.mpr;
-            omega;
-          · apply forces_chainVal_7_iff hinj _ |>.not.mpr;
-            omega;
-          · use u (3 * (i + 1));
-            constructor;
-            · exact hlt <| by omega;
-            · exact (forces_chainVal_6_iff hinj (3 * (i + 1))).mpr ⟨i + 1, rfl⟩;
-
-end Psi
-
-end Fine
-
 open Fine
 
 /-- Every frame validating Fine's logic validates `∼ε`.
 
 - [Fin74a, Lemma 1]
 - [Lit04, p. 332] -/
-theorem validates_neg_ε_of_validates_logicS4Fine (hL : F ⊧ logicS4Fine) : F ⊧ ∼ε := by
+theorem validates_neg_ε_of_validates_logicS4Fine {κ : Type*} {F : Frame κ}
+    (hL : F ⊧ logicS4Fine) : F ⊧ ∼ε := by
   obtain ⟨_, _⟩ :=
     Frame.validates_logicS4_iff.mp fun A h => hL A <| NormalLogic.mem_add_of_mem h;
   intro V x hxE;
@@ -1454,7 +1332,5 @@ lemma neg_ε_mem_frameLogic_logicS4Fine : ∼ε ∈ logicS4Fine.frameLogic.{u} f
 theorem not_kripkeComplete_logicS4Fine : ¬logicS4Fine.KripkeComplete.{u} fun _ _ => True := by
   by_contra h;
   exact neg_ε_not_mem_logicS4Fine <| h neg_ε_mem_frameLogic_logicS4Fine
-
-end Incomplete
 
 end
