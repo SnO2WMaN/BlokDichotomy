@@ -31,9 +31,13 @@ variable {κ : Type*} {M : Model κ ℕ} [IsTrans κ M.Rel'] {x y : M.World} {m 
 
 /-- `D` persists to any successor that still forces `p₀ ⋎ p₁`. -/
 lemma forces_D_of_rel (hD : x ⊩ D) (Rxy : x ≺ y) (hp : y ⊩ p0 ⋎ p1) : y ⊩ D := by
-  simp only [D, forces_and] at hD ⊢;
-  obtain ⟨-, h₁, h₂, h₃⟩ := hD;
-  exact ⟨hp, forces_box_of_rel h₁ Rxy, forces_box_of_rel h₂ Rxy, forces_box_of_rel h₃ Rxy⟩
+  obtain ⟨-, h₁, h₂, h₃⟩ := forces_D_iff.mp hD;
+  rw [forces_D_iff];
+  and_intros;
+  · exact hp;
+  · exact forces_box_of_rel h₁ Rxy;
+  · exact forces_box_of_rel h₂ Rxy;
+  · exact forces_box_of_rel h₃ Rxy
 
 /-- If `M` strongly verifies `G` and `x` forces `E⟦σ_m⟧`, then some strict successor of `x`
 forces `E⟦σ_{m+1}⟧`.
