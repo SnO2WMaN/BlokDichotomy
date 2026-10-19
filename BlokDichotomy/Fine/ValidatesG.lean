@@ -7,7 +7,7 @@ public import BlokDichotomy.Fine.ModelForcing
 
 Given any valuation and a point forcing `ε`, the point is some `d_m`, the "V-shape" below it is
 pinned (up to the `b`/`c` mirror `swap`) to an apex `a_n`, and `d_{n+1}` witnesses `ψ`.
-Everything here lives in the namespace `FineFrame`.
+Everything here lives in the namespace `fineFrame`.
 
 ## References
 
@@ -17,24 +17,24 @@ Everything here lives in the namespace `FineFrame`.
 
 @[expose] public section
 
-namespace FineFrame
+namespace fineFrame
 
-open Fine
+open Fine FinePoint Model.World
 
-open Model.World
+section Extraction
 
-variable {V : World → ℕ → Prop}
+variable {V : FinePoint → ℕ → Prop} {w x y : FinePoint} {A B : Formula ℕ}
 
 /-! ### The V-shape extracted from `w ⊩ ε` -/
 
 /-- The witnesses of the "V-shape" extracted from `w ⊩ ε`, for an arbitrary valuation `V`. -/
-lemma exists_V_shape {w : World} (hE : w ⊩[⟨frame, V⟩] ε) :
-    ∃ t u₀ u₁ v₀ v₁ : World,
-      R w t ∧ t ⊩[⟨frame, V⟩] α 0 ∧
+lemma exists_V_shape (hE : w ⊩[⟨fineFrame, V⟩] ε) :
+    ∃ t u₀ u₁ v₀ v₁ : FinePoint,
+      R w t ∧ t ⊩[⟨fineFrame, V⟩] α 0 ∧
       R t u₁ ∧ R u₁ u₀ ∧
       R t v₁ ∧ R v₁ v₀ ∧
-      u₁ ⊩[⟨frame, V⟩] β 1 ∧ u₀ ⊩[⟨frame, V⟩] β 0 ∧
-      v₁ ⊩[⟨frame, V⟩] γ 1 ∧ v₀ ⊩[⟨frame, V⟩] γ 0 ∧
+      u₁ ⊩[⟨fineFrame, V⟩] β 1 ∧ u₀ ⊩[⟨fineFrame, V⟩] β 0 ∧
+      v₁ ⊩[⟨fineFrame, V⟩] γ 1 ∧ v₀ ⊩[⟨fineFrame, V⟩] γ 0 ∧
       ¬ R u₀ u₁ ∧ ¬ R v₀ v₁ ∧
       ¬ R u₁ v₀ ∧ ¬ R v₁ u₀ := by
   obtain ⟨-, hA0, hK⟩ := forces_ε_iff.mp hE;
@@ -61,16 +61,16 @@ lemma exists_V_shape {w : World} (hE : w ⊩[⟨frame, V⟩] ε) :
     exact forces_neg.mp hv1nB0 (forces_dia.mpr ⟨u₀, h, hu0B0⟩)
 
 /-- A point forcing `∼◇A` sees no point forcing `A`. -/
-private lemma false_of_neg_dia {x y : World} {A : Formula ℕ} (hn : x ⊩[⟨frame, V⟩] ∼◇A)
-    (hxy : R x y) (hy : y ⊩[⟨frame, V⟩] A) : False :=
+private lemma false_of_neg_dia (hn : x ⊩[⟨fineFrame, V⟩] ∼◇A)
+    (hxy : R x y) (hy : y ⊩[⟨fineFrame, V⟩] A) : False :=
   forces_neg.mp hn (forces_dia.mpr ⟨y, hxy, hy⟩)
 
 /-! ### Confinement of forced points to `d`-points -/
 
 /-- One guard conjunct of `δ` produces a strict successor forcing the other atom. -/
-private lemma exists_rel_of_guard {y : World} {A B : Formula ℕ}
-    (hg : y ⊩[⟨frame, V⟩] A 🡒 (∼B ⋏ ◇B)) (hp : y ⊩[⟨frame, V⟩] A) :
-    ∃ z, R y z ∧ ¬ R z y ∧ z ⊩[⟨frame, V⟩] B := by
+private lemma exists_rel_of_guard
+    (hg : y ⊩[⟨fineFrame, V⟩] A 🡒 (∼B ⋏ ◇B)) (hp : y ⊩[⟨fineFrame, V⟩] A) :
+    ∃ z, R y z ∧ ¬ R z y ∧ z ⊩[⟨fineFrame, V⟩] B := by
   obtain ⟨hnq, hq⟩ := forces_and.mp (hg hp);
   obtain ⟨z, hyz, hz⟩ := forces_dia.mp hq;
   use z, hyz;
@@ -82,13 +82,13 @@ private lemma exists_rel_of_guard {y : World} {A B : Formula ℕ}
 
 /-- `δ`'s two guard conjuncts drive an infinite, strictly ascending chain of points forced
 into the cone of `w`, alternating between `#0` and `#1`. -/
-private lemma exists_p01_chain {w : World} (hD : w ⊩[⟨frame, V⟩] δ) :
-    ∃ u : ℕ → World, u 0 = w ∧
+private lemma exists_p01_chain (hD : w ⊩[⟨fineFrame, V⟩] δ) :
+    ∃ u : ℕ → FinePoint, u 0 = w ∧
       ∀ i, R (u i) (u (i + 1)) ∧ ¬ R (u (i + 1)) (u i) ∧
-        R w (u i) ∧ u i ⊩[⟨frame, V⟩] (#0 ⋎ #1) := by
+        R w (u i) ∧ u i ⊩[⟨fineFrame, V⟩] (#0 ⋎ #1) := by
   obtain ⟨hp01, hbox₁, hbox₂, -⟩ := forces_δ_iff.mp hD;
-  have step : ∀ y : World, R w y → y ⊩[⟨frame, V⟩] (#0 ⋎ #1) →
-      ∃ v, R y v ∧ ¬ R v y ∧ R w v ∧ v ⊩[⟨frame, V⟩] (#0 ⋎ #1) := by
+  have step : ∀ y : FinePoint, R w y → y ⊩[⟨fineFrame, V⟩] (#0 ⋎ #1) →
+      ∃ v, R y v ∧ ¬ R v y ∧ R w v ∧ v ⊩[⟨fineFrame, V⟩] (#0 ⋎ #1) := by
     intro y hwy hy;
     rcases forces_or.mp hy with hy₀ | hy₁;
     · obtain ⟨z, hyz, hzy, hz⟩ := exists_rel_of_guard (forces_box.mp hbox₁ y hwy) hy₀;
@@ -96,7 +96,7 @@ private lemma exists_p01_chain {w : World} (hD : w ⊩[⟨frame, V⟩] δ) :
     · obtain ⟨z, hyz, hzy, hz⟩ := exists_rel_of_guard (forces_box.mp hbox₂ y hwy) hy₁;
       exact ⟨z, hyz, hzy, R_trans hwy hyz, forces_or.mpr (Or.inl hz)⟩;
   obtain ⟨u, hu₀, hu⟩ := exists_seq_of_forall_exists_rel (r := fun y v => R y v ∧ ¬ R v y)
-    (P := fun _ y => R w y ∧ y ⊩[⟨frame, V⟩] (#0 ⋎ #1)) ⟨R_refl w, hp01⟩ <| by
+    (P := fun _ y => R w y ∧ y ⊩[⟨fineFrame, V⟩] (#0 ⋎ #1)) ⟨R_refl w, hp01⟩ <| by
       rintro - y ⟨hwy, hy⟩;
       obtain ⟨v, hyv, hvy, hwv, hv⟩ := step y hwy hy;
       exact ⟨v, ⟨hyv, hvy⟩, hwv, hv⟩;
@@ -107,7 +107,8 @@ private lemma exists_p01_chain {w : World} (hD : w ⊩[⟨frame, V⟩] δ) :
     exact ⟨(hu i).2.1, (hu i).2.2, (hu i).1⟩
 
 /-- Any point forcing `δ` under an arbitrary valuation `V` is a `d`-point. -/
-lemma exists_d_of_forces_δ {w : World} (hD : w ⊩[⟨frame, V⟩] δ) : ∃ m, w = World.d m := by
+lemma exists_d_of_forces_δ (hD : w ⊩[⟨fineFrame, V⟩] δ) :
+    ∃ m, w = FinePoint.d m := by
   obtain ⟨u, hu₀, hu⟩ := exists_p01_chain hD;
   obtain ⟨m, hm⟩ := strict_chain_all_d (fun i => (hu i).1) (fun i => (hu i).2.1) 0;
   exact ⟨m, hu₀ ▸ hm⟩
@@ -115,10 +116,10 @@ lemma exists_d_of_forces_δ {w : World} (hD : w ⊩[⟨frame, V⟩] δ) : ∃ m,
 /-- A `d`-point forcing `δ` forces `#0 ⋎ #1` at every `d`-point at or above its index: the fourth
 conjunct of `δ` makes `∼(#0 ⋎ #1)` upward-closed, so `#0 ⋎ #1` is inherited downward from the
 strict `#0 ⋎ #1`-chain, which reaches every `d`-point index from above. -/
-lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨frame, V⟩] δ) {k : ℕ} (hk : m ≤ k) :
-    World.d k ⊩[⟨frame, V⟩] #0 ⋎ #1 := by
+lemma forces_p01_at {m : ℕ} (hD : FinePoint.d m ⊩[⟨fineFrame, V⟩] δ) {k : ℕ} (hk : m ≤ k) :
+    FinePoint.d k ⊩[⟨fineFrame, V⟩] #0 ⋎ #1 := by
   obtain ⟨u, hu₀, hu⟩ := exists_p01_chain hD;
-  have hd : ∀ i, ∃ k, u i = World.d k := by
+  have hd : ∀ i, ∃ k, u i = FinePoint.d k := by
     intro i;
     exact strict_chain_all_d (fun j => (hu j).1) (fun j => (hu j).2.1) i;
   choose kf hkf using hd;
@@ -128,13 +129,13 @@ lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨frame, V⟩] δ) {k : ℕ} 
     have h := (hu i).2.1;
     rw [hkf i, hkf (i + 1)] at h;
     simpa using h;
-  have h₁ : World.d (kf k) ⊩[⟨frame, V⟩] #0 ⋎ #1 := by
+  have h₁ : FinePoint.d (kf k) ⊩[⟨fineFrame, V⟩] #0 ⋎ #1 := by
     rw [← hkf k];
     exact (hu k).2.2.2;
   by_contra hcon;
   obtain ⟨-, -, -, hbox⟩ := forces_δ_iff.mp hD;
-  have h₂ := forces_box.mp hbox (World.d k) (by simp [hk]) (forces_neg.mpr hcon);
-  exact forces_neg.mp (forces_box.mp h₂ (World.d (kf k)) (by simpa using hmono.le_apply)) h₁
+  have h₂ := forces_box.mp hbox (FinePoint.d k) (by simp [hk]) (forces_neg.mpr hcon);
+  exact forces_neg.mp (forces_box.mp h₂ (FinePoint.d (kf k)) (by simpa using hmono.le_apply)) h₁
 
 /-! ### Classification of the V-shape -/
 
@@ -142,12 +143,14 @@ lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨frame, V⟩] δ) {k : ℕ} 
 incomparability facts (`¬ R u₀ u₁`, `¬ R v₀ v₁`, `¬ R u₁ v₀`,
 `¬ R v₁ u₀`) must, up to swapping the `b`- and `c`-branches, have the shape
 `(b_{n+1}, b_n, c_{n+1}, c_n)`. -/
-lemma v_shape_classify {t u₀ u₁ v₀ v₁ : World}
+lemma v_shape_classify {t u₀ u₁ v₀ v₁ : FinePoint}
     (hRtu1 : R t u₁) (hRu1u0 : R u₁ u₀) (hRtv1 : R t v₁) (hRv1v0 : R v₁ v₀)
     (hnu0u1 : ¬ R u₀ u₁) (hnv0v1 : ¬ R v₀ v₁) (hnu1v0 : ¬ R u₁ v₀) (hnv1u0 : ¬ R v₁ u₀) :
     ∃ n : ℕ, (u₁ = .b (n + 1) ∧ u₀ = .b n ∧ v₁ = .c (n + 1) ∧ v₀ = .c n) ∨
              (u₁ = .c (n + 1) ∧ u₀ = .c n ∧ v₁ = .b (n + 1) ∧ v₀ = .b n) := by
   cases u₁ <;> cases u₀ <;> cases v₁ <;> cases v₀ <;> simp_all <;> omega
+
+end Extraction
 
 /-! ### The reference points of the V-shape -/
 
@@ -155,15 +158,17 @@ lemma v_shape_classify {t u₀ u₁ v₀ v₁ : World}
 (via `v_shape_classify`) to the upright configuration `(b_{n+1}, b_n, c_{n+1}, c_n)`: the guard
 formula `δ` and the `ι`-block hold at `d_m`, and the four reference points force the atomic Litak
 formulas. -/
-structure ShapeData (m n : ℕ) (V : World → ℕ → Prop) : Prop where
-  hwδ : World.d m ⊩[⟨frame, V⟩] δ
-  hwι₀ : World.d m ⊩[⟨frame, V⟩] ι 0
-  hbnβ₀ : World.b n ⊩[⟨frame, V⟩] β 0
-  hbn1β₁ : World.b (n + 1) ⊩[⟨frame, V⟩] β 1
-  hcnγ₀ : World.c n ⊩[⟨frame, V⟩] γ 0
-  hcn1γ₁ : World.c (n + 1) ⊩[⟨frame, V⟩] γ 1
+structure ShapeData (m n : ℕ) (V : FinePoint → ℕ → Prop) : Prop where
+  hwδ : FinePoint.d m ⊩[⟨fineFrame, V⟩] δ
+  hwι₀ : FinePoint.d m ⊩[⟨fineFrame, V⟩] ι 0
+  hbnβ₀ : FinePoint.b n ⊩[⟨fineFrame, V⟩] β 0
+  hbn1β₁ : FinePoint.b (n + 1) ⊩[⟨fineFrame, V⟩] β 1
+  hcnγ₀ : FinePoint.c n ⊩[⟨fineFrame, V⟩] γ 0
+  hcn1γ₁ : FinePoint.c (n + 1) ⊩[⟨fineFrame, V⟩] γ 1
 
-variable {m n : ℕ} {z : World}
+section Cone
+
+variable {V : FinePoint → ℕ → Prop} {m n : ℕ} {z : FinePoint}
 
 section
 
@@ -171,22 +176,22 @@ variable (hs : ShapeData m n V)
 
 include hs
 
-lemma ShapeData.hι₁ : World.d m ⊩[⟨frame, V⟩] ι₁ 0 := (forces_ι_iff.mp hs.hwι₀).1
-lemma ShapeData.hι₂ : World.d m ⊩[⟨frame, V⟩] ι₂ 0 := (forces_ι_iff.mp hs.hwι₀).2.1
-lemma ShapeData.hι₃ : World.d m ⊩[⟨frame, V⟩] ι₃ 0 := (forces_ι_iff.mp hs.hwι₀).2.2.1
-lemma ShapeData.hι₄ : World.d m ⊩[⟨frame, V⟩] ι₄ 0 := (forces_ι_iff.mp hs.hwι₀).2.2.2
+lemma ShapeData.hι₁ : FinePoint.d m ⊩[⟨fineFrame, V⟩] ι₁ 0 := (forces_ι_iff.mp hs.hwι₀).1
+lemma ShapeData.hι₂ : FinePoint.d m ⊩[⟨fineFrame, V⟩] ι₂ 0 := (forces_ι_iff.mp hs.hwι₀).2.1
+lemma ShapeData.hι₃ : FinePoint.d m ⊩[⟨fineFrame, V⟩] ι₃ 0 := (forces_ι_iff.mp hs.hwι₀).2.2.1
+lemma ShapeData.hι₄ : FinePoint.d m ⊩[⟨fineFrame, V⟩] ι₄ 0 := (forces_ι_iff.mp hs.hwι₀).2.2.2
 
-lemma ShapeData.ι₁_at (y : World) (hy : R (World.d m) y) (h : y ⊩[⟨frame, V⟩] β 1) :
-    y ⊩[⟨frame, V⟩] ◇(β 0) ⋏ ∼◇(γ 0) := forces_box.mp hs.hι₁ y hy h
+lemma ShapeData.ι₁_at (y : FinePoint) (hy : R (FinePoint.d m) y) (h : y ⊩[⟨fineFrame, V⟩] β 1) :
+    y ⊩[⟨fineFrame, V⟩] ◇(β 0) ⋏ ∼◇(γ 0) := forces_box.mp hs.hι₁ y hy h
 
-lemma ShapeData.ι₂_at (y : World) (hy : R (World.d m) y) (h : y ⊩[⟨frame, V⟩] γ 1) :
-    y ⊩[⟨frame, V⟩] ◇(γ 0) ⋏ ∼◇(β 0) := forces_box.mp hs.hι₂ y hy h
+lemma ShapeData.ι₂_at (y : FinePoint) (hy : R (FinePoint.d m) y) (h : y ⊩[⟨fineFrame, V⟩] γ 1) :
+    y ⊩[⟨fineFrame, V⟩] ◇(γ 0) ⋏ ∼◇(β 0) := forces_box.mp hs.hι₂ y hy h
 
-lemma ShapeData.ι₃_at (y : World) (hy : R (World.d m) y) (h : y ⊩[⟨frame, V⟩] β 0) :
-    y ⊩[⟨frame, V⟩] ∼◇(β 1) := forces_box.mp hs.hι₃ y hy h
+lemma ShapeData.ι₃_at (y : FinePoint) (hy : R (FinePoint.d m) y) (h : y ⊩[⟨fineFrame, V⟩] β 0) :
+    y ⊩[⟨fineFrame, V⟩] ∼◇(β 1) := forces_box.mp hs.hι₃ y hy h
 
-lemma ShapeData.ι₄_at (y : World) (hy : R (World.d m) y) (h : y ⊩[⟨frame, V⟩] γ 0) :
-    y ⊩[⟨frame, V⟩] ∼◇(γ 1) := forces_box.mp hs.hι₄ y hy h
+lemma ShapeData.ι₄_at (y : FinePoint) (hy : R (FinePoint.d m) y) (h : y ⊩[⟨fineFrame, V⟩] γ 0) :
+    y ⊩[⟨fineFrame, V⟩] ∼◇(γ 1) := forces_box.mp hs.hι₄ y hy h
 
 /-- The data of a V-shape, seen through the mirror valuation. -/
 lemma ShapeData.mirror : ShapeData m n (mirrorVal V) where
@@ -200,7 +205,7 @@ lemma ShapeData.mirror : ShapeData m n (mirrorVal V) where
 /-! ### The `β`-side facts on the cone of `a_n` -/
 
 /-- On the cone of `a_n`, `β 0` is forced only at `b_n`. -/
-lemma eq_b_of_forces_β₀ (hmn : m ≤ n) (hRz : R (.a n) z) (h : z ⊩[⟨frame, V⟩] β 0) :
+lemma eq_b_of_forces_β₀ (hmn : m ≤ n) (hRz : R (.a n) z) (h : z ⊩[⟨fineFrame, V⟩] β 0) :
     z = .b n := by
   have h₁ := hs.ι₃_at z (R_trans (by simp [hmn]) hRz) h;
   have h₂ := (forces_and.mp (hs.ι₂_at (.c (n + 1)) (by simp) hs.hcn1γ₁)).2;
@@ -222,7 +227,7 @@ lemma eq_b_of_forces_β₀ (hmn : m ≤ n) (hRz : R (.a n) z) (h : z ⊩[⟨fram
   | d k => simp at hRz
 
 /-- On the cone of `a_n`, `β 1` is forced only at `b_{n+1}`. -/
-lemma eq_b_of_forces_β₁ (hmn : m ≤ n) (hRz : R (.a n) z) (h : z ⊩[⟨frame, V⟩] β 1) :
+lemma eq_b_of_forces_β₁ (hmn : m ≤ n) (hRz : R (.a n) z) (h : z ⊩[⟨fineFrame, V⟩] β 1) :
     z = .b (n + 1) := by
   have hR : R (.d m) z := R_trans (by simp [hmn]) hRz;
   obtain ⟨h₁, h₂⟩ := forces_and.mp (hs.ι₁_at z hR h);
@@ -249,7 +254,7 @@ lemma eq_b_of_forces_β₁ (hmn : m ≤ n) (hRz : R (.a n) z) (h : z ⊩[⟨fram
   | d k => simp at hRz
 
 /-- `b_{n+2}` forces `β 2`. -/
-lemma forces_β₂_at : World.b (n + 2) ⊩[⟨frame, V⟩] β 2 := by
+lemma forces_β₂_at : FinePoint.b (n + 2) ⊩[⟨fineFrame, V⟩] β 2 := by
   have h₁ := (forces_and.mp (hs.ι₁_at (.b (n + 1)) (by simp) hs.hbn1β₁)).2;
   have h₂ := hs.ι₄_at (.c n) (by simp) hs.hcnγ₀;
   rw [β_add_two, forces_and, forces_and];
@@ -276,7 +281,7 @@ lemma forces_β₂_at : World.b (n + 2) ⊩[⟨frame, V⟩] β 2 := by
 /-! ### The facts on the cone of `d_{n+1}` -/
 
 /-- On the cone of `d_{n+1}`, `β 1` is forced only at `b_{n+1}`. -/
-lemma eq_bn1_of_forces_β₁ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨frame, V⟩] β 1) :
+lemma eq_bn1_of_forces_β₁ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨fineFrame, V⟩] β 1) :
     z = .b (n + 1) := by
   have h₁ := (forces_and.mp (hs.ι₁_at z (R_trans (by simp; omega) hRz) h)).2;
   cases z with
@@ -295,7 +300,7 @@ lemma eq_bn1_of_forces_β₁ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩
     · exact (false_of_neg_dia h₁ (y := .c n) (by simp; omega) hs.hcnγ₀).elim
 
 /-- On the cone of `d_{n+1}`, `β 2` is forced only at `b_{n+2}`. -/
-lemma eq_bn2_of_forces_β₂ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨frame, V⟩] β 2) :
+lemma eq_bn2_of_forces_β₂ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨fineFrame, V⟩] β 2) :
     z = .b (n + 2) := by
   rw [β_add_two, forces_and, forces_and] at h;
   obtain ⟨h₁, h₂, h₃⟩ := h;
@@ -321,25 +326,25 @@ lemma eq_bn2_of_forces_β₂ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩
 /-! ### The `γ`-side facts, by the mirror -/
 
 /-- `c_{n+2}` forces `γ 2`, the mirror of `forces_β₂_at`. -/
-lemma forces_γ₂_at : World.c (n + 2) ⊩[⟨frame, V⟩] γ 2 := by
+lemma forces_γ₂_at : FinePoint.c (n + 2) ⊩[⟨fineFrame, V⟩] γ 2 := by
   simpa [forces_mirror] using forces_β₂_at hs.mirror
 
 /-- On the cone of `d_{n+1}`, `γ 1` is forced only at `c_{n+1}`. -/
-lemma eq_cn1_of_forces_γ₁ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨frame, V⟩] γ 1) :
+lemma eq_cn1_of_forces_γ₁ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨fineFrame, V⟩] γ 1) :
     z = .c (n + 1) := by
   have := eq_bn1_of_forces_β₁ hs.mirror hmn (z := swap z) (by simpa using R_swap.mpr hRz)
     (by simpa [forces_mirror, mirrorVal] using h);
   simpa [swap_involutive.eq_iff] using this
 
 /-- On the cone of `d_{n+1}`, `γ 2` is forced only at `c_{n+2}`. -/
-lemma eq_cn2_of_forces_γ₂ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨frame, V⟩] γ 2) :
+lemma eq_cn2_of_forces_γ₂ (hmn : m ≤ n) (hRz : R (.d (n + 1)) z) (h : z ⊩[⟨fineFrame, V⟩] γ 2) :
     z = .c (n + 2) := by
   have := eq_bn2_of_forces_β₂ hs.mirror hmn (z := swap z) (by simpa using R_swap.mpr hRz)
     (by simpa [forces_mirror] using h);
   simpa [swap_involutive.eq_iff] using this
 
 /-- `a_{n+1}` sees no point forcing `β 3`. -/
-lemma not_forces_dia_β₃ (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨frame, V⟩] ∼◇(β 3) := by
+lemma not_forces_dia_β₃ (hmn : m ≤ n) : FinePoint.a (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(β 3) := by
   rw [forces_neg, not_forces_dia];
   intro p hp hpB3;
   rw [β_add_two, forces_and, forces_and] at hpB3;
@@ -352,7 +357,7 @@ lemma not_forces_dia_β₃ (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨frame, V⟩]
   cases p with
   | d j => simp at hp;
   | a j =>
-    simp only [rel_frame, R_a_a] at hp;
+    simp only [fineFrame.rel_iff, R_a_a] at hp;
     subst hp;
     exact false_of_neg_dia h₃ (y := .c (n + 2)) (by simp) (forces_γ₂_at hs)
   | b j =>
@@ -363,11 +368,11 @@ lemma not_forces_dia_β₃ (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨frame, V⟩]
     omega
 
 /-- `a_{n+1}` sees no point forcing `γ 3`, the mirror of `not_forces_dia_β₃`. -/
-lemma not_forces_dia_γ₃ (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨frame, V⟩] ∼◇(γ 3) := by
+lemma not_forces_dia_γ₃ (hmn : m ≤ n) : FinePoint.a (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(γ 3) := by
   simpa [forces_mirror] using not_forces_dia_β₃ hs.mirror hmn
 
 /-- `a_{n+1}` forces `α 1`. -/
-lemma forces_α₁_at (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨frame, V⟩] α 1 := by
+lemma forces_α₁_at (hmn : m ≤ n) : FinePoint.a (n + 1) ⊩[⟨fineFrame, V⟩] α 1 := by
   rw [forces_α_iff];
   and_intros;
   · exact forces_dia.mpr ⟨.b (n + 2), by simp, forces_β₂_at hs⟩;
@@ -377,7 +382,7 @@ lemma forces_α₁_at (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨frame, V⟩] α 1
 
 /-- No point in the cone of `d_{n+1}` forces `α 0`: the only `α 0`-point `a_n` is not
 reachable from `d_{n+1}`. -/
-lemma not_dia_α₀_at (hmn : m ≤ n) : World.d (n + 1) ⊩[⟨frame, V⟩] ∼◇(α 0) := by
+lemma not_dia_α₀_at (hmn : m ≤ n) : FinePoint.d (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(α 0) := by
   rw [forces_neg, not_forces_dia];
   intro z hz hzA0;
   obtain ⟨h₁, h₂, h₃, h₄⟩ := forces_α_iff.mp hzA0;
@@ -399,7 +404,7 @@ lemma not_dia_α₀_at (hmn : m ≤ n) : World.d (n + 1) ⊩[⟨frame, V⟩] ∼
 
 /-- Any point forcing `α 0` and seeing the `β 1`-point `b_{n+1}` and the `γ 1`-point `c_{n+1}`
 is the apex `a_n`. -/
-lemma apex_eq (hzA0 : z ⊩[⟨frame, V⟩] α 0) (hRzb : R z (.b (n + 1))) (hRzc : R z (.c (n + 1))) :
+lemma apex_eq (hzA0 : z ⊩[⟨fineFrame, V⟩] α 0) (hRzb : R z (.b (n + 1))) (hRzc : R z (.c (n + 1))) :
     z = .a n := by
   obtain ⟨-, -, h₁, h₂⟩ := forces_α_iff.mp hzA0;
   cases z with
@@ -415,7 +420,7 @@ lemma apex_eq (hzA0 : z ⊩[⟨frame, V⟩] α 0) (hRzb : R z (.b (n + 1))) (hRz
     have hkn : k ≤ n := by
       by_contra hc;
       exact false_of_neg_dia h₁ (y := .b (n + 2)) (by simp; omega) (forces_β₂_at hs);
-    exact congrArg World.a (by omega)
+    exact congrArg FinePoint.a (by omega)
 
 end
 
@@ -424,14 +429,14 @@ end
 /-- The upright core of `validates_θ`: from the V-shape data (with reference forcings in the
 `(b_{n+1}, b_n, c_{n+1}, c_n)` configuration) and the apex `t` forcing `α 0` and seeing
 `b_{n+1}` and `c_{n+1}`, the point `d_m` forces `ψ`. The witness is `d_{n+1}`. -/
-lemma forces_ψ_of_shapeAndApex (hs : ShapeData m n V) {t : World}
-    (hwt : R (.d m) t) (htA0 : t ⊩[⟨frame, V⟩] α 0)
+lemma forces_ψ_of_shapeAndApex (hs : ShapeData m n V) {t : FinePoint}
+    (hwt : R (.d m) t) (htA0 : t ⊩[⟨fineFrame, V⟩] α 0)
     (hRtb : R t (.b (n + 1))) (hRtc : R t (.c (n + 1))) :
-    World.d m ⊩[⟨frame, V⟩] ψ := by
+    FinePoint.d m ⊩[⟨fineFrame, V⟩] ψ := by
   obtain rfl := apex_eq hs htA0 hRtb hRtc;
   have hmn : m ≤ n := by simpa using hwt;
   rw [ψ, forces_dia];
-  use World.d (n + 1);
+  use FinePoint.d (n + 1);
   rw [forces_and, forces_and];
   and_intros;
   · simp; omega;
@@ -439,11 +444,13 @@ lemma forces_ψ_of_shapeAndApex (hs : ShapeData m n V) {t : World}
   · exact not_dia_α₀_at hs hmn;
   · exact forces_dia.mpr ⟨.a (n + 1), by simp, forces_α₁_at hs hmn⟩
 
+end Cone
+
 /-- Fine's frame validates `θ`: for every valuation and every point, `ε → ψ` holds.
 
 - [Fin74a, Lemma 2]
 - [Lit04, p. 332] -/
-theorem validates_θ : frame ⊧ θ := by
+theorem validates_θ : fineFrame ⊧ θ := by
   intro V w hE;
   obtain ⟨t, u₀, u₁, v₀, v₁, hwt, htA0, htu1, hu1u0, htv1, hv1v0, hu1B1, hu0B0, hv1C1, hv0C0,
     hnu0u1, hnv0v1, hnu1v0, hnv1u0⟩ := exists_V_shape hE;
@@ -465,6 +472,6 @@ theorem validates_θ : frame ⊧ θ := by
       (by simpa using R_swap.mpr htv1);
     exact forces_swap_iff.mpr (by simpa using hF)
 
-end FineFrame
+end fineFrame
 
 end

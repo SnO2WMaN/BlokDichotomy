@@ -283,7 +283,7 @@ lemma β_γ_subst_tau (n : ℕ) : (β n)⟦tau⟧ = γ n ∧ (γ n)⟦tau⟧ = �
 lemma ι_subst_tau (m : ℕ) : (ι m)⟦tau⟧ = ι₂ m ⋏ ι₁ m ⋏ ι₄ m ⋏ ι₃ m := by
   simp [ι, ι₁, ι₂, ι₃, ι₄]
 
-lemma forces_ι_subst_tau_iff {x : M.World} {m : ℕ} : x ⊩ (ι m)⟦tau⟧ ↔ x ⊩ ι m := by
+lemma forces_ι_subst_tau_iff : x ⊩ (ι m)⟦tau⟧ ↔ x ⊩ ι m := by
   rw [ι_subst_tau];
   simp only [ι, forces_and];
   tauto

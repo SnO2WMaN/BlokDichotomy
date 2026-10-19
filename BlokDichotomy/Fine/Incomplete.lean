@@ -22,13 +22,15 @@ steps live in the namespace `Fine`; the results about `logicS4Fine` are in the r
 
 universe u
 
+variable {κ : Type*} {F : Frame κ}
+
 namespace Fine
 
 open Model.World
 
 section Chain
 
-variable {κ : Type*} {M : Model κ ℕ} [IsTrans κ M.Rel'] {x y : M.World} {m : ℕ}
+variable {M : Model κ ℕ} [IsTrans κ M.Rel'] {x y : M.World} {m : ℕ}
 
 /-- `δ` persists to any successor that still forces `p₀ ⋎ p₁`. -/
 lemma forces_δ_of_rel (hD : x ⊩ δ) (Rxy : x ≺ y) (hp : y ⊩ #0 ⋎ #1) : y ⊩ δ := by
@@ -58,7 +60,7 @@ end Chain
 
 section Psi
 
-variable {κ : Type*} {F : Frame κ} {u : ℕ → F.World}
+variable {u : ℕ → F.World}
 
 /-- The valuation along a chain `u`: `#6` holds exactly at the points of index `3i`, `#7` exactly at
 those of index `3i+1`; all other atoms are false.
@@ -124,8 +126,6 @@ end Fine
 
 open Fine
 
-variable {κ : Type*} {F : Frame κ}
-
 /-- Every frame validating Fine's logic validates `∼ε`.
 
 - [Fin74a, Lemma 1]
@@ -148,19 +148,19 @@ theorem validates_neg_ε_of_validates_logicS4Fine (hL : F ⊧ logicS4Fine) : F �
 /-- Every theorem of Fine's logic is strongly valid in Fine's model.
 
 - [Fin74a, Lemma 2] -/
-lemma logicS4Fine_le_model_logic : logicS4Fine ≤ FineFrame.model.logic :=
+lemma logicS4Fine_le_fineModel_logic : logicS4Fine ≤ fineModel.logic :=
   NormalLogic.add_le (fun _ h => Frame.logic_le_model_logic <| Frame.validates_logicS4 _ h) <| by
     rintro _ (rfl | rfl);
-    · exact Frame.logic_le_model_logic FineFrame.validates_θ;
-    · exact FineFrame.χ_mem_model_logic
+    · exact Frame.logic_le_model_logic fineFrame.validates_θ;
+    · exact fineModel.χ_mem_logic
 
 /-- `∼ε` is not a theorem of Fine's logic.
 
 - [Fin74a, Lemma 2] -/
 lemma neg_ε_not_mem_logicS4Fine : ∼ε ∉ logicS4Fine := by
   by_contra h;
-  exact Model.validates_of_mem_logic (logicS4Fine_le_model_logic h) (FineFrame.World.d 0)
-    FineFrame.forces_ε_d0
+  exact Model.validates_of_mem_logic (logicS4Fine_le_fineModel_logic h) (FinePoint.d 0)
+    fineModel.forces_ε_d0
 
 /-- `∼ε` lies in the logic of the frames validating Fine's logic.
 

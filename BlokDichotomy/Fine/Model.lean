@@ -10,7 +10,9 @@ public import Mathlib.Data.Set.Finite.Basic
 The countermodel `𝔄` of [Fin74a] witnessing `∼ε ∉ logicS4Fine`: a partial order on four families
 of points `a_m`, `b_m`, `c_m`, `d_m`, in which only `d`-points start infinite strict chains. The
 involution `swap` exchanging the `b`- and `c`-families is an automorphism of the underlying frame.
-Everything here lives in the namespace `FineFrame`.
+The points form the inductive type `FinePoint` (with the relation `FinePoint.R` and the valuation
+`FinePoint.val`), which gives the frame `fineFrame` and the model `fineModel`; facts about the
+forcing relation of a frame or a model are stated in the namespace of that object.
 
 ## References
 
@@ -19,24 +21,24 @@ Everything here lives in the namespace `FineFrame`.
 
 @[expose] public section
 
-namespace FineFrame
-
-open Fine
-
 /-- The points of Fine's model.
 
 - [Fin74a, p. 25] -/
-inductive World
+inductive FinePoint
 | a (m : ℕ)
 | b (m : ℕ)
 | c (m : ℕ)
 | d (m : ℕ)
 deriving DecidableEq
 
+namespace FinePoint
+
+open Fine
+
 /-- The accessibility relation of Fine's model, given in closed form (no transitive closure),
 reconstructed from [Fin74a]'s (partly missing) definition. -/
 @[grind =]
-def R : World → World → Prop
+def R : FinePoint → FinePoint → Prop
 | .b m, .b k => k ≤ m
 | .b m, .c k => k + 2 ≤ m
 | .c m, .c k => k ≤ m
@@ -67,28 +69,26 @@ def R : World → World → Prop
 @[simp] lemma R_d_c {n k : ℕ} : R (.d n) (.c k) := by simp [R];
 @[simp] lemma R_d_d {n k : ℕ} : R (.d n) (.d k) ↔ n ≤ k := by simp [R];
 
-@[grind .] lemma R_refl (w : World) : R w w := by cases w <;> simp;
+@[grind .] lemma R_refl (w : FinePoint) : R w w := by cases w <;> simp;
 
 @[grind →]
-lemma R_trans {x y z : World} (hxy : R x y) (hyz : R y z) : R x z := by
+lemma R_trans {x y z : FinePoint} (hxy : R x y) (hyz : R y z) : R x z := by
   cases x <;> cases y <;> cases z <;> simp_all <;> omega;
 
-/-- `R` is antisymmetric, so `(World, R)` is a partial order. -/
-lemma R_antisymm {x y : World} (hxy : R x y) (hyx : R y x) : x = y := by
+/-- `R` is antisymmetric, so `(FinePoint, R)` is a partial order. -/
+lemma R_antisymm {x y : FinePoint} (hxy : R x y) (hyx : R y x) : x = y := by
   cases x <;> cases y <;> simp_all <;> omega;
 
 instance : Std.Refl R := ⟨R_refl⟩
 
-instance : IsTrans World R := ⟨fun _ _ _ => R_trans⟩
-
-abbrev frame : Frame World := ⟨R⟩
+instance : IsTrans FinePoint R := ⟨fun _ _ _ => R_trans⟩
 
 /-- The valuation of Fine's model, reconstructed from [Fin74a]: `V(q₀) = {b₀}`, `V(q₁) = {b₁}`,
 `V(r₀) = {c₀}`, `V(r₁) = {c₁}`, `V(p₀) = {d_{2k} : k ≥ 0}`, `V(p₁) = {d_{2k+1} : k ≥ 0}`, and
 all other atoms are valuated `∅`. Atom indices follow Fine's `p₀, p₁, q₀, q₁, r₀, r₁, s, t`
 (`#0`–`#7`). -/
 @[grind =]
-def val : World → ℕ → Prop
+def val : FinePoint → ℕ → Prop
 | .b 0, 2 => True
 | .b 1, 3 => True
 | .c 0, 4 => True
@@ -96,8 +96,6 @@ def val : World → ℕ → Prop
 | .d n, 0 => n % 2 = 0
 | .d n, 1 => n % 2 = 1
 | _, _ => False
-
-abbrev model : Model World ℕ := ⟨frame, val⟩
 
 @[simp] lemma val_a {m a : ℕ} : ¬ val (.a m) a := by simp [val];
 @[simp] lemma val_b_iff {m a : ℕ} : val (.b m) a ↔ (m = 0 ∧ a = 2) ∨ (m = 1 ∧ a = 3) := by
@@ -107,29 +105,8 @@ abbrev model : Model World ℕ := ⟨frame, val⟩
 @[simp] lemma val_d_iff {n a : ℕ} : val (.d n) a ↔ (a = 0 ∧ n % 2 = 0) ∨ (a = 1 ∧ n % 2 = 1) := by
   rcases a with _ | _ | a <;> simp [val];
 
-@[simp] lemma rel_frame {x y : World} : Frame.Rel (F := frame) x y ↔ R x y := Iff.rfl
-
-section
-
-open Model.World
-
-variable {V : World → ℕ → Prop}
-
-@[simp] lemma forces_atom_frame {w : World} {a : ℕ} : w ⊩[⟨frame, V⟩] #a ↔ V w a := Iff.rfl
-
-@[simp high] lemma forces_atom_0_iff {w : World} : w ⊩[model] #0 ↔ ∃ k, w = .d k ∧ k % 2 = 0 := by
-  cases w <;> simp
-@[simp high] lemma forces_atom_1_iff {w : World} : w ⊩[model] #1 ↔ ∃ k, w = .d k ∧ k % 2 = 1 := by
-  cases w <;> simp
-@[simp high] lemma forces_atom_2_iff {w : World} : w ⊩[model] #2 ↔ w = .b 0 := by cases w <;> simp
-@[simp high] lemma forces_atom_3_iff {w : World} : w ⊩[model] #3 ↔ w = .b 1 := by cases w <;> simp
-@[simp high] lemma forces_atom_4_iff {w : World} : w ⊩[model] #4 ↔ w = .c 0 := by cases w <;> simp
-@[simp high] lemma forces_atom_5_iff {w : World} : w ⊩[model] #5 ↔ w = .c 1 := by cases w <;> simp
-
-end
-
 /-- The `R`-cone of a point other than a `d`-point is finite. -/
-lemma cone_finite {w : World} (hw : ∀ k, w ≠ .d k) : {z | R w z}.Finite := by
+lemma cone_finite {w : FinePoint} (hw : ∀ k, w ≠ .d k) : {z | R w z}.Finite := by
   obtain ⟨m, hm⟩ : ∃ m, ∀ z, R w z → ∃ k ≤ m, z = .a k ∨ z = .b k ∨ z = .c k := by
     cases w with
     | d k => exact absurd rfl (hw k);
@@ -145,13 +122,13 @@ lemma cone_finite {w : World} (hw : ∀ k, w ≠ .d k) : {z | R w z}.Finite := b
       use m + 1;
       intro z hz;
       cases z <;> simp_all <;> omega;
-  apply ((Finset.range (m + 1)).image World.a ∪ (Finset.range (m + 1)).image World.b ∪
-    (Finset.range (m + 1)).image World.c).finite_toSet.subset;
+  apply ((Finset.range (m + 1)).image FinePoint.a ∪ (Finset.range (m + 1)).image FinePoint.b ∪
+    (Finset.range (m + 1)).image FinePoint.c).finite_toSet.subset;
   intro z hz;
   obtain ⟨k, hk, rfl | rfl | rfl⟩ := hm z hz <;> simp [Nat.lt_succ_iff, hk];
 
 /-- Every infinite strict `R`-chain consists entirely of `d`-points. -/
-lemma strict_chain_all_d {u : ℕ → World} (hR : ∀ m, R (u m) (u (m + 1)))
+lemma strict_chain_all_d {u : ℕ → FinePoint} (hR : ∀ m, R (u m) (u (m + 1)))
     (hs : ∀ m, ¬R (u (m + 1)) (u m)) (i : ℕ) : ∃ k, u i = .d k := by
   have hinj : Function.Injective u := injective_of_forall_rel_succ (r := R) hR hs;
   have hchain : ∀ n, R (u i) (u (i + n)) := by
@@ -172,7 +149,7 @@ lemma strict_chain_all_d {u : ℕ → World} (hR : ∀ m, R (u m) (u (m + 1)))
 
 /-- The involution on Fine's model's worlds exchanging the `b`- and `c`-families and fixing
 the `a`- and `d`-families. -/
-def swap : World → World
+def swap : FinePoint → FinePoint
 | .a m => .a m
 | .b m => .c m
 | .c m => .b m
@@ -185,11 +162,50 @@ def swap : World → World
 
 lemma swap_involutive : Function.Involutive swap := by intro x; cases x <;> rfl;
 
-@[simp] lemma swap_swap (w : World) : swap (swap w) = w := swap_involutive w
+@[simp] lemma swap_swap (w : FinePoint) : swap (swap w) = w := swap_involutive w
 
 /-- `R` does not distinguish the `b`- and `c`-families, only their indices. -/
-lemma R_swap {x y : World} : R (swap x) (swap y) ↔ R x y := by cases x <;> cases y <;> simp;
+lemma R_swap {x y : FinePoint} : R (swap x) (swap y) ↔ R x y := by cases x <;> cases y <;> simp;
 
-end FineFrame
+end FinePoint
+
+/-- Fine's frame: the points `FinePoint` ordered by `FinePoint.R`.
+
+- [Fin74a, p. 25] -/
+abbrev fineFrame : Frame FinePoint := ⟨FinePoint.R⟩
+
+/-- Fine's model: `fineFrame` with the valuation `FinePoint.val`.
+
+- [Fin74a, p. 25] -/
+abbrev fineModel : Model FinePoint ℕ := ⟨fineFrame, FinePoint.val⟩
+
+namespace fineFrame
+
+open Fine FinePoint
+
+variable {V : FinePoint → ℕ → Prop} {x y : FinePoint}
+
+@[simp] lemma rel_iff : Frame.Rel (F := fineFrame) x y ↔ R x y := Iff.rfl
+
+@[simp] lemma forces_atom {n : ℕ} : x ⊩[⟨fineFrame, V⟩] #n ↔ V x n := Iff.rfl
+
+end fineFrame
+
+namespace fineModel
+
+open Fine FinePoint
+
+variable {x : FinePoint}
+
+@[simp high] lemma forces_atom_0_iff : x ⊩[fineModel] #0 ↔ ∃ k, x = .d k ∧ k % 2 = 0 := by
+  cases x <;> simp
+@[simp high] lemma forces_atom_1_iff : x ⊩[fineModel] #1 ↔ ∃ k, x = .d k ∧ k % 2 = 1 := by
+  cases x <;> simp
+@[simp high] lemma forces_atom_2_iff : x ⊩[fineModel] #2 ↔ x = .b 0 := by cases x <;> simp
+@[simp high] lemma forces_atom_3_iff : x ⊩[fineModel] #3 ↔ x = .b 1 := by cases x <;> simp
+@[simp high] lemma forces_atom_4_iff : x ⊩[fineModel] #4 ↔ x = .c 0 := by cases x <;> simp
+@[simp high] lemma forces_atom_5_iff : x ⊩[fineModel] #5 ↔ x = .c 1 := by cases x <;> simp
+
+end fineModel
 
 end
