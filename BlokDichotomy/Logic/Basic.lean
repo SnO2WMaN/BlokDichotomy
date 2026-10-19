@@ -128,6 +128,22 @@ inductive FormulaSet.axiomsK : FormulaSet α
 abbrev logicK : NormalLogic α := NormalLogic.ofSet FormulaSet.axiomsK
 notation "𝐊" => logicK
 
+/-- The axiom scheme `4`. -/
+inductive FormulaSet.axiomsFour : FormulaSet α
+| four {φ} : axiomsFour <| □φ 🡒 □□φ
+
+/-- The axiom scheme `T`. -/
+inductive FormulaSet.axiomsT : FormulaSet α
+| t {φ} : axiomsT <| □φ 🡒 φ
+
+/-- The normal logic `𝐊𝟒 = 𝐊 ⊕ 4`. -/
+abbrev logicK4 : NormalLogic α := (𝐊 : NormalLogic α) + (FormulaSet.axiomsFour : FormulaSet α)
+notation "𝐊𝟒" => logicK4
+
+/-- The normal logic `𝐒𝟒 = 𝐊𝟒 ⊕ T`. -/
+abbrev logicS4 : NormalLogic α := (𝐊𝟒 : NormalLogic α) + (FormulaSet.axiomsT : FormulaSet α)
+notation "𝐒𝟒" => logicS4
+
 namespace NormalLogic
 
 /-- `L` is a normal extension of `L₀`. -/
@@ -150,7 +166,7 @@ notation:50 Γ:51 " ⊬[" L "] " φ:60 => NotDerives L Γ φ
 variable {L L₀ L₁ L₂ : NormalLogic α} {X : FormulaSet α} {Γ Δ : FormulaSet α}
   {φ ψ χ θ : Formula α} {l : List (Formula α)} {n : ℕ}
 
-instance : (𝐊 : NormalLogic α).IsNExt 𝐊 := ⟨le_rfl⟩
+instance : L.IsNExt L := ⟨le_rfl⟩
 
 instance [L₁.IsNExt L₀] [L₂.IsNExt L₀] : (L₁ ∩ L₂).IsNExt L₀ :=
   ⟨fun _ hA => ⟨IsNExt.logic_le hA, IsNExt.logic_le hA⟩⟩

@@ -220,6 +220,19 @@ Fin85:
     issue: 3
   page-range: 619-651
 
+Ger75:
+  type: Article
+  title: The inadequacy of the neighbourhood semantics for modal logic
+  author:
+    - "Gerson, Martin"
+  date: 1975
+  parent:
+    type: Periodical
+    title: The Journal of Symbolic Logic
+    volume: 40
+    issue: 2
+  page-range: 141-148
+
 Gol20:
   type: Misc
   title: Fine's theorem on first-order complete modal logics
