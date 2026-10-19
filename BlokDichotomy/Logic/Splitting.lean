@@ -37,14 +37,19 @@ def Splits (L₀ L₁ : NormalLogic α) : Prop := ∃ L₂, IsSplittingPair L₀
 
 namespace IsSplittingPair
 
-lemma not_le_of_le (h : IsSplittingPair L₀ L₁ L₂) (hL : L ≤ L₁) : ¬L₂ ≤ L :=
-  fun hL₂ => h.not_le <| hL₂.trans hL
+lemma not_le_of_le (h : IsSplittingPair L₀ L₁ L₂) (hL : L ≤ L₁) : ¬L₂ ≤ L := by
+  by_contra hL₂;
+  exact h.not_le <| hL₂.trans hL;
 
 /-- Every normal extension `L` of `L₀` has exactly one of `L ≤ L₁` and `L₂ ≤ L`.
 - [CZ98, §10.5]
 -/
-lemma le_iff_not_le (h : IsSplittingPair L₀ L₁ L₂) [L.IsNExt L₀] : L₂ ≤ L ↔ ¬L ≤ L₁ :=
-  ⟨fun hL₂ hL => h.not_le_of_le hL hL₂, (h.le_or_le L).resolve_left⟩
+lemma le_iff_not_le (h : IsSplittingPair L₀ L₁ L₂) [L.IsNExt L₀] : L₂ ≤ L ↔ ¬L ≤ L₁ := by
+  constructor;
+  · intro hL₂;
+    by_contra hL;
+    exact h.not_le_of_le hL hL₂;
+  · exact (h.le_or_le L).resolve_left;
 
 /-- `L₂` is determined by `L₁`.
 - [CZ98, §10.5]

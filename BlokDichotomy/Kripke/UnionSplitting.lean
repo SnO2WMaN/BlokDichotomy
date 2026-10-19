@@ -122,7 +122,9 @@ theorem isSplittingPair_unionSplitting_singleton (F : JFFrame) :
     IsSplittingPair 𝐊 F.frame.logic (unionSplitting {F}) where
   isNExt_left := ⟨fun _ hφ => validates_logicK _ hφ⟩
   isNExt_right := inferInstance
-  not_le h := not_validates_unionSplitting (Set.mem_singleton F) fun _ hφ => h hφ
+  not_le := by
+    by_contra h;
+    exact not_validates_unionSplitting (Set.mem_singleton F) fun _ hφ => h hφ;
   le_or_le L _ := by
     by_cases hFL : F.frame ⊧ L;
     · exact Or.inl fun _ hφ => hFL _ hφ;
@@ -154,7 +156,10 @@ lemma le_coreUnionSplitting (h : L'.IsUnionSplitting) (hle : L' ≤ L) :
     L' ≤ L.coreUnionSplitting := by
   obtain ⟨𝔉, rfl⟩ := h;
   apply unionSplitting_mono;
-  exact fun F hF hFL => not_validates_unionSplitting hF fun φ hA => hFL φ <| hle hA;
+  intro F hF;
+  change F.frame ⊭ L;
+  by_contra hFL;
+  exact not_validates_unionSplitting hF fun φ hA => hFL φ <| hle hA;
 
 theorem isGreatest_coreUnionSplitting [L.IsNExt 𝐊] :
     IsGreatest {L' | L'.IsUnionSplitting ∧ L' ≤ L} L.coreUnionSplitting :=

@@ -158,6 +158,22 @@ instance [L₁.IsNExt L₀] [L₂.IsNExt L₀] : (L₁ ∩ L₂).IsNExt L₀ :=
 instance [L.IsNExt L₀] : (L + X).IsNExt L₀ :=
   ⟨fun _ hA => le_add (IsNExt.logic_le hA)⟩
 
+/-- `L` contains every formula. -/
+def Inconsistent (L : NormalLogic α) : Prop := ¬L.Consistent
+
+lemma inconsistent_iff : L.Inconsistent ↔ ∀ φ : Formula α, φ ∈ L := by
+  simp [Inconsistent, consistent_iff]
+
+lemma not_inconsistent_iff : ¬L.Inconsistent ↔ L.Consistent := not_not
+
+namespace Inconsistent
+
+lemma mem (h : L.Inconsistent) (φ : Formula α) : φ ∈ L := inconsistent_iff.mp h φ
+
+lemma isNExt (h : L.Inconsistent) : L.IsNExt L₀ := ⟨fun φ _ => h.mem φ⟩
+
+end Inconsistent
+
 lemma mdp₂ (h : φ 🡒 ψ 🡒 χ ∈ L) (hA : φ ∈ L) (hB : ψ ∈ L) : χ ∈ L :=
   mem_mdp hB <| mem_mdp hA h
 

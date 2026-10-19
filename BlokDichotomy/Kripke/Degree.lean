@@ -21,7 +21,7 @@ Frame equivalence of normal logics, frame companions, and the degree of Kripke i
 universe u v
 
 variable {α : Type v}
-variable {L L' L₁ L₂ L₃ : NormalLogic α} {φ : Formula α}
+variable {L L' L₀ L₁ L₂ L₃ : NormalLogic α} {φ : Formula α}
 variable {P : ⦃κ : Type u⦄ → Frame κ → Prop}
 
 namespace NormalLogic
@@ -57,6 +57,9 @@ lemma mem_frameLogic : φ ∈ L.frameLogic P ↔ ∀ ⦃κ : Type u⦄ (F : Fram
   Iff.rfl
 
 instance : (L.frameLogic P).IsNExt 𝐊 := ⟨fun _ hA _ _ _ _ => Frame.validates_logicK _ hA⟩
+
+instance [L.IsNExt L₀] : (L.frameLogic P).IsNExt L₀ :=
+  ⟨fun _ hA _ _ _ hF => hF _ (IsNExt.logic_le hA)⟩
 
 lemma le_frameLogic : L ≤ L.frameLogic P := fun _ hA _ _ _ hF => hF _ hA
 
@@ -96,72 +99,55 @@ lemma kripkeComplete_iff_frameLogic_eq : L.KripkeComplete P ↔ L.frameLogic P =
 lemma kripkeComplete_frameLogic : (L.frameLogic P).KripkeComplete P :=
   frameLogic_frameLogic.le
 
-/-- The normal extensions `L'` of `K` with `L ≊[P] L'`.
+/-- The normal extensions `L'` of `L₀` with `L ≊[P] L'`.
 - [CZ98, §10.5] -/
-def Companion (L : NormalLogic α) (P : ⦃κ : Type u⦄ → Frame κ → Prop) :=
-  {L' : NormalLogic α // L'.IsNExt 𝐊 ∧ L ≊[P] L'}
+def Companion (L L₀ : NormalLogic α) (P : ⦃κ : Type u⦄ → Frame κ → Prop) :=
+  {L' : NormalLogic α // L'.IsNExt L₀ ∧ L ≊[P] L'}
 
-def Companion.self (L : NormalLogic α) [L.IsNExt 𝐊] : L.Companion P :=
+def Companion.self (L L₀ : NormalLogic α) [L.IsNExt L₀] : L.Companion L₀ P :=
   ⟨L, inferInstance, .refl⟩
 
-def Companion.frameLogic (L : NormalLogic α) : L.Companion P :=
+def Companion.frameLogic (L L₀ : NormalLogic α) [L.IsNExt L₀] : L.Companion L₀ P :=
   ⟨L.frameLogic P, inferInstance, frameEquiv_frameLogic⟩
 
-/-- The cardinality of `L.Companion P`.
+/-- The cardinality of `L.Companion L₀ P`.
 - [CZ98, §10.5] -/
-noncomputable def degree (L : NormalLogic α) (P : ⦃κ : Type u⦄ → Frame κ → Prop) : Cardinal.{v} :=
-  Cardinal.mk (L.Companion P)
+noncomputable def degree (L L₀ : NormalLogic α) (P : ⦃κ : Type u⦄ → Frame κ → Prop) :
+    Cardinal.{v} :=
+  Cardinal.mk (L.Companion L₀ P)
 
-lemma FrameEquiv.degree_eq (h : L₁ ≊[P] L₂) : L₁.degree P = L₂.degree P :=
+lemma FrameEquiv.degree_eq (h : L₁ ≊[P] L₂) : L₁.degree L₀ P = L₂.degree L₀ P :=
   Cardinal.mk_congr <| Equiv.subtypeEquivRight fun _ =>
     and_congr_right' ⟨fun h' => h.symm.trans h', fun h' => h.trans h'⟩
 
-lemma degree_ne_zero : L.degree P ≠ 0 :=
-  Cardinal.mk_ne_zero_iff.mpr ⟨Companion.frameLogic L⟩
+lemma degree_ne_zero [L.IsNExt L₀] : L.degree L₀ P ≠ 0 :=
+  Cardinal.mk_ne_zero_iff.mpr ⟨Companion.frameLogic L L₀⟩
 
-lemma one_le_degree : 1 ≤ L.degree P := Cardinal.one_le_iff_ne_zero.mpr degree_ne_zero
+lemma one_le_degree [L.IsNExt L₀] : 1 ≤ L.degree L₀ P :=
+  Cardinal.one_le_iff_ne_zero.mpr degree_ne_zero
 
-lemma degree_eq_one_iff :
-    L.degree P = 1 ↔ ∀ L' : NormalLogic α, L'.IsNExt 𝐊 → L ≊[P] L' → L' = L.frameLogic P := by
+lemma degree_eq_one_iff [L.IsNExt L₀] :
+    L.degree L₀ P = 1 ↔ ∀ L' : NormalLogic α, L'.IsNExt L₀ → L ≊[P] L' → L' = L.frameLogic P := by
   rw [degree, Cardinal.eq_one_iff_unique];
   constructor;
   · rintro ⟨hs, -⟩ L' hL' h;
-    exact congrArg Subtype.val <| hs.elim ⟨L', hL', h⟩ (Companion.frameLogic L);
+    exact congrArg Subtype.val <| hs.elim ⟨L', hL', h⟩ (Companion.frameLogic L L₀);
   · intro h;
     and_intros;
     · constructor;
       rintro ⟨L₁, hL₁, h₁⟩ ⟨L₂, hL₂, h₂⟩;
       exact Subtype.ext <| (h L₁ hL₁ h₁).trans (h L₂ hL₂ h₂).symm;
-    · exact ⟨Companion.frameLogic L⟩;
+    · exact ⟨Companion.frameLogic L L₀⟩;
 
-/-- If `L.degree P = 1`, then `L = L.frameLogic P`.
+/-- If `L.degree L₀ P = 1`, then `L = L.frameLogic P`.
 - [CZ98, §10.5] -/
-lemma eq_frameLogic_of_degree_eq_one [L.IsNExt 𝐊] (h : L.degree P = 1) : L = L.frameLogic P :=
+lemma eq_frameLogic_of_degree_eq_one [L.IsNExt L₀] (h : L.degree L₀ P = 1) :
+    L = L.frameLogic P :=
   degree_eq_one_iff.mp h L inferInstance .refl
 
-lemma kripkeComplete_of_degree_eq_one [L.IsNExt 𝐊] (h : L.degree P = 1) : L.KripkeComplete P :=
+lemma kripkeComplete_of_degree_eq_one [L.IsNExt L₀] (h : L.degree L₀ P = 1) :
+    L.KripkeComplete P :=
   (eq_frameLogic_of_degree_eq_one h).symm.le
-
-/-- If `L₁ ≠ L₂` are companions of `L`, then `2 ≤ L.degree P`.
-- [CZ98, §10.5] -/
-lemma two_le_degree (hL₁ : L₁.IsNExt 𝐊) (hL₂ : L₂.IsNExt 𝐊)
-  (h₁ : L ≊[P] L₁) (h₂ : L ≊[P] L₂) (hne : L₁ ≠ L₂) : 2 ≤ L.degree P :=
-  Cardinal.two_le_iff.mpr ⟨⟨L₁, hL₁, h₁⟩, ⟨L₂, hL₂, h₂⟩, fun h => hne <| congrArg Subtype.val h⟩
-
-lemma two_le_degree_of_ne [L.IsNExt 𝐊] (hL' : L'.IsNExt 𝐊) (h : L ≊[P] L')
-    (hne : L' ≠ L) : 2 ≤ L.degree P :=
-  two_le_degree hL' inferInstance h .refl hne
-
-/-- If `¬L.KripkeComplete P`, then `2 ≤ L.degree P`.
-- [CZ98, §10.5] -/
-lemma two_le_degree_of_not_kripkeComplete [L.IsNExt 𝐊] (h : ¬L.KripkeComplete P) :
-    2 ≤ L.degree P :=
-  two_le_degree_of_ne inferInstance frameEquiv_frameLogic fun he => h he.le
-
-lemma degree_eq_one_or_two_le : L.degree P = 1 ∨ 2 ≤ L.degree P := by
-  rcases (one_le_degree (P := P) (L := L)).eq_or_lt with h | h;
-  · exact Or.inl h.symm;
-  · exact Or.inr <| Cardinal.two_le_iff_one_lt.mpr h;
 
 end NormalLogic
 
@@ -252,7 +238,7 @@ theorem IsUnionSplitting.kripkeComplete (h : L.IsUnionSplitting)
 - [CZ98, Theorem 10.51]
 -/
 theorem degree_eq_one_of_isUnionSplitting (h : L.IsUnionSplitting)
-  : L.degree (fun _ _ => True) = 1 := by
+  : L.degree 𝐊 (fun _ _ => True) = 1 := by
   obtain ⟨𝔉, rfl⟩ := h;
   have hc : (unionSplitting 𝔉).KripkeComplete (fun _ _ => True) := unionSplitting_kripkeComplete;
   apply degree_eq_one_iff.mpr;
@@ -273,23 +259,27 @@ end UnionSplitting
 
 section Inconsistent
 
-variable {α : Type v} {L : NormalLogic α}
+variable {α : Type v} {L L₀ : NormalLogic α}
 
 /-- An inconsistent logic has degree `1`.
 - [CZ98, Theorem 8.67]
 -/
-theorem degree_eq_one_of_not_consistent (h : ¬L.Consistent) : L.degree (fun _ _ => True) = 1 := by
-  have hL : ∀ φ, φ ∈ L := fun φ => by
-    by_contra hA;
-    exact h <| consistent_iff.mpr ⟨φ, hA⟩;
+theorem Inconsistent.degree_eq_one [L₀.IsNExt 𝐊] (h : L.Inconsistent) :
+    L.degree L₀ (fun _ _ => True) = 1 := by
+  have : L.IsNExt L₀ := h.isNExt;
   apply degree_eq_one_iff.mpr;
   intro L' hL' hE;
-  have hall : ∀ φ, φ ∈ L' := fun φ => by
-    by_contra hA;
-    obtain ⟨F, hF⟩ := Consistent.exists_frame_validates <| consistent_iff.mpr ⟨φ, hA⟩;
+  have : L'.IsNExt 𝐊 := ⟨le_trans IsNExt.logic_le hL'.logic_le⟩;
+  have hL' : L'.Inconsistent := by
+    by_contra! hc;
+    obtain ⟨F, hF⟩ := (not_inconsistent_iff.mp hc).exists_frame_validates;
     exact h <| consistent_of_validates <| (hE F.ulift trivial).mpr <|
       validateLogic_transport_iff.mpr hF;
-  exact SetLike.ext fun φ => iff_of_true (hall φ) (le_frameLogic <| hL φ);
+  apply SetLike.ext;
+  intro φ;
+  apply iff_of_true;
+  · exact hL'.mem φ;
+  · exact le_frameLogic <| h.mem φ;
 
 end Inconsistent
 

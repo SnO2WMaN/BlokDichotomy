@@ -20,7 +20,7 @@ The degree of Kripke incompleteness of a normal logic extending `𝐊` is `1` or
 ## References
 
 - [CZ98, Theorem 10.59]
-- [Blok78, Theorem 4.9]
+- [Blo78, Theorem 4.9]
 -/
 
 @[expose] public section
@@ -527,13 +527,13 @@ theorem HookInterface.inter_logic_ne {J : Set ℕ} {κ' : Type*} {H' : GeneralFr
     rw [he] at h;
     exact hJ.not_validates_xi hiJ h.2;
 
-/-- `Cardinal.continuum ≤ L.degree P`.
+/-- `Cardinal.continuum ≤ L.degree 𝐊 P`.
 - [CZ98, p. 367, p. 368]
 -/
 theorem HookInterface.continuum_le_degree {κ : Set ℕ → Type w} {H : ∀ I, GeneralFrame (κ I)}
     (hH : ∀ I, HookInterface L N m e φ I (H I)) (hφ : φ ∈ L) (hN : 1 ≤ N) :
-    Cardinal.continuum ≤ L.degree P := by
-  let f : Set ℕ → L.Companion P := fun I =>
+    Cardinal.continuum ≤ L.degree 𝐊 P := by
+  let f : Set ℕ → L.Companion 𝐊 P := fun I =>
     ⟨L ∩ (H I).logic, inferInstance, (hH I).frameEquiv hN⟩;
   have hf : Function.Injective f := fun I J h => by
     by_contra hIJ;
@@ -550,7 +550,7 @@ end Naming
 /-- The data of a hooked frame: a rooted frame `F`, an infinite path in `F`, the number `len + 1`
 of copies, the length `m` of the `d`-chain, and whether `dBot` is reflexive.
 - [CZ98, Fig. 10.4, Fig. 10.5]
-- [Blok78, Definition 4.3]
+- [Blo78, Definition 4.3]
 -/
 structure HookData (κ : Type u) where
   F : Frame κ
@@ -657,7 +657,7 @@ private lemma finite_isA_index_le (n : ℕ) : {w : D.World I | w.IsA ∧ w.index
 /-- The admissible sets of the hooked frame: the sets `S` such that only finitely many `a`-points
 disagree with `b` about membership in `S`.
 - [CZ98, Fig. 10.5]
-- [Blok78, Definition 4.3]
+- [Blo78, Definition 4.3]
 -/
 def Adm (D : HookData κ) (I : Set ℕ) : Set (Set (D.World I)) :=
   {S | {w | w.IsA ∧ (w ∈ S ↔ World.b ∉ S)}.Finite}
@@ -736,7 +736,7 @@ lemma adm_diaSet {S : Set (D.World I)} : (D.hookFrame I).diaSet S ∈ D.Adm I :=
 variable (D I) in
 /-- The hooked general frame.
 - [CZ98, Fig. 10.4, Fig. 10.5]
-- [Blok78, Definition 4.3]
+- [Blo78, Definition 4.3]
 -/
 def hooked : GeneralFrame (D.World I) where
   toFrame := D.hookFrame I
@@ -1127,7 +1127,7 @@ variable {V : D.F.World → α → Prop} {φ : Formula α}
 
 /-- Under `D.liftVal I V`, `.base u ⊩ φ ↔ u ⊩ φ` when `φ.depth ≤ D.len + 1`, and
 `.copy t _ ⊩ φ ↔ D.path (t + 1) ⊩ φ` when `φ.depth + t ≤ D.len`.
-- [Blok78, Theorem 4.6]
+- [Blo78, Theorem 4.6]
 - [CZ98, Proposition 3.2]
 -/
 theorem forces_liftVal :
@@ -1721,13 +1721,13 @@ open Cardinal
 variable {L : NormalLogic ℕ} {P : ⦃κ : Type u⦄ → Frame κ → Prop}
 
 /--
-`L.degree P ≤ 𝔠` for `L : NormalLogic ℕ`.
+`L.degree 𝐊 P ≤ 𝔠` for `L : NormalLogic ℕ`.
 - [CZ98, §10.5]
 -/
-theorem degree_le_continuum : L.degree P ≤ 𝔠 :=
+theorem degree_le_continuum : L.degree 𝐊 P ≤ 𝔠 :=
   calc
     _ ≤ Cardinal.mk (Set (Formula ℕ)) :=
-        mk_le_of_injective (f := fun L' : L.Companion P => (L'.1 : Set (Formula ℕ)))
+        mk_le_of_injective (f := fun L' : L.Companion 𝐊 P => (L'.1 : Set (Formula ℕ)))
           fun _ _ h => Subtype.ext <| SetLike.coe_injective h
     _ = 2 ^ Cardinal.mk (Formula ℕ) := mk_set
     _ ≤ 2 ^ ℵ₀ := power_le_power_left two_ne_zero mk_le_aleph0
@@ -1738,10 +1738,10 @@ variable [L.IsNExt 𝐊]
 /--
 If `L` is consistent and not a union-splitting of `𝐊`, then its degree is `𝔠`.
 - [CZ98, Theorem 10.59]
-- [Blok78, Theorem 4.9]
+- [Blo78, Theorem 4.9]
 -/
 theorem degree_eq_continuum (hc : L.Consistent) (hL : ¬L.IsUnionSplitting)
-  : L.degree.{u} (fun _ _ => True) = 𝔠 := by
+  : L.degree.{u} 𝐊 (fun _ _ => True) = 𝔠 := by
   obtain ⟨n, D, hrefl, hgen, φ, hφ, hdepth, V, hV⟩ := exists_hookData hL;
   apply le_antisymm degree_le_continuum;
   exact Naming.HookInterface.continuum_le_degree (H := D.hooked)
@@ -1750,10 +1750,10 @@ theorem degree_eq_continuum (hc : L.Consistent) (hL : ¬L.IsUnionSplitting)
 /--
 For consistent `L`, the degree of `L` is `1` iff `L` is a union-splitting of `𝐊`.
 - [CZ98, Theorem 10.51, Theorem 10.59]
-- [Blok78, Theorem 4.9]
+- [Blo78, Theorem 4.9]
 -/
 theorem degree_eq_one_iff_isUnionSplitting (hc : L.Consistent)
-  : L.degree (fun _ _ => True) = 1 ↔ L.IsUnionSplitting := by
+  : L.degree 𝐊 (fun _ _ => True) = 1 ↔ L.IsUnionSplitting := by
   constructor;
   · intro h;
     by_contra hL;
@@ -1764,15 +1764,15 @@ theorem degree_eq_one_iff_isUnionSplitting (hc : L.Consistent)
 /--
 Blok's dichotomy: the degree of Kripke incompleteness of `L` is `1` or `𝔠`.
 - [CZ98, Theorem 10.59]
-- [Blok78, Theorem 4.9]
+- [Blo78, Theorem 4.9]
 -/
 theorem blok_dichotomy :
-    L.degree.{u} (fun _ _ => True) = 1 ∨ L.degree.{u} (fun _ _ => True) = 𝔠 := by
+    L.degree.{u} 𝐊 (fun _ _ => True) = 1 ∨ L.degree.{u} 𝐊 (fun _ _ => True) = 𝔠 := by
   by_cases hc : L.Consistent;
   · by_cases hL : L.IsUnionSplitting;
     · exact Or.inl <| degree_eq_one_of_isUnionSplitting hL;
     · exact Or.inr <| degree_eq_continuum hc hL;
-  · exact Or.inl <| degree_eq_one_of_not_consistent hc;
+  · exact Or.inl <| Inconsistent.degree_eq_one hc;
 
 
 end

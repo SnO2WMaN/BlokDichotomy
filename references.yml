@@ -4,7 +4,55 @@
 # The keys are the citation keys used in docstrings, e.g. `- [CZ98, Theorem 10.55]`;
 # see docs/conventions.md. Entries are sorted by key.
 
-Blok78:
+BBM25:
+  type: Article
+  title: "Degrees of the finite model property: the antidichotomy theorem"
+  author:
+    - "Bezhanishvili, Guram"
+    - "Bezhanishvili, Nick"
+    - "Moraschini, Tommaso"
+  date: 2025
+  parent:
+    type: Periodical
+    title: Journal of Mathematical Logic
+  doi: "10.1142/S0219061325500060"
+  url: "https://arxiv.org/abs/2307.07209"
+
+BBdJ08:
+  type: Article
+  title: "The Kuznetsov-Gerčiu and Rieger-Nishimura logics: the boundaries of the finite model property"
+  author:
+    - "Bezhanishvili, Guram"
+    - "Bezhanishvili, Nick"
+    - "de Jongh, Dick"
+  date: 2008
+  parent:
+    type: Periodical
+    title: Logic and Logical Philosophy
+    volume: 17
+  page-range: 73-110
+
+BC22:
+  type: Misc
+  title: Blok–Esakia theorems via stable canonical rules
+  author:
+    - "Bezhanishvili, Nick"
+    - "Cleani, Antonio Maria"
+  date: 2022
+  note: "arXiv:2206.08863"
+  url: "https://arxiv.org/abs/2206.08863"
+
+BC24:
+  type: Misc
+  title: Failure of the Blok–Esakia theorem in the monadic setting
+  author:
+    - "Bezhanishvili, Guram"
+    - "Carai, Luca"
+  date: 2024
+  note: "arXiv:2405.09401"
+  url: "https://arxiv.org/abs/2405.09401"
+
+Blo78:
   type: Misc
   title: "On the degree of incompleteness of modal logics and the covering relation in the lattice of modal logics"
   author: Blok, Willem J.
@@ -13,10 +61,39 @@ Blok78:
   date: 1978
   note: "Report 78-07"
 
+Blo80:
+  type: Article
+  title: "The lattice of modal logics: an algebraic investigation"
+  author:
+    - "Blok, Willem J."
+  date: 1980
+  parent:
+    type: Periodical
+    title: The Journal of Symbolic Logic
+    volume: 45
+    issue: 2
+  page-range: 221-236
+
+CM24:
+  type: Article
+  title: Tabularity and post-completeness in tense logic
+  author:
+    - "Chen, Qian"
+    - "Ma, Minghui"
+  date: 2024
+  parent:
+    type: Periodical
+    title: The Review of Symbolic Logic
+    volume: 17
+    issue: 2
+  page-range: 475-492
+
 CZ98:
   type: Book
   title: Modal Logic
-  author: ["Chagrov, Alexander", "Zakharyaschev, Michael"]
+  author:
+    - "Chagrov, Alexander"
+    - "Zakharyaschev, Michael"
   date: 1997
   publisher:
     name: Clarendon Press
@@ -27,3 +104,381 @@ CZ98:
     type: Anthology
     title: Oxford Logic Guides
     volume: 35
+
+Che22:
+  type: Thesis
+  title: Degrees of FMP in extensions of bi-intuitionistic logic
+  author: "Chernev, Anton"
+  date: 2022
+  organization: Institute for Logic, Language and Computation, University of Amsterdam
+  genre: MSc thesis
+  note: "MoL-2022-17"
+
+Che24:
+  type: Misc
+  title: "Pretabular tense logics over S4t"
+  author: "Chen, Qian"
+  date: 2024
+  note: "arXiv:2412.19558"
+  url: "https://arxiv.org/abs/2412.19558"
+
+Che25:
+  type: Misc
+  title: "Degree of Kripke-incompleteness of tense logics"
+  author: "Chen, Qian"
+  date: 2025
+  note: "arXiv:2507.04533"
+  url: "https://arxiv.org/abs/2507.04533"
+
+Che25a:
+  type: Misc
+  title: Degree of Kripke incompleteness in tense logics
+  author:
+    - "Chen, Qian"
+  date: 2025
+  note: "Extended abstract, LATD 2025"
+  url: "https://www.congressi.unisi.it/latd25/wp-content/uploads/sites/156/2025/07/Qian-Chen.pdf"
+
+Che25b:
+  type: Misc
+  title: Degree of Kripke incompleteness in NExt(S4t)
+  author:
+    - "Chen, Qian"
+  date: 2025
+  note: "Extended abstract, TbiLLC 2025"
+  url: "https://events.illc.uva.nl/Tbilisi/Tbilisi2025/uploaded_files/uploadlibraryitem/abstracts/35.pdf"
+
+FM25:
+  type: Misc
+  title: "Degrees of incompleteness of implicative logics: the trichotomy theorem"
+  author:
+    - "Fornasiere, Damiano"
+    - "Moraschini, Tommaso"
+  date: 2025
+  note: "Preprint"
+  url: "https://moraschini.github.io/files/submitted/2025-Trichotomy-Theorem.pdf"
+
+Fin74a:
+  type: Article
+  title: An incomplete logic containing S4
+  author:
+    - "Fine, Kit"
+  date: 1974
+  parent:
+    type: Periodical
+    title: Theoria
+    volume: 40
+    issue: 1
+  page-range: 23-29
+
+Fin74b:
+  type: Article
+  title: Logics containing K4, Part I
+  author:
+    - "Fine, Kit"
+  date: 1974
+  parent:
+    type: Periodical
+    title: The Journal of Symbolic Logic
+    volume: 39
+    issue: 1
+  page-range: 31-42
+
+Fin74c:
+  type: Article
+  title: An ascending chain of S4 logics
+  author:
+    - "Fine, Kit"
+  date: 1974
+  parent:
+    type: Periodical
+    title: Theoria
+    volume: 40
+    issue: 2
+  page-range: 110-116
+
+Fin75:
+  type: Article
+  title: "Some connections between elementary and modal logic"
+  author:
+    - "Fine, Kit"
+  date: 1975
+  parent:
+    type: Periodical
+    title: Proceedings of the Third Scandinavian Logic Symposium
+
+Fin85:
+  type: Article
+  title: Logics containing K4, Part II
+  author:
+    - "Fine, Kit"
+  date: 1985
+  parent:
+    type: Periodical
+    title: The Journal of Symbolic Logic
+    volume: 50
+    issue: 3
+  page-range: 619-651
+
+Gol20:
+  type: Misc
+  title: Fine's theorem on first-order complete modal logics
+  author:
+    - "Goldblatt, Robert"
+  date: 2020
+  note: "arXiv:1604.02196"
+  url: "https://arxiv.org/abs/1604.02196"
+
+HL19:
+  type: Article
+  title: Complete additivity and modal incompleteness
+  author:
+    - "Holliday, Wesley H."
+    - "Litak, Tadeusz"
+  date: 2019
+  parent:
+    type: Periodical
+    title: The Review of Symbolic Logic
+    volume: 12
+    issue: 3
+  page-range: 487-535
+  doi: "10.1017/S1755020317000259"
+
+Kra90:
+  type: Article
+  title: An almost general splitting theorem for modal logic
+  author: "Kracht, Marcus"
+  date: 1990
+  parent:
+    type: Periodical
+    title: Studia Logica
+    volume: 49
+    issue: 4
+  page-range: 455-470
+
+Kra92:
+  type: Article
+  title: Even more about the lattice of tense logics
+  author: "Kracht, Marcus"
+  date: 1992
+  parent:
+    type: Periodical
+    title: Archive for Mathematical Logic
+    volume: 31
+    issue: 4
+  page-range: 243-257
+
+Kra99:
+  type: Book
+  title: Tools and Techniques in Modal Logic
+  author:
+    - "Kracht, Marcus"
+  date: 1999
+  publisher:
+    name: Elsevier
+  parent:
+    type: Anthology
+    title: Studies in Logic and the Foundations of Mathematics
+    volume: 142
+
+Lit02:
+  type: Article
+  title: A continuum of incomplete intermediate logics
+  author: "Litak, Tadeusz"
+  date: 2002
+  parent:
+    type: Periodical
+    title: Reports on Mathematical Logic
+    volume: 36
+  page-range: 131-141
+  url: "https://arxiv.org/abs/1808.06284"
+
+Lit04:
+  type: Article
+  title: Modal incompleteness revisited
+  author:
+    - "Litak, Tadeusz"
+  date: 2004
+  parent:
+    type: Periodical
+    title: Studia Logica
+    volume: 76
+    issue: 3
+  page-range: 329-342
+
+Lit05:
+  type: Thesis
+  title: An algebraic approach to incompleteness in modal logic
+  author: "Litak, Tadeusz"
+  date: 2005
+  organization: Japan Advanced Institute of Science and Technology
+  genre: PhD thesis
+
+Lit08:
+  type: Article
+  title: Stability of the Blok theorem
+  author:
+    - "Litak, Tadeusz"
+  date: 2008
+  parent:
+    type: Periodical
+    title: Algebra Universalis
+    volume: 58
+  page-range: 385-411
+  doi: "10.1007/s00012-008-2062-4"
+
+Mak71:
+  type: Article
+  title: "Some embedding theorems for modal logic"
+  author:
+    - "Makinson, David"
+  date: 1971
+  parent:
+    type: Periodical
+    title: Notre Dame Journal of Formal Logic
+    volume: 12
+  page-range: 252-254
+
+RWZ06:
+  type: Article
+  title: Willem Blok and modal logic
+  author:
+    - "Rautenberg, Wolfgang"
+    - "Wolter, Frank"
+    - "Zakharyaschev, Michael"
+  date: 2006
+  parent:
+    type: Periodical
+    title: Studia Logica
+    volume: 83
+  page-range: 15-30
+  doi: "10.1007/s11225-006-8296-2"
+
+Tak25a:
+  type: Misc
+  title: Decidability of being a union-splitting
+  author: "Takahashi, Tenyo"
+  date: 2025
+  note: "arXiv:2510.14520"
+  url: "https://arxiv.org/abs/2510.14520"
+
+Tak25b:
+  type: Misc
+  title: "Chopping more finely: finite countermodels in modal logic via the subdivision construction"
+  author: "Takahashi, Tenyo"
+  date: 2025
+  note: "arXiv:2511.19747"
+  url: "https://arxiv.org/abs/2511.19747"
+
+Tak25c:
+  type: Misc
+  title: "Stable canonical rules and formulas for pre-transitive logics via definable filtration"
+  author: "Takahashi, Tenyo"
+  date: 2025
+  note: "arXiv:2510.22638"
+  url: "https://arxiv.org/abs/2510.22638"
+
+Tak25d:
+  type: Thesis
+  title: Union-splittings, the axiomatization problem, and the rule dichotomy property in modal logic
+  author:
+    - "Takahashi, Tenyo"
+  date: 2025
+  organization: Institute for Logic, Language and Computation, University of Amsterdam
+  genre: MSc thesis
+  note: "MoL-2025-16"
+  url: "https://eprints.illc.uva.nl/id/eprint/2386/"
+
+Tak26:
+  type: Misc
+  title: Decidability of being a union-splitting
+  author:
+    - "Takahashi, Tenyo"
+  date: 2026
+  note: "Slides, TACL 2026"
+  url: "https://iphils.uj.edu.pl/tacl/slides/9.pdf"
+
+Tho74:
+  type: Article
+  title: "An incompleteness theorem in modal logic"
+  author:
+    - "Thomason, S. K."
+  date: 1974
+  parent:
+    type: Periodical
+    title: Theoria
+    volume: 40
+    issue: 1
+  page-range: 30-34
+
+VB78:
+  type: Article
+  title: "Transitivity follows from Dummett's axiom"
+  author:
+    - "van Benthem, Johan F. A. K."
+    - "Blok, Willem J."
+  date: 1978
+  parent:
+    type: Periodical
+    title: Theoria
+    volume: 44
+  page-range: 117-118
+
+Van78:
+  type: Article
+  title: Two simple incomplete modal logics
+  author:
+    - "van Benthem, Johan F. A. K."
+  date: 1978
+  parent:
+    type: Periodical
+    title: Theoria
+    volume: 44
+    issue: 1
+  page-range: 25-37
+
+Van79:
+  type: Article
+  title: "Syntactic aspects of modal incompleteness theorems"
+  author:
+    - "van Benthem, Johan F. A. K."
+  date: 1979
+  parent:
+    type: Periodical
+    title: Theoria
+    volume: 45
+
+WZ07:
+  type: Chapter
+  title: Modal decision problems
+  author:
+    - "Wolter, Frank"
+    - "Zakharyaschev, Michael"
+  date: 2007
+  parent:
+    type: Book
+    title: Handbook of Modal Logic
+    publisher: Elsevier
+
+Wol95:
+  type: Article
+  title: "Lattices of subframe logics: a survey"
+  author: "Wolter, Frank"
+  date: 1995
+  parent:
+    type: Periodical
+    title: 数理解析研究所講究録
+    volume: 927
+  page-range: 187-208
+
+Wol97:
+  type: Article
+  title: The structure of lattices of subframe logics
+  author:
+    - "Wolter, Frank"
+  date: 1997
+  parent:
+    type: Periodical
+    title: Annals of Pure and Applied Logic
+    volume: 86
+  page-range: 47-100
