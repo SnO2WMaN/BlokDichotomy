@@ -219,7 +219,7 @@ lemma γ_subst_shift (m n : ℕ) : (γ n)⟦shift m⟧ = γ (m + n) := (β_γ_su
 
 @[simp, grind =]
 lemma α_subst_shift (m n : ℕ) : (α n)⟦shift m⟧ = α (m + n) := by
-  simp [α, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+  simp [α, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 by omega]
 
 @[simp, grind =]
 lemma δ_subst_shift (m : ℕ) : δ⟦shift m⟧ = δ := by
@@ -227,19 +227,19 @@ lemma δ_subst_shift (m : ℕ) : δ⟦shift m⟧ = δ := by
 
 @[simp, grind =]
 lemma ι₁_subst_shift (m n : ℕ) : (ι₁ n)⟦shift m⟧ = ι₁ (m + n) := by
-  simp [ι₁, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+  simp [ι₁, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 by omega]
 
 @[simp, grind =]
 lemma ι₂_subst_shift (m n : ℕ) : (ι₂ n)⟦shift m⟧ = ι₂ (m + n) := by
-  simp [ι₂, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+  simp [ι₂, β_subst_shift, γ_subst_shift, show m + (n + 1) = m + n + 1 by omega]
 
 @[simp, grind =]
 lemma ι₃_subst_shift (m n : ℕ) : (ι₃ n)⟦shift m⟧ = ι₃ (m + n) := by
-  simp [ι₃, β_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+  simp [ι₃, β_subst_shift, show m + (n + 1) = m + n + 1 by omega]
 
 @[simp, grind =]
 lemma ι₄_subst_shift (m n : ℕ) : (ι₄ n)⟦shift m⟧ = ι₄ (m + n) := by
-  simp [ι₄, γ_subst_shift, show m + (n + 1) = m + n + 1 from by omega]
+  simp [ι₄, γ_subst_shift, show m + (n + 1) = m + n + 1 by omega]
 
 @[simp, grind =]
 lemma ι_subst_shift (m n : ℕ) : (ι n)⟦shift m⟧ = ι (m + n) := by
@@ -322,31 +322,24 @@ end Fine
 
 section Countermodel
 
-namespace fineFrame
-
-/-- The accessibility relation of Fine's model on the points `(0, m) = a_m`, `(1, m) = b_m`,
-`(2, m) = c_m` and `(3, m) = d_m`. -/
-@[grind =]
-def R : Fin 4 × ℕ → Fin 4 × ℕ → Prop
-| (1, m), (1, k) => k ≤ m
-| (1, m), (2, k) => k + 2 ≤ m
-| (2, m), (2, k) => k ≤ m
-| (2, m), (1, k) => k + 2 ≤ m
-| (0, m), (0, k) => k = m
-| (0, m), (1, k) => k ≤ m + 1
-| (0, m), (2, k) => k ≤ m + 1
-| (3, n), (3, k) => n ≤ k
-| (3, n), (0, m) => n ≤ m
-| (3, _), (1, _) => True
-| (3, _), (2, _) => True
-| _, _ => False
-
-end fineFrame
-
-/-- Fine's frame.
+/-- Fine's frame, on the points `(0, m) = a_m`, `(1, m) = b_m`, `(2, m) = c_m` and
+`(3, m) = d_m`.
 
 - [Fin74a, p. 25] -/
-abbrev fineFrame : Frame (Fin 4 × ℕ) := ⟨fineFrame.R⟩
+abbrev fineFrame : Frame (Fin 4 × ℕ) where
+  Rel'
+  | (1, m), (1, k) => k ≤ m
+  | (1, m), (2, k) => k + 2 ≤ m
+  | (2, m), (2, k) => k ≤ m
+  | (2, m), (1, k) => k + 2 ≤ m
+  | (0, m), (0, k) => k = m
+  | (0, m), (1, k) => k ≤ m + 1
+  | (0, m), (2, k) => k ≤ m + 1
+  | (3, n), (3, k) => n ≤ k
+  | (3, n), (0, m) => n ≤ m
+  | (3, _), (1, _) => True
+  | (3, _), (2, _) => True
+  | _, _ => False
 
 namespace fineFrame
 
@@ -382,37 +375,31 @@ section Rel
 
 variable {x y z : fineFrame.World} {m k n : ℕ}
 
-lemma rel_iff : x ≺ y ↔ R x y := Iff.rfl
-
 @[simp] lemma not_rel_iff : x ⊀ y ↔ ¬ x ≺ y := Iff.rfl
 
-@[simp] lemma rel_a_a : (a m ≺ a k) ↔ k = m := by simp [rel_iff, R]
-@[simp] lemma rel_a_b : (a m ≺ b k) ↔ k ≤ m + 1 := by simp [rel_iff, R]
-@[simp] lemma rel_a_c : (a m ≺ c k) ↔ k ≤ m + 1 := by simp [rel_iff, R]
-@[simp] lemma rel_a_d : a m ⊀ d k := by simp [rel_iff, R]
-@[simp] lemma rel_b_a : b m ⊀ a k := by simp [rel_iff, R]
-@[simp] lemma rel_b_b : (b m ≺ b k) ↔ k ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_b_c : (b m ≺ c k) ↔ k + 2 ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_b_d : b m ⊀ d k := by simp [rel_iff, R]
-@[simp] lemma rel_c_a : c m ⊀ a k := by simp [rel_iff, R]
-@[simp] lemma rel_c_b : (c m ≺ b k) ↔ k + 2 ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_c_c : (c m ≺ c k) ↔ k ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_c_d : c m ⊀ d k := by simp [rel_iff, R]
-@[simp] lemma rel_d_a : (d n ≺ a m) ↔ n ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_d_b : d n ≺ b k := by simp [rel_iff, R]
-@[simp] lemma rel_d_c : d n ≺ c k := by simp [rel_iff, R]
-@[simp] lemma rel_d_d : (d n ≺ d k) ↔ n ≤ k := by simp [rel_iff, R]
+@[simp] lemma rel_a_a : (a m ≺ a k) ↔ k = m := Iff.rfl
+@[simp] lemma rel_a_b : (a m ≺ b k) ↔ k ≤ m + 1 := Iff.rfl
+@[simp] lemma rel_a_c : (a m ≺ c k) ↔ k ≤ m + 1 := Iff.rfl
+@[simp] lemma rel_a_d : a m ⊀ d k := id
+@[simp] lemma rel_b_a : b m ⊀ a k := id
+@[simp] lemma rel_b_b : (b m ≺ b k) ↔ k ≤ m := Iff.rfl
+@[simp] lemma rel_b_c : (b m ≺ c k) ↔ k + 2 ≤ m := Iff.rfl
+@[simp] lemma rel_b_d : b m ⊀ d k := id
+@[simp] lemma rel_c_a : c m ⊀ a k := id
+@[simp] lemma rel_c_b : (c m ≺ b k) ↔ k + 2 ≤ m := Iff.rfl
+@[simp] lemma rel_c_c : (c m ≺ c k) ↔ k ≤ m := Iff.rfl
+@[simp] lemma rel_c_d : c m ⊀ d k := id
+@[simp] lemma rel_d_a : (d n ≺ a m) ↔ n ≤ m := Iff.rfl
+@[simp] lemma rel_d_b : d n ≺ b k := trivial
+@[simp] lemma rel_d_c : d n ≺ c k := trivial
+@[simp] lemma rel_d_d : (d n ≺ d k) ↔ n ≤ k := Iff.rfl
 
 instance : Std.Refl fineFrame.Rel' where
   refl w := by
-    change w ≺ w
     cases w using casesOn <;> simp
 
 instance : IsTrans fineFrame.World fineFrame.Rel' where
   trans x y z hxy hyz := by
-    change x ≺ y at hxy
-    change y ≺ z at hyz
-    change x ≺ z
     cases x using casesOn <;> cases y using casesOn <;> cases z using casesOn <;> simp_all <;> omega
 
 lemma rel_antisymm (hxy : x ≺ y) (hyx : y ≺ x) : x = y := by
@@ -445,11 +432,11 @@ lemma cone_finite {w : fineFrame.World} (hw : ∀ k, w ≠ d k) : {z | w ≺ z}.
 /-- An infinite strict chain consists of `d`-points. -/
 lemma strict_chain_all_d {u : ℕ → fineFrame.World} (hR : ∀ m, u m ≺ u (m + 1))
     (hs : ∀ m, u (m + 1) ⊀ u m) (i : ℕ) : ∃ k, u i = d k := by
-  have hinj : Function.Injective u := injective_of_forall_rel_succ (r := fineFrame.Rel') hR hs
+  have hinj : Function.Injective u := injective_of_forall_rel_succ hR hs
   have hchain : ∀ n, u i ≺ u (i + n) := by
     intro n
     induction n with
-    | zero => simp
+    | zero => exact Frame.rel_refl _
     | succ n ih => exact Frame.rel_trans ih (hR (i + n))
   have hinj' : Function.Injective fun n => u (i + n) := by
     intro a b hab
@@ -703,16 +690,16 @@ lemma d_eventually_period_two (A : Formula ℕ) :
 /-- The three pairwise incompatible phases of a refutation of `χ⟦σ⟧`. -/
 def phase (σ : Formula.Substitution ℕ ℕ) (r : ℕ) : Formula ℕ :=
   match r with
-  | 0 => (#6 : Formula ℕ)⟦σ⟧
-  | 1 => ∼((#6 : Formula ℕ)⟦σ⟧) ⋏ (#7 : Formula ℕ)⟦σ⟧
-  | _ => ∼((#6 : Formula ℕ)⟦σ⟧) ⋏ ∼((#7 : Formula ℕ)⟦σ⟧)
+  | 0 => #6⟦σ⟧
+  | 1 => ∼(#6⟦σ⟧) ⋏ #7⟦σ⟧
+  | _ => ∼(#6⟦σ⟧) ⋏ ∼(#7⟦σ⟧)
 
 @[simp, grind =]
-lemma phase_zero (σ : Formula.Substitution ℕ ℕ) : phase σ 0 = (#6 : Formula ℕ)⟦σ⟧ := rfl
+lemma phase_zero (σ : Formula.Substitution ℕ ℕ) : phase σ 0 = #6⟦σ⟧ := rfl
 @[simp, grind =] lemma phase_one (σ : Formula.Substitution ℕ ℕ) :
-    phase σ 1 = ∼((#6 : Formula ℕ)⟦σ⟧) ⋏ (#7 : Formula ℕ)⟦σ⟧ := rfl
+    phase σ 1 = ∼(#6⟦σ⟧) ⋏ #7⟦σ⟧ := rfl
 @[simp, grind =] lemma phase_add_two (σ : Formula.Substitution ℕ ℕ) (r : ℕ) :
-    phase σ (r + 2) = ∼((#6 : Formula ℕ)⟦σ⟧) ⋏ ∼((#7 : Formula ℕ)⟦σ⟧) := rfl
+    phase σ (r + 2) = ∼(#6⟦σ⟧) ⋏ ∼(#7⟦σ⟧) := rfl
 
 private lemma d_eventually_period_two_phase (σ : Formula.Substitution ℕ ℕ) :
     ∃ N : ℕ, ∀ r < 3, ∀ i j : ℕ, N ≤ i → N ≤ j → i % 2 = j % 2 →
@@ -994,7 +981,7 @@ lemma v_shape_classify {t u₀ u₁ v₀ v₁ : fineFrame.World}
     ∃ n : ℕ, (u₁ = b (n + 1) ∧ u₀ = b n ∧ v₁ = c (n + 1) ∧ v₀ = c n) ∨
              (u₁ = c (n + 1) ∧ u₀ = c n ∧ v₁ = b (n + 1) ∧ v₀ = b n) := by
   cases u₁ using casesOn <;> cases u₀ using casesOn <;> cases v₁ using casesOn <;>
-    cases v₀ using casesOn <;> simp_all <;> omega
+    cases v₀ using casesOn <;> simp at * <;> omega
 
 end Extraction
 
@@ -1133,7 +1120,7 @@ lemma eq_bn1_of_forces_β₁ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[
     exact (false_of_neg_dia h₁ (y := c n) (by simp; omega) hs.hcnγ₀).elim;
   | c k =>
     rcases Nat.lt_or_ge k n with hk | hk;
-    · have := eq_b_of_forces_β₁ hs hmn (z := c k) (by simp; omega) h;
+    · have := eq_b_of_forces_β₁ hs hmn (by simp; omega) h;
       simp at this;
     · exact (false_of_neg_dia h₁ (y := c n) (by simp [hk]) hs.hcnγ₀).elim;
   | b k =>
@@ -1174,14 +1161,14 @@ lemma forces_γ₂_at : c (n + 2) ⊩[⟨fineFrame, V⟩] γ 2 := by
 /-- On the cone of `d_{n+1}`, `γ 1` is forced only at `c_{n+1}`. -/
 lemma eq_cn1_of_forces_γ₁ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] γ 1) :
     z = c (n + 1) := by
-  have := eq_bn1_of_forces_β₁ hs.mirror hmn (z := swap z) (by simpa using rel_swap.mpr hRz)
+  have := eq_bn1_of_forces_β₁ hs.mirror hmn (by simpa using rel_swap.mpr hRz)
     (by simpa [forces_mirror, mirrorVal] using h);
   simpa [swap_involutive.eq_iff] using this
 
 /-- On the cone of `d_{n+1}`, `γ 2` is forced only at `c_{n+2}`. -/
 lemma eq_cn2_of_forces_γ₂ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] γ 2) :
     z = c (n + 2) := by
-  have := eq_bn2_of_forces_β₂ hs.mirror hmn (z := swap z) (by simpa using rel_swap.mpr hRz)
+  have := eq_bn2_of_forces_β₂ hs.mirror hmn (by simpa using rel_swap.mpr hRz)
     (by simpa [forces_mirror] using h);
   simpa [swap_involutive.eq_iff] using this
 
@@ -1304,7 +1291,7 @@ theorem validates_θ : fineFrame ⊧ θ := by
       · simpa using forces_swap_iff.mp hu1B1;
       · simpa using forces_swap_iff.mp hv0C0;
       · simpa using forces_swap_iff.mp hv1C1;
-    have hF := forces_ψ_of_shapeAndApex hs (t := swap t) (by simpa using rel_swap.mpr hwt)
+    have hF := forces_ψ_of_shapeAndApex hs (by simpa using rel_swap.mpr hwt)
       (forces_swap_iff.mp htA0) (by simpa using rel_swap.mpr htu1)
       (by simpa using rel_swap.mpr htv1);
     exact forces_swap_iff.mpr (by simpa using hF)
@@ -1434,7 +1421,7 @@ theorem validates_neg_ε_of_validates_logicS4Fine (hL : F ⊧ logicS4Fine) : F �
       obtain ⟨v, Ryv, Rvy, hv⟩ := chain_step hG hy;
       exact ⟨v, ⟨Ryv, Rvy⟩, hv⟩;
   have hR : ∀ m, u m ≺ u (m + 1) := fun m => (hu m).2.1;
-  have hinj := injective_of_forall_rel_succ (r := F.Rel') hR fun m => (hu m).2.2;
+  have hinj := injective_of_forall_rel_succ hR fun m => (hu m).2.2;
   exact chainVal_forces_neg_χ hR hinj <| hL χ (NormalLogic.mem_add <| by simp) (chainVal u) (u 0)
 
 /-- Every theorem of Fine's logic is strongly valid in Fine's model.
