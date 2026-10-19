@@ -286,7 +286,16 @@ lemma forces_K_subst_tau_iff {x : M.World} {m : ℕ} : x ⊩ (K m)⟦tau⟧ ↔ 
   simp only [K, forces_and];
   tauto
 
-lemma D_subst_tau : D⟦tau⟧ = D := by simp [D]
+lemma forces_A_iff : x ⊩ A m ↔
+    x ⊩ ◇(B (m + 1)) ∧ x ⊩ ◇(C (m + 1)) ∧ x ⊩ ∼◇(B (m + 2)) ∧ x ⊩ ∼◇(C (m + 2)) := by
+  simp only [A, forces_and]
+
+lemma forces_D_iff : x ⊩ D ↔ x ⊩ p0 ⋎ p1 ∧ x ⊩ □(p0 🡒 (∼p1 ⋏ ◇p1)) ∧
+    x ⊩ □(p1 🡒 (∼p0 ⋏ ◇p0)) ∧ x ⊩ □(∼(p0 ⋎ p1) 🡒 □(∼(p0 ⋎ p1))) := by
+  simp only [D, forces_and]
+
+lemma forces_K_iff : x ⊩ K m ↔ x ⊩ K1 m ∧ x ⊩ K2 m ∧ x ⊩ K3 m ∧ x ⊩ K4 m := by
+  simp only [K, forces_and]
 
 lemma forces_E_iff : x ⊩ E ↔ x ⊩ D ∧ x ⊩ ◇(A 0) ∧ x ⊩ K 0 := by
   simp only [E, forces_and]
