@@ -322,32 +322,23 @@ end Fine
 
 section Countermodel
 
-/-- The points of Fine's model.
-
-- [Fin74a, p. 25] -/
-inductive fineFrame.World
-| a (m : ℕ)
-| b (m : ℕ)
-| c (m : ℕ)
-| d (m : ℕ)
-deriving DecidableEq
-
 namespace fineFrame
 
-/-- The accessibility relation of Fine's model. -/
+/-- The accessibility relation of Fine's model on the points `(0, m) = a_m`, `(1, m) = b_m`,
+`(2, m) = c_m` and `(3, m) = d_m`. -/
 @[grind =]
-def R : World → World → Prop
-| .b m, .b k => k ≤ m
-| .b m, .c k => k + 2 ≤ m
-| .c m, .c k => k ≤ m
-| .c m, .b k => k + 2 ≤ m
-| .a m, .a k => k = m
-| .a m, .b k => k ≤ m + 1
-| .a m, .c k => k ≤ m + 1
-| .d n, .d k => n ≤ k
-| .d n, .a m => n ≤ m
-| .d _, .b _ => True
-| .d _, .c _ => True
+def R : Fin 4 × ℕ → Fin 4 × ℕ → Prop
+| (1, m), (1, k) => k ≤ m
+| (1, m), (2, k) => k + 2 ≤ m
+| (2, m), (2, k) => k ≤ m
+| (2, m), (1, k) => k + 2 ≤ m
+| (0, m), (0, k) => k = m
+| (0, m), (1, k) => k ≤ m + 1
+| (0, m), (2, k) => k ≤ m + 1
+| (3, n), (3, k) => n ≤ k
+| (3, n), (0, m) => n ≤ m
+| (3, _), (1, _) => True
+| (3, _), (2, _) => True
 | _, _ => False
 
 end fineFrame
@@ -355,14 +346,33 @@ end fineFrame
 /-- Fine's frame.
 
 - [Fin74a, p. 25] -/
-abbrev fineFrame : Frame fineFrame.World := ⟨fineFrame.R⟩
+abbrev fineFrame : Frame (Fin 4 × ℕ) := ⟨fineFrame.R⟩
+
+namespace fineFrame
+
+/-- The four families of points of Fine's model.
+
+- [Fin74a, p. 25] -/
+@[simp, match_pattern] abbrev a (m : ℕ) : fineFrame.World := (0, m)
+@[simp, match_pattern] abbrev b (m : ℕ) : fineFrame.World := (1, m)
+@[simp, match_pattern] abbrev c (m : ℕ) : fineFrame.World := (2, m)
+@[simp, match_pattern] abbrev d (m : ℕ) : fineFrame.World := (3, m)
+
+/-- Case analysis on the points of Fine's model. -/
+@[elab_as_elim]
+theorem casesOn {P : fineFrame.World → Prop} (x : fineFrame.World) (a : ∀ m, P (fineFrame.a m))
+    (b : ∀ m, P (fineFrame.b m)) (c : ∀ m, P (fineFrame.c m)) (d : ∀ m, P (fineFrame.d m)) :
+    P x := by
+  obtain ⟨⟨_ | _ | _ | _ | i, hi⟩, m⟩ := x
+  · exact a m
+  · exact b m
+  · exact c m
+  · exact d m
+  · omega
+
+end fineFrame
 
 /-! ### The accessibility relation -/
-
-local infixl:60 (priority := high) " ≺ " => @Frame.Rel _ fineFrame
-local infixl:60 (priority := high) " ⊀ " => @Frame.NotRel _ fineFrame
-
-attribute [local simp] Frame.NotRel
 
 namespace fineFrame
 
@@ -374,65 +384,67 @@ variable {x y z : fineFrame.World} {m k n : ℕ}
 
 lemma rel_iff : x ≺ y ↔ R x y := Iff.rfl
 
-@[simp] lemma rel_a_a : (World.a m ≺ World.a k) ↔ k = m := by simp [rel_iff, R]
-@[simp] lemma rel_a_b : (World.a m ≺ World.b k) ↔ k ≤ m + 1 := by simp [rel_iff, R]
-@[simp] lemma rel_a_c : (World.a m ≺ World.c k) ↔ k ≤ m + 1 := by simp [rel_iff, R]
-@[simp] lemma rel_a_d : World.a m ⊀ World.d k := by simp [rel_iff, R]
-@[simp] lemma rel_b_a : World.b m ⊀ World.a k := by simp [rel_iff, R]
-@[simp] lemma rel_b_b : (World.b m ≺ World.b k) ↔ k ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_b_c : (World.b m ≺ World.c k) ↔ k + 2 ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_b_d : World.b m ⊀ World.d k := by simp [rel_iff, R]
-@[simp] lemma rel_c_a : World.c m ⊀ World.a k := by simp [rel_iff, R]
-@[simp] lemma rel_c_b : (World.c m ≺ World.b k) ↔ k + 2 ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_c_c : (World.c m ≺ World.c k) ↔ k ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_c_d : World.c m ⊀ World.d k := by simp [rel_iff, R]
-@[simp] lemma rel_d_a : (World.d n ≺ World.a m) ↔ n ≤ m := by simp [rel_iff, R]
-@[simp] lemma rel_d_b : World.d n ≺ World.b k := by simp [rel_iff, R]
-@[simp] lemma rel_d_c : World.d n ≺ World.c k := by simp [rel_iff, R]
-@[simp] lemma rel_d_d : (World.d n ≺ World.d k) ↔ n ≤ k := by simp [rel_iff, R]
+@[simp] lemma not_rel_iff : x ⊀ y ↔ ¬ x ≺ y := Iff.rfl
+
+@[simp] lemma rel_a_a : (a m ≺ a k) ↔ k = m := by simp [rel_iff, R]
+@[simp] lemma rel_a_b : (a m ≺ b k) ↔ k ≤ m + 1 := by simp [rel_iff, R]
+@[simp] lemma rel_a_c : (a m ≺ c k) ↔ k ≤ m + 1 := by simp [rel_iff, R]
+@[simp] lemma rel_a_d : a m ⊀ d k := by simp [rel_iff, R]
+@[simp] lemma rel_b_a : b m ⊀ a k := by simp [rel_iff, R]
+@[simp] lemma rel_b_b : (b m ≺ b k) ↔ k ≤ m := by simp [rel_iff, R]
+@[simp] lemma rel_b_c : (b m ≺ c k) ↔ k + 2 ≤ m := by simp [rel_iff, R]
+@[simp] lemma rel_b_d : b m ⊀ d k := by simp [rel_iff, R]
+@[simp] lemma rel_c_a : c m ⊀ a k := by simp [rel_iff, R]
+@[simp] lemma rel_c_b : (c m ≺ b k) ↔ k + 2 ≤ m := by simp [rel_iff, R]
+@[simp] lemma rel_c_c : (c m ≺ c k) ↔ k ≤ m := by simp [rel_iff, R]
+@[simp] lemma rel_c_d : c m ⊀ d k := by simp [rel_iff, R]
+@[simp] lemma rel_d_a : (d n ≺ a m) ↔ n ≤ m := by simp [rel_iff, R]
+@[simp] lemma rel_d_b : d n ≺ b k := by simp [rel_iff, R]
+@[simp] lemma rel_d_c : d n ≺ c k := by simp [rel_iff, R]
+@[simp] lemma rel_d_d : (d n ≺ d k) ↔ n ≤ k := by simp [rel_iff, R]
 
 instance : Std.Refl fineFrame.Rel' where
   refl w := by
     change w ≺ w
-    cases w <;> simp
+    cases w using casesOn <;> simp
 
 instance : IsTrans fineFrame.World fineFrame.Rel' where
   trans x y z hxy hyz := by
     change x ≺ y at hxy
     change y ≺ z at hyz
     change x ≺ z
-    cases x <;> cases y <;> cases z <;> simp_all <;> omega
+    cases x using casesOn <;> cases y using casesOn <;> cases z using casesOn <;> simp_all <;> omega
 
 lemma rel_antisymm (hxy : x ≺ y) (hyx : y ≺ x) : x = y := by
-  cases x <;> cases y <;> simp_all <;> omega
+  cases x using casesOn <;> cases y using casesOn <;> simp_all <;> omega
 
 end Rel
 
 /-- The cone above a point other than a `d`-point is finite. -/
-lemma cone_finite {w : fineFrame.World} (hw : ∀ k, w ≠ .d k) : {z | w ≺ z}.Finite := by
-  obtain ⟨m, hm⟩ : ∃ m, ∀ z, w ≺ z → ∃ k ≤ m, z = .a k ∨ z = .b k ∨ z = .c k := by
-    cases w with
+lemma cone_finite {w : fineFrame.World} (hw : ∀ k, w ≠ d k) : {z | w ≺ z}.Finite := by
+  obtain ⟨m, hm⟩ : ∃ m, ∀ z, w ≺ z → ∃ k ≤ m, z = a k ∨ z = b k ∨ z = c k := by
+    cases w using casesOn with
     | d k => exact absurd rfl (hw k)
     | a m =>
       use m + 1
       intro z hz
-      cases z <;> simp_all
+      cases z using casesOn <;> simp_all
     | b m =>
       use m + 1
       intro z hz
-      cases z <;> simp_all <;> omega
+      cases z using casesOn <;> simp_all <;> omega
     | c m =>
       use m + 1
       intro z hz
-      cases z <;> simp_all <;> omega
-  apply ((Finset.range (m + 1)).image World.a ∪ (Finset.range (m + 1)).image World.b ∪
-    (Finset.range (m + 1)).image World.c).finite_toSet.subset
+      cases z using casesOn <;> simp_all <;> omega
+  apply ((Finset.range (m + 1)).image a ∪ (Finset.range (m + 1)).image b ∪
+    (Finset.range (m + 1)).image c).finite_toSet.subset
   intro z hz
   obtain ⟨k, hk, rfl | rfl | rfl⟩ := hm z hz <;> simp [hk]
 
 /-- An infinite strict chain consists of `d`-points. -/
 lemma strict_chain_all_d {u : ℕ → fineFrame.World} (hR : ∀ m, u m ≺ u (m + 1))
-    (hs : ∀ m, u (m + 1) ⊀ u m) (i : ℕ) : ∃ k, u i = .d k := by
+    (hs : ∀ m, u (m + 1) ⊀ u m) (i : ℕ) : ∃ k, u i = d k := by
   have hinj : Function.Injective u := injective_of_forall_rel_succ (r := fineFrame.Rel') hR hs
   have hchain : ∀ n, u i ≺ u (i + n) := by
     intro n
@@ -449,29 +461,31 @@ lemma strict_chain_all_d {u : ℕ → fineFrame.World} (hR : ∀ m, u m ≺ u (m
   exact (cone_finite h).not_infinite hinf
 
 /-- The involution exchanging the `b`- and `c`-families. -/
-def swap : World → World
-| .a m => .a m
-| .b m => .c m
-| .c m => .b m
-| .d m => .d m
+def swap : fineFrame.World → fineFrame.World
+| a m => a m
+| b m => c m
+| c m => b m
+| d m => d m
 
-@[simp] lemma swap_a {m : ℕ} : swap (.a m) = .a m := rfl
-@[simp] lemma swap_b {m : ℕ} : swap (.b m) = .c m := rfl
-@[simp] lemma swap_c {m : ℕ} : swap (.c m) = .b m := rfl
-@[simp] lemma swap_d {m : ℕ} : swap (.d m) = .d m := rfl
+@[simp] lemma swap_a {m : ℕ} : swap (a m) = a m := rfl
+@[simp] lemma swap_b {m : ℕ} : swap (b m) = c m := rfl
+@[simp] lemma swap_c {m : ℕ} : swap (c m) = b m := rfl
+@[simp] lemma swap_d {m : ℕ} : swap (d m) = d m := rfl
 
 lemma swap_involutive : Function.Involutive swap := by
   intro x
-  cases x <;> rfl
+  cases x using casesOn <;> rfl
 
-@[simp] lemma swap_swap (w : World) : swap (swap w) = w := swap_involutive w
+@[simp] lemma swap_swap (w : fineFrame.World) : swap (swap w) = w := swap_involutive w
 
-lemma rel_swap {x y : World} : (swap x ≺ swap y) ↔ x ≺ y := by
-  cases x <;> cases y <;> simp
+lemma rel_swap {x y : fineFrame.World} : (swap x ≺ swap y) ↔ x ≺ y := by
+  cases x using casesOn <;> cases y using casesOn <;> simp
 
 end fineFrame
 
 namespace fineModel
+
+open fineFrame
 
 /-- The valuation of Fine's model: `q₀ = {b₀}`, `q₁ = {b₁}`, `r₀ = {c₀}`, `r₁ = {c₁}`,
 `p₀ = {d_{2k}}`, `p₁ = {d_{2k+1}}`, and `∅` for the other atoms.
@@ -479,21 +493,21 @@ namespace fineModel
 - [Fin74a, p. 25] -/
 @[grind =]
 def val : fineFrame.World → ℕ → Prop
-| .b 0, 2 => True
-| .b 1, 3 => True
-| .c 0, 4 => True
-| .c 1, 5 => True
-| .d n, 0 => n % 2 = 0
-| .d n, 1 => n % 2 = 1
+| b 0, 2 => True
+| b 1, 3 => True
+| c 0, 4 => True
+| c 1, 5 => True
+| d n, 0 => n % 2 = 0
+| d n, 1 => n % 2 = 1
 | _, _ => False
 
-@[simp] lemma val_a {m a : ℕ} : ¬ val (.a m) a := by simp [val];
-@[simp] lemma val_b_iff {m a : ℕ} : val (.b m) a ↔ (m = 0 ∧ a = 2) ∨ (m = 1 ∧ a = 3) := by
-  rcases m with _ | _ | m <;> rcases a with _ | _ | _ | _ | a <;> simp [val];
-@[simp] lemma val_c_iff {m a : ℕ} : val (.c m) a ↔ (m = 0 ∧ a = 4) ∨ (m = 1 ∧ a = 5) := by
-  rcases m with _ | _ | m <;> rcases a with _ | _ | _ | _ | _ | _ | a <;> simp [val];
-@[simp] lemma val_d_iff {n a : ℕ} : val (.d n) a ↔ (a = 0 ∧ n % 2 = 0) ∨ (a = 1 ∧ n % 2 = 1) := by
-  rcases a with _ | _ | a <;> simp [val];
+@[simp] lemma val_a {m i : ℕ} : ¬ val (a m) i := by simp [val];
+@[simp] lemma val_b_iff {m i : ℕ} : val (b m) i ↔ (m = 0 ∧ i = 2) ∨ (m = 1 ∧ i = 3) := by
+  rcases m with _ | _ | m <;> rcases i with _ | _ | _ | _ | i <;> simp [val];
+@[simp] lemma val_c_iff {m i : ℕ} : val (c m) i ↔ (m = 0 ∧ i = 4) ∨ (m = 1 ∧ i = 5) := by
+  rcases m with _ | _ | m <;> rcases i with _ | _ | _ | _ | _ | _ | i <;> simp [val];
+@[simp] lemma val_d_iff {n i : ℕ} : val (d n) i ↔ (i = 0 ∧ n % 2 = 0) ∨ (i = 1 ∧ n % 2 = 1) := by
+  rcases i with _ | _ | i <;> simp [val];
 
 end fineModel
 
@@ -504,9 +518,9 @@ abbrev fineModel : Model fineFrame.World ℕ := ⟨fineFrame, fineModel.val⟩
 
 namespace fineFrame
 
-open Fine fineFrame.World
+open Fine fineFrame
 
-variable {V : World → ℕ → Prop} {x y : World}
+variable {V : fineFrame.World → ℕ → Prop} {x y : fineFrame.World}
 
 @[simp] lemma forces_atom {n : ℕ} : x ⊩[⟨fineFrame, V⟩] #n ↔ V x n := Iff.rfl
 
@@ -514,18 +528,22 @@ end fineFrame
 
 namespace fineModel
 
-open Fine fineFrame.World
+open Fine fineFrame
 
 variable {x : fineFrame.World}
 
-@[simp high] lemma forces_atom_0_iff : x ⊩[fineModel] #0 ↔ ∃ k, x = .d k ∧ k % 2 = 0 := by
-  cases x <;> simp
-@[simp high] lemma forces_atom_1_iff : x ⊩[fineModel] #1 ↔ ∃ k, x = .d k ∧ k % 2 = 1 := by
-  cases x <;> simp
-@[simp high] lemma forces_atom_2_iff : x ⊩[fineModel] #2 ↔ x = .b 0 := by cases x <;> simp
-@[simp high] lemma forces_atom_3_iff : x ⊩[fineModel] #3 ↔ x = .b 1 := by cases x <;> simp
-@[simp high] lemma forces_atom_4_iff : x ⊩[fineModel] #4 ↔ x = .c 0 := by cases x <;> simp
-@[simp high] lemma forces_atom_5_iff : x ⊩[fineModel] #5 ↔ x = .c 1 := by cases x <;> simp
+@[simp high] lemma forces_atom_0_iff : x ⊩[fineModel] #0 ↔ ∃ k, x = d k ∧ k % 2 = 0 := by
+  cases x using casesOn <;> simp
+@[simp high] lemma forces_atom_1_iff : x ⊩[fineModel] #1 ↔ ∃ k, x = d k ∧ k % 2 = 1 := by
+  cases x using casesOn <;> simp
+@[simp high] lemma forces_atom_2_iff : x ⊩[fineModel] #2 ↔ x = b 0 := by
+  cases x using casesOn <;> simp
+@[simp high] lemma forces_atom_3_iff : x ⊩[fineModel] #3 ↔ x = b 1 := by
+  cases x using casesOn <;> simp
+@[simp high] lemma forces_atom_4_iff : x ⊩[fineModel] #4 ↔ x = c 0 := by
+  cases x using casesOn <;> simp
+@[simp high] lemma forces_atom_5_iff : x ⊩[fineModel] #5 ↔ x = c 1 := by
+  cases x using casesOn <;> simp
 
 end fineModel
 
@@ -536,69 +554,72 @@ namespace fineModel
 open Fine fineFrame Model.World
 
 /-- `β_2` is forced exactly at `b_2`. -/
-lemma forces_β₂_iff (w : fineFrame.World) : w ⊩[fineModel] β 2 ↔ w = .b 2 := by
+lemma forces_β₂_iff (w : fineFrame.World) : w ⊩[fineModel] β 2 ↔ w = b 2 := by
   rw [β_add_two, forces_and, forces_and, forces_neg];
   simp only [Nat.zero_add, β_one, γ_zero, γ_one, forces_dia, forces_atom_3_iff, forces_atom_4_iff,
     forces_atom_5_iff, NotForces, exists_eq_right];
-  cases w <;> simp <;> omega
+  cases w using casesOn <;> simp <;> omega
 
 /-- `γ_2` is forced exactly at `c_2`. -/
-lemma forces_γ₂_iff (w : fineFrame.World) : w ⊩[fineModel] γ 2 ↔ w = .c 2 := by
+lemma forces_γ₂_iff (w : fineFrame.World) : w ⊩[fineModel] γ 2 ↔ w = c 2 := by
   rw [γ_add_two, forces_and, forces_and, forces_neg];
   simp only [Nat.zero_add, β_zero, β_one, γ_one, forces_dia, forces_atom_2_iff, forces_atom_3_iff,
     forces_atom_5_iff, NotForces, exists_eq_right];
-  cases w <;> simp <;> omega
+  cases w using casesOn <;> simp <;> omega
 
 /-- `d_0` forces `δ`. -/
-lemma forces_δ_d0 : World.d 0 ⊩[fineModel] δ := by
+lemma forces_δ_d0 : d 0 ⊩[fineModel] δ := by
   rw [δ, forces_and, forces_and, forces_and, forces_box, forces_box, forces_box];
   and_intros;
   · rw [forces_or];
     simp;
   · rintro w -;
     rw [forces_imp, forces_and, forces_neg, forces_dia];
-    rcases w with _ | _ | _ | k;
-    iterate 3 simp [NotForces];
-    simp only [NotForces, forces_atom_0_iff, forces_atom_1_iff,
-      ↓existsAndEq, rel_d_d, true_and, World.d.injEq];
-    rcases Nat.mod_two_eq_zero_or_one k with hk | hk;
-    · exact Or.inr ⟨by omega, k + 1, by omega, by omega⟩;
-    · exact Or.inl (by omega);
+    cases w using casesOn with
+    | d k =>
+      simp only [NotForces, forces_atom_0_iff, forces_atom_1_iff,
+        ↓existsAndEq, rel_d_d, true_and, d, Prod.mk.injEq];
+      rcases Nat.mod_two_eq_zero_or_one k with hk | hk;
+      · exact Or.inr ⟨by omega, k + 1, by omega, by omega⟩;
+      · exact Or.inl (by omega)
+    | _ => simp [NotForces]
   · rintro w -;
     rw [forces_imp, forces_and, forces_neg, forces_dia];
-    rcases w with _ | _ | _ | k;
-    iterate 3 simp [NotForces];
-    simp only [NotForces, forces_atom_0_iff, forces_atom_1_iff,
-      ↓existsAndEq, rel_d_d, true_and, World.d.injEq];
-    rcases Nat.mod_two_eq_zero_or_one k with hk | hk;
-    · exact Or.inl (by omega);
-    · exact Or.inr ⟨by omega, k + 1, by omega, by omega⟩;
-  · rintro (_ | _ | _ | k) -;
-    all_goals rw [forces_imp, forces_box];
-    · right;
-      rintro (_ | _ | _ | n) hn <;> rw [forces_neg, not_forces_or] <;> simp [NotForces] at hn ⊢;
-    · right;
-      rintro (_ | _ | _ | n) hn <;> rw [forces_neg, not_forces_or] <;> simp [NotForces] at hn ⊢;
-    · right;
-      rintro (_ | _ | _ | n) hn <;> rw [forces_neg, not_forces_or] <;> simp [NotForces] at hn ⊢;
-    · left;
-      rw [not_forces_neg, forces_or];
-      simp;
+    cases w using casesOn with
+    | d k =>
+      simp only [NotForces, forces_atom_0_iff, forces_atom_1_iff,
+        ↓existsAndEq, rel_d_d, true_and, d, Prod.mk.injEq];
+      rcases Nat.mod_two_eq_zero_or_one k with hk | hk;
+      · exact Or.inl (by omega);
+      · exact Or.inr ⟨by omega, k + 1, by omega, by omega⟩
+    | _ => simp [NotForces]
+  · rintro w -
+    rw [forces_imp, forces_box]
+    cases w using casesOn with
+    | d k =>
+      left
+      rw [not_forces_neg, forces_or]
+      simp
       omega
+    | _ =>
+      right
+      intro z hz
+      rw [forces_neg, not_forces_or]
+      cases z using casesOn <;> simp [NotForces] at hz ⊢
 
 /-- `α_0` is forced at `a_0`. -/
-lemma forces_α₀_a0 : World.a 0 ⊩[fineModel] α 0 := by
+lemma forces_α₀_a0 : a 0 ⊩[fineModel] α 0 := by
   rw [α, forces_and, forces_and, forces_and, forces_neg, forces_neg];
   simp only [Nat.zero_add, β_one, γ_one, forces_dia, forces_atom_3_iff, forces_atom_5_iff,
     forces_β₂_iff, forces_γ₂_iff, NotForces, exists_eq_right];
   simp
 
 /-- `◇(α_0)` is forced at `d_0`. -/
-lemma forces_dia_α₀_d0 : World.d 0 ⊩[fineModel] ◇(α 0) :=
-  forces_dia.mpr ⟨.a 0, by simp, forces_α₀_a0⟩
+lemma forces_dia_α₀_d0 : d 0 ⊩[fineModel] ◇(α 0) :=
+  forces_dia.mpr ⟨a 0, by simp, forces_α₀_a0⟩
 
 /-- `d_0` forces `ι 0`. -/
-lemma forces_ι₀_d0 : World.d 0 ⊩[fineModel] ι 0 := by
+lemma forces_ι₀_d0 : d 0 ⊩[fineModel] ι 0 := by
   rw [ι, forces_and, forces_and, forces_and];
   and_intros;
   · rw [ι₁, forces_box];
@@ -627,7 +648,7 @@ lemma forces_ι₀_d0 : World.d 0 ⊩[fineModel] ι 0 := by
     simp [forces_dia, NotForces]
 
 /-- `d_0` forces `ε`. -/
-lemma forces_ε_d0 : World.d 0 ⊩[fineModel] ε :=
+lemma forces_ε_d0 : d 0 ⊩[fineModel] ε :=
   forces_ε_iff.mpr ⟨forces_δ_d0, forces_dia_α₀_d0, forces_ι₀_d0⟩
 
 /-! ### `χ` is strongly valid in Fine's model -/
@@ -637,7 +658,7 @@ lemma forces_ε_d0 : World.d 0 ⊩[fineModel] ε :=
 - [Fin74a, p.\ 28] -/
 lemma d_eventually_period_two (A : Formula ℕ) :
     ∃ N : ℕ, ∀ i j : ℕ, N ≤ i → N ≤ j → i % 2 = j % 2 →
-      ((World.d i ⊩[fineModel] A) ↔ (World.d j ⊩[fineModel] A)) := by
+      ((d i ⊩[fineModel] A) ↔ (d j ⊩[fineModel] A)) := by
   induction A with
   | atom a =>
     use 0;
@@ -655,26 +676,26 @@ lemma d_eventually_period_two (A : Formula ℕ) :
     simp only [forces_imp, NotForces, hNA i j (by omega) (by omega) hij,
       hNB i j (by omega) (by omega) hij]
   | dia B ih =>
-    have hdia : ∀ i : ℕ, (World.d i ⊩[fineModel] ◇B) ↔
-        (∃ k, i ≤ k ∧ (World.d k ⊩[fineModel] B)) ∨
-        (∃ m, i ≤ m ∧ (World.a m ⊩[fineModel] B)) ∨
-        (∃ k, (World.b k ⊩[fineModel] B)) ∨ (∃ k, (World.c k ⊩[fineModel] B)) := by
+    have hdia : ∀ i : ℕ, (d i ⊩[fineModel] ◇B) ↔
+        (∃ k, i ≤ k ∧ (d k ⊩[fineModel] B)) ∨
+        (∃ m, i ≤ m ∧ (a m ⊩[fineModel] B)) ∨
+        (∃ k, (b k ⊩[fineModel] B)) ∨ (∃ k, (c k ⊩[fineModel] B)) := by
       intro i;
       rw [forces_dia];
       constructor;
       · rintro ⟨y, hy, hyA⟩;
-        cases y with
+        cases y using casesOn with
         | d k => exact Or.inl ⟨k, hy, hyA⟩;
         | a m => exact Or.inr <| Or.inl ⟨m, hy, hyA⟩;
         | b k => exact Or.inr <| Or.inr <| Or.inl ⟨k, hyA⟩;
         | c k => exact Or.inr <| Or.inr <| Or.inr ⟨k, hyA⟩;
       · rintro (⟨k, hk, hA⟩ | ⟨m, hm, hA⟩ | ⟨k, hA⟩ | ⟨k, hA⟩);
-        · exact ⟨World.d k, hk, hA⟩;
-        · exact ⟨World.a m, hm, hA⟩;
-        · exact ⟨World.b k, trivial, hA⟩;
-        · exact ⟨World.c k, trivial, hA⟩;
-    obtain ⟨N1, hN1⟩ := exists_ge_eventually_const (fun k => World.d k ⊩[fineModel] B);
-    obtain ⟨N2, hN2⟩ := exists_ge_eventually_const (fun m => World.a m ⊩[fineModel] B);
+        · exact ⟨d k, hk, hA⟩;
+        · exact ⟨a m, hm, hA⟩;
+        · exact ⟨b k, trivial, hA⟩;
+        · exact ⟨c k, trivial, hA⟩;
+    obtain ⟨N1, hN1⟩ := exists_ge_eventually_const (fun k => d k ⊩[fineModel] B);
+    obtain ⟨N2, hN2⟩ := exists_ge_eventually_const (fun m => a m ⊩[fineModel] B);
     use max N1 N2;
     intro i j hi hj _;
     rw [hdia i, hdia j, hN1 i j (by omega) (by omega), hN2 i j (by omega) (by omega)]
@@ -695,7 +716,7 @@ lemma phase_zero (σ : Formula.Substitution ℕ ℕ) : phase σ 0 = (#6 : Formul
 
 private lemma d_eventually_period_two_phase (σ : Formula.Substitution ℕ ℕ) :
     ∃ N : ℕ, ∀ r < 3, ∀ i j : ℕ, N ≤ i → N ≤ j → i % 2 = j % 2 →
-      (World.d i ⊩[fineModel] phase σ r ↔ World.d j ⊩[fineModel] phase σ r) := by
+      (d i ⊩[fineModel] phase σ r ↔ d j ⊩[fineModel] phase σ r) := by
   obtain ⟨N0, h0⟩ := d_eventually_period_two (phase σ 0);
   obtain ⟨N1, h1⟩ := d_eventually_period_two (phase σ 1);
   obtain ⟨N2, h2⟩ := d_eventually_period_two (phase σ 2);
@@ -795,7 +816,7 @@ theorem χ_mem_logic : χ ∈ fineModel.logic := by
     simp at h₁ h₂;
     omega;
   obtain ⟨N, hN⟩ := d_eventually_period_two_phase σ;
-  have hphase' : ∀ i, World.d (k i) ⊩[fineModel] phase σ (i % 3) := by
+  have hphase' : ∀ i, d (k i) ⊩[fineModel] phase σ (i % 3) := by
     intro i;
     rw [← hk i];
     exact hphase i;
@@ -937,16 +958,16 @@ private lemma exists_p01_chain (hD : w ⊩[⟨fineFrame, V⟩] δ) :
 
 /-- A point forcing `δ` is a `d`-point. -/
 lemma exists_d_of_forces_δ (hD : w ⊩[⟨fineFrame, V⟩] δ) :
-    ∃ m, w = World.d m := by
+    ∃ m, w = d m := by
   obtain ⟨u, hu₀, hu⟩ := exists_p01_chain hD;
   obtain ⟨m, hm⟩ := strict_chain_all_d (fun i => (hu i).1) (fun i => (hu i).2.1) 0;
   exact ⟨m, hu₀ ▸ hm⟩
 
 /-- If `d_m` forces `δ`, every `d_k` with `m ≤ k` forces `#0 ⋎ #1`. -/
-lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨fineFrame, V⟩] δ) {k : ℕ} (hk : m ≤ k) :
-    World.d k ⊩[⟨fineFrame, V⟩] #0 ⋎ #1 := by
+lemma forces_p01_at {m : ℕ} (hD : d m ⊩[⟨fineFrame, V⟩] δ) {k : ℕ} (hk : m ≤ k) :
+    d k ⊩[⟨fineFrame, V⟩] #0 ⋎ #1 := by
   obtain ⟨u, hu₀, hu⟩ := exists_p01_chain hD;
-  have hd : ∀ i, ∃ k, u i = World.d k := by
+  have hd : ∀ i, ∃ k, u i = d k := by
     intro i;
     exact strict_chain_all_d (fun j => (hu j).1) (fun j => (hu j).2.1) i;
   choose kf hkf using hd;
@@ -956,13 +977,13 @@ lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨fineFrame, V⟩] δ) {k : �
     have h := (hu i).2.1;
     rw [hkf i, hkf (i + 1)] at h;
     simpa using h;
-  have h₁ : World.d (kf k) ⊩[⟨fineFrame, V⟩] #0 ⋎ #1 := by
+  have h₁ : d (kf k) ⊩[⟨fineFrame, V⟩] #0 ⋎ #1 := by
     rw [← hkf k];
     exact (hu k).2.2.2;
   by_contra hcon;
   obtain ⟨-, -, -, hbox⟩ := forces_δ_iff.mp hD;
-  have h₂ := forces_box.mp hbox (World.d k) (by simp [hk]) (forces_neg.mpr hcon);
-  exact forces_neg.mp (forces_box.mp h₂ (World.d (kf k)) (by simpa using hmono.le_apply)) h₁
+  have h₂ := forces_box.mp hbox (d k) (by simp [hk]) (forces_neg.mpr hcon);
+  exact forces_neg.mp (forces_box.mp h₂ (d (kf k)) (by simpa using hmono.le_apply)) h₁
 
 /-! ### Classification of the V-shape -/
 
@@ -970,9 +991,10 @@ lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨fineFrame, V⟩] δ) {k : �
 lemma v_shape_classify {t u₀ u₁ v₀ v₁ : fineFrame.World}
     (hRtu1 : t ≺ u₁) (hRu1u0 : u₁ ≺ u₀) (hRtv1 : t ≺ v₁) (hRv1v0 : v₁ ≺ v₀)
     (hnu0u1 : u₀ ⊀ u₁) (hnv0v1 : v₀ ⊀ v₁) (hnu1v0 : u₁ ⊀ v₀) (hnv1u0 : v₁ ⊀ u₀) :
-    ∃ n : ℕ, (u₁ = .b (n + 1) ∧ u₀ = .b n ∧ v₁ = .c (n + 1) ∧ v₀ = .c n) ∨
-             (u₁ = .c (n + 1) ∧ u₀ = .c n ∧ v₁ = .b (n + 1) ∧ v₀ = .b n) := by
-  cases u₁ <;> cases u₀ <;> cases v₁ <;> cases v₀ <;> simp_all <;> omega
+    ∃ n : ℕ, (u₁ = b (n + 1) ∧ u₀ = b n ∧ v₁ = c (n + 1) ∧ v₀ = c n) ∨
+             (u₁ = c (n + 1) ∧ u₀ = c n ∧ v₁ = b (n + 1) ∧ v₀ = b n) := by
+  cases u₁ using casesOn <;> cases u₀ using casesOn <;> cases v₁ using casesOn <;>
+    cases v₀ using casesOn <;> simp_all <;> omega
 
 end Extraction
 
@@ -980,12 +1002,12 @@ end Extraction
 
 /-- The forcing data of an upright `V`-shape `(b_{n+1}, b_n, c_{n+1}, c_n)` below `d_m`. -/
 structure ShapeData (m n : ℕ) (V : fineFrame.World → ℕ → Prop) : Prop where
-  hwδ : World.d m ⊩[⟨fineFrame, V⟩] δ
-  hwι₀ : World.d m ⊩[⟨fineFrame, V⟩] ι 0
-  hbnβ₀ : World.b n ⊩[⟨fineFrame, V⟩] β 0
-  hbn1β₁ : World.b (n + 1) ⊩[⟨fineFrame, V⟩] β 1
-  hcnγ₀ : World.c n ⊩[⟨fineFrame, V⟩] γ 0
-  hcn1γ₁ : World.c (n + 1) ⊩[⟨fineFrame, V⟩] γ 1
+  hwδ : d m ⊩[⟨fineFrame, V⟩] δ
+  hwι₀ : d m ⊩[⟨fineFrame, V⟩] ι 0
+  hbnβ₀ : b n ⊩[⟨fineFrame, V⟩] β 0
+  hbn1β₁ : b (n + 1) ⊩[⟨fineFrame, V⟩] β 1
+  hcnγ₀ : c n ⊩[⟨fineFrame, V⟩] γ 0
+  hcn1γ₁ : c (n + 1) ⊩[⟨fineFrame, V⟩] γ 1
 
 section Cone
 
@@ -997,21 +1019,21 @@ variable (hs : ShapeData m n V)
 
 include hs
 
-lemma ShapeData.hι₁ : World.d m ⊩[⟨fineFrame, V⟩] ι₁ 0 := (forces_ι_iff.mp hs.hwι₀).1
-lemma ShapeData.hι₂ : World.d m ⊩[⟨fineFrame, V⟩] ι₂ 0 := (forces_ι_iff.mp hs.hwι₀).2.1
-lemma ShapeData.hι₃ : World.d m ⊩[⟨fineFrame, V⟩] ι₃ 0 := (forces_ι_iff.mp hs.hwι₀).2.2.1
-lemma ShapeData.hι₄ : World.d m ⊩[⟨fineFrame, V⟩] ι₄ 0 := (forces_ι_iff.mp hs.hwι₀).2.2.2
+lemma ShapeData.hι₁ : d m ⊩[⟨fineFrame, V⟩] ι₁ 0 := (forces_ι_iff.mp hs.hwι₀).1
+lemma ShapeData.hι₂ : d m ⊩[⟨fineFrame, V⟩] ι₂ 0 := (forces_ι_iff.mp hs.hwι₀).2.1
+lemma ShapeData.hι₃ : d m ⊩[⟨fineFrame, V⟩] ι₃ 0 := (forces_ι_iff.mp hs.hwι₀).2.2.1
+lemma ShapeData.hι₄ : d m ⊩[⟨fineFrame, V⟩] ι₄ 0 := (forces_ι_iff.mp hs.hwι₀).2.2.2
 
-lemma ShapeData.ι₁_at (y : fineFrame.World) (hy : World.d m ≺ y) (h : y ⊩[⟨fineFrame, V⟩] β 1) :
+lemma ShapeData.ι₁_at (y : fineFrame.World) (hy : d m ≺ y) (h : y ⊩[⟨fineFrame, V⟩] β 1) :
     y ⊩[⟨fineFrame, V⟩] ◇(β 0) ⋏ ∼◇(γ 0) := forces_box.mp hs.hι₁ y hy h
 
-lemma ShapeData.ι₂_at (y : fineFrame.World) (hy : World.d m ≺ y) (h : y ⊩[⟨fineFrame, V⟩] γ 1) :
+lemma ShapeData.ι₂_at (y : fineFrame.World) (hy : d m ≺ y) (h : y ⊩[⟨fineFrame, V⟩] γ 1) :
     y ⊩[⟨fineFrame, V⟩] ◇(γ 0) ⋏ ∼◇(β 0) := forces_box.mp hs.hι₂ y hy h
 
-lemma ShapeData.ι₃_at (y : fineFrame.World) (hy : World.d m ≺ y) (h : y ⊩[⟨fineFrame, V⟩] β 0) :
+lemma ShapeData.ι₃_at (y : fineFrame.World) (hy : d m ≺ y) (h : y ⊩[⟨fineFrame, V⟩] β 0) :
     y ⊩[⟨fineFrame, V⟩] ∼◇(β 1) := forces_box.mp hs.hι₃ y hy h
 
-lemma ShapeData.ι₄_at (y : fineFrame.World) (hy : World.d m ≺ y) (h : y ⊩[⟨fineFrame, V⟩] γ 0) :
+lemma ShapeData.ι₄_at (y : fineFrame.World) (hy : d m ≺ y) (h : y ⊩[⟨fineFrame, V⟩] γ 0) :
     y ⊩[⟨fineFrame, V⟩] ∼◇(γ 1) := forces_box.mp hs.hι₄ y hy h
 
 lemma ShapeData.mirror : ShapeData m n (mirrorVal V) where
@@ -1025,42 +1047,42 @@ lemma ShapeData.mirror : ShapeData m n (mirrorVal V) where
 /-! ### The `β`-side facts on the cone of `a_n` -/
 
 /-- On the cone of `a_n`, `β 0` is forced only at `b_n`. -/
-lemma eq_b_of_forces_β₀ (hmn : m ≤ n) (hRz : .a n ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 0) :
-    z = .b n := by
+lemma eq_b_of_forces_β₀ (hmn : m ≤ n) (hRz : a n ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 0) :
+    z = b n := by
   have h₁ := hs.ι₃_at z (Frame.rel_trans (by simp [hmn]) hRz) h;
-  have h₂ := (forces_and.mp (hs.ι₂_at (.c (n + 1)) (by simp) hs.hcn1γ₁)).2;
-  cases z with
+  have h₂ := (forces_and.mp (hs.ι₂_at (c (n + 1)) (by simp) hs.hcn1γ₁)).2;
+  cases z using casesOn with
   | a k =>
     simp only [rel_a_a] at hRz;
     subst hRz;
-    exact (false_of_neg_dia h₁ (y := .b (k + 1)) (by simp) hs.hbn1β₁).elim;
+    exact (false_of_neg_dia h₁ (y := b (k + 1)) (by simp) hs.hbn1β₁).elim;
   | b k =>
     simp at hRz;
     rcases Nat.lt_trichotomy k n with hk | rfl | hk;
-    · exact (false_of_neg_dia h₂ (y := .b k) (by simp; omega) h).elim;
+    · exact (false_of_neg_dia h₂ (y := b k) (by simp; omega) h).elim;
     · rfl;
     · obtain rfl : k = n + 1 := by omega;
-      exact (false_of_neg_dia h₁ (y := .b (n + 1)) (by simp) hs.hbn1β₁).elim;
+      exact (false_of_neg_dia h₁ (y := b (n + 1)) (by simp) hs.hbn1β₁).elim;
   | c k =>
     simp at hRz;
-    exact (false_of_neg_dia h₂ (y := .c k) (by simp; omega) h).elim;
+    exact (false_of_neg_dia h₂ (y := c k) (by simp; omega) h).elim;
   | d k => simp at hRz
 
 /-- On the cone of `a_n`, `β 1` is forced only at `b_{n+1}`. -/
-lemma eq_b_of_forces_β₁ (hmn : m ≤ n) (hRz : .a n ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 1) :
-    z = .b (n + 1) := by
-  have hR : .d m ≺ z := Frame.rel_trans (by simp [hmn]) hRz;
+lemma eq_b_of_forces_β₁ (hmn : m ≤ n) (hRz : a n ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 1) :
+    z = b (n + 1) := by
+  have hR : d m ≺ z := Frame.rel_trans (by simp [hmn]) hRz;
   obtain ⟨h₁, h₂⟩ := forces_and.mp (hs.ι₁_at z hR h);
-  have h₃ := hs.ι₃_at (.b n) (by simp) hs.hbnβ₀;
-  cases z with
+  have h₃ := hs.ι₃_at (b n) (by simp) hs.hbnβ₀;
+  cases z using casesOn with
   | a k =>
     simp only [rel_a_a] at hRz;
     subst hRz;
-    exact (false_of_neg_dia h₂ (y := .c k) (by simp) hs.hcnγ₀).elim;
+    exact (false_of_neg_dia h₂ (y := c k) (by simp) hs.hcnγ₀).elim;
   | b k =>
     simp at hRz;
     rcases Nat.lt_or_ge k (n + 1) with hk | hk;
-    · exact (false_of_neg_dia h₃ (y := .b k) (by simp; omega) h).elim;
+    · exact (false_of_neg_dia h₃ (y := b k) (by simp; omega) h).elim;
     · obtain rfl : k = n + 1 := by omega;
       rfl;
   | c k =>
@@ -1070,20 +1092,20 @@ lemma eq_b_of_forces_β₁ (hmn : m ≤ n) (hRz : .a n ≺ z) (h : z ⊩[⟨fine
       obtain rfl := eq_b_of_forces_β₀ hs hmn (Frame.rel_trans (by simp; omega) hcw) hw;
       simp at hcw;
       omega;
-    · exact (false_of_neg_dia h₂ (y := .c n) (by simp [hk]) hs.hcnγ₀).elim;
+    · exact (false_of_neg_dia h₂ (y := c n) (by simp [hk]) hs.hcnγ₀).elim;
   | d k => simp at hRz
 
 /-- `b_{n+2}` forces `β 2`. -/
-lemma forces_β₂_at : World.b (n + 2) ⊩[⟨fineFrame, V⟩] β 2 := by
-  have h₁ := (forces_and.mp (hs.ι₁_at (.b (n + 1)) (by simp) hs.hbn1β₁)).2;
-  have h₂ := hs.ι₄_at (.c n) (by simp) hs.hcnγ₀;
+lemma forces_β₂_at : b (n + 2) ⊩[⟨fineFrame, V⟩] β 2 := by
+  have h₁ := (forces_and.mp (hs.ι₁_at (b (n + 1)) (by simp) hs.hbn1β₁)).2;
+  have h₂ := hs.ι₄_at (c n) (by simp) hs.hcnγ₀;
   rw [β_add_two, forces_and, forces_and];
   and_intros;
-  · exact forces_dia.mpr ⟨.b (n + 1), by simp, hs.hbn1β₁⟩;
-  · exact forces_dia.mpr ⟨.c n, by simp, hs.hcnγ₀⟩;
+  · exact forces_dia.mpr ⟨b (n + 1), by simp, hs.hbn1β₁⟩;
+  · exact forces_dia.mpr ⟨c n, by simp, hs.hcnγ₀⟩;
   · rw [forces_neg, not_forces_dia];
     intro q hq hqC1;
-    cases q with
+    cases q using casesOn with
     | a k => simp at hq;
     | d k => simp at hq;
     | c k =>
@@ -1091,95 +1113,95 @@ lemma forces_β₂_at : World.b (n + 2) ⊩[⟨fineFrame, V⟩] β 2 := by
       exact false_of_neg_dia h₂ (by simp; omega) hqC1;
     | b k =>
       simp at hq;
-      obtain ⟨hkC0, hkB0⟩ := forces_and.mp (hs.ι₂_at (.b k) (by simp) hqC1);
+      obtain ⟨hkC0, hkB0⟩ := forces_and.mp (hs.ι₂_at (b k) (by simp) hqC1);
       rcases Nat.lt_or_ge k (n + 2) with hk | hk;
       · obtain ⟨r, hbkr, hr⟩ := forces_dia.mp hkC0;
         exact false_of_neg_dia h₁ (Frame.rel_trans (by simp; omega) hbkr) hr;
       · obtain rfl : k = n + 2 := by omega;
-        exact false_of_neg_dia hkB0 (y := .b n) (by simp) hs.hbnβ₀
+        exact false_of_neg_dia hkB0 (y := b n) (by simp) hs.hbnβ₀
 
 /-! ### The facts on the cone of `d_{n+1}` -/
 
 /-- On the cone of `d_{n+1}`, `β 1` is forced only at `b_{n+1}`. -/
-lemma eq_bn1_of_forces_β₁ (hmn : m ≤ n) (hRz : .d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 1) :
-    z = .b (n + 1) := by
+lemma eq_bn1_of_forces_β₁ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 1) :
+    z = b (n + 1) := by
   have h₁ := (forces_and.mp (hs.ι₁_at z (Frame.rel_trans (by simp; omega) hRz) h)).2;
-  cases z with
-  | d k => exact (false_of_neg_dia h₁ (y := .c n) (by simp) hs.hcnγ₀).elim;
+  cases z using casesOn with
+  | d k => exact (false_of_neg_dia h₁ (y := c n) (by simp) hs.hcnγ₀).elim;
   | a k =>
     simp at hRz;
-    exact (false_of_neg_dia h₁ (y := .c n) (by simp; omega) hs.hcnγ₀).elim;
+    exact (false_of_neg_dia h₁ (y := c n) (by simp; omega) hs.hcnγ₀).elim;
   | c k =>
     rcases Nat.lt_or_ge k n with hk | hk;
-    · have := eq_b_of_forces_β₁ hs hmn (z := .c k) (by simp; omega) h;
+    · have := eq_b_of_forces_β₁ hs hmn (z := c k) (by simp; omega) h;
       simp at this;
-    · exact (false_of_neg_dia h₁ (y := .c n) (by simp [hk]) hs.hcnγ₀).elim;
+    · exact (false_of_neg_dia h₁ (y := c n) (by simp [hk]) hs.hcnγ₀).elim;
   | b k =>
     rcases Nat.lt_or_ge k (n + 2) with hk | hk;
     · exact eq_b_of_forces_β₁ hs hmn (by simp; omega) h;
-    · exact (false_of_neg_dia h₁ (y := .c n) (by simp; omega) hs.hcnγ₀).elim
+    · exact (false_of_neg_dia h₁ (y := c n) (by simp; omega) hs.hcnγ₀).elim
 
 /-- On the cone of `d_{n+1}`, `β 2` is forced only at `b_{n+2}`. -/
-lemma eq_bn2_of_forces_β₂ (hmn : m ≤ n) (hRz : .d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 2) :
-    z = .b (n + 2) := by
+lemma eq_bn2_of_forces_β₂ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] β 2) :
+    z = b (n + 2) := by
   rw [β_add_two, forces_and, forces_and] at h;
   obtain ⟨h₁, h₂, h₃⟩ := h;
   obtain ⟨y, hzy, hy⟩ := forces_dia.mp h₁;
   obtain rfl := eq_bn1_of_forces_β₁ hs hmn (Frame.rel_trans hRz hzy) hy;
-  have h₄ := (forces_and.mp (hs.ι₁_at (.b (n + 1)) (by simp) hs.hbn1β₁)).2;
-  cases z with
+  have h₄ := (forces_and.mp (hs.ι₁_at (b (n + 1)) (by simp) hs.hbn1β₁)).2;
+  cases z using casesOn with
   | a k =>
     simp at hRz;
-    exact (false_of_neg_dia h₃ (y := .c (n + 1)) (by simp; omega) hs.hcn1γ₁).elim;
-  | d k => exact (false_of_neg_dia h₃ (y := .c (n + 1)) (by simp) hs.hcn1γ₁).elim;
+    exact (false_of_neg_dia h₃ (y := c (n + 1)) (by simp; omega) hs.hcn1γ₁).elim;
+  | d k => exact (false_of_neg_dia h₃ (y := c (n + 1)) (by simp) hs.hcn1γ₁).elim;
   | c k =>
     simp at hzy;
-    exact (false_of_neg_dia h₃ (y := .c (n + 1)) (by simp; omega) hs.hcn1γ₁).elim;
+    exact (false_of_neg_dia h₃ (y := c (n + 1)) (by simp; omega) hs.hcn1γ₁).elim;
   | b k =>
     simp at hzy;
     rcases Nat.lt_or_ge k (n + 3) with hk | hk;
     · obtain rfl | rfl : k = n + 1 ∨ k = n + 2 := by omega;
       · exact (forces_neg.mp h₄ h₂).elim;
       · rfl;
-    · exact (false_of_neg_dia h₃ (y := .c (n + 1)) (by simp; omega) hs.hcn1γ₁).elim
+    · exact (false_of_neg_dia h₃ (y := c (n + 1)) (by simp; omega) hs.hcn1γ₁).elim
 
 /-! ### The `γ`-side facts, by the mirror -/
 
 /-- `c_{n+2}` forces `γ 2`, the mirror of `forces_β₂_at`. -/
-lemma forces_γ₂_at : World.c (n + 2) ⊩[⟨fineFrame, V⟩] γ 2 := by
+lemma forces_γ₂_at : c (n + 2) ⊩[⟨fineFrame, V⟩] γ 2 := by
   simpa [forces_mirror] using forces_β₂_at hs.mirror
 
 /-- On the cone of `d_{n+1}`, `γ 1` is forced only at `c_{n+1}`. -/
-lemma eq_cn1_of_forces_γ₁ (hmn : m ≤ n) (hRz : .d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] γ 1) :
-    z = .c (n + 1) := by
+lemma eq_cn1_of_forces_γ₁ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] γ 1) :
+    z = c (n + 1) := by
   have := eq_bn1_of_forces_β₁ hs.mirror hmn (z := swap z) (by simpa using rel_swap.mpr hRz)
     (by simpa [forces_mirror, mirrorVal] using h);
   simpa [swap_involutive.eq_iff] using this
 
 /-- On the cone of `d_{n+1}`, `γ 2` is forced only at `c_{n+2}`. -/
-lemma eq_cn2_of_forces_γ₂ (hmn : m ≤ n) (hRz : .d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] γ 2) :
-    z = .c (n + 2) := by
+lemma eq_cn2_of_forces_γ₂ (hmn : m ≤ n) (hRz : d (n + 1) ≺ z) (h : z ⊩[⟨fineFrame, V⟩] γ 2) :
+    z = c (n + 2) := by
   have := eq_bn2_of_forces_β₂ hs.mirror hmn (z := swap z) (by simpa using rel_swap.mpr hRz)
     (by simpa [forces_mirror] using h);
   simpa [swap_involutive.eq_iff] using this
 
 /-- `a_{n+1}` sees no point forcing `β 3`. -/
-lemma not_forces_dia_β₃ (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(β 3) := by
+lemma not_forces_dia_β₃ (hmn : m ≤ n) : a (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(β 3) := by
   rw [forces_neg, not_forces_dia];
   intro p hp hpB3;
   rw [β_add_two, forces_and, forces_and] at hpB3;
   obtain ⟨h₁, h₂, h₃⟩ := hpB3;
   obtain ⟨q₂, hpq₂, hq₂⟩ := forces_dia.mp h₁;
   obtain ⟨q₁, hpq₁, hq₁⟩ := forces_dia.mp h₂;
-  have hdp : .d (n + 1) ≺ p := Frame.rel_trans (by simp) hp;
+  have hdp : d (n + 1) ≺ p := Frame.rel_trans (by simp) hp;
   obtain rfl := eq_bn2_of_forces_β₂ hs hmn (Frame.rel_trans hdp hpq₂) hq₂;
   obtain rfl := eq_cn1_of_forces_γ₁ hs hmn (Frame.rel_trans hdp hpq₁) hq₁;
-  cases p with
+  cases p using casesOn with
   | d j => simp at hp;
   | a j =>
     simp only [rel_a_a] at hp;
     subst hp;
-    exact false_of_neg_dia h₃ (y := .c (n + 2)) (by simp) (forces_γ₂_at hs)
+    exact false_of_neg_dia h₃ (y := c (n + 2)) (by simp) (forces_γ₂_at hs)
   | b j =>
     simp at hp hpq₁;
     omega
@@ -1188,20 +1210,20 @@ lemma not_forces_dia_β₃ (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨fineFrame, V
     omega
 
 /-- `a_{n+1}` sees no point forcing `γ 3`, the mirror of `not_forces_dia_β₃`. -/
-lemma not_forces_dia_γ₃ (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(γ 3) := by
+lemma not_forces_dia_γ₃ (hmn : m ≤ n) : a (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(γ 3) := by
   simpa [forces_mirror] using not_forces_dia_β₃ hs.mirror hmn
 
 /-- `a_{n+1}` forces `α 1`. -/
-lemma forces_α₁_at (hmn : m ≤ n) : World.a (n + 1) ⊩[⟨fineFrame, V⟩] α 1 := by
+lemma forces_α₁_at (hmn : m ≤ n) : a (n + 1) ⊩[⟨fineFrame, V⟩] α 1 := by
   rw [forces_α_iff];
   and_intros;
-  · exact forces_dia.mpr ⟨.b (n + 2), by simp, forces_β₂_at hs⟩;
-  · exact forces_dia.mpr ⟨.c (n + 2), by simp, forces_γ₂_at hs⟩;
+  · exact forces_dia.mpr ⟨b (n + 2), by simp, forces_β₂_at hs⟩;
+  · exact forces_dia.mpr ⟨c (n + 2), by simp, forces_γ₂_at hs⟩;
   · exact not_forces_dia_β₃ hs hmn;
   · exact not_forces_dia_γ₃ hs hmn
 
 /-- `d_{n+1}` sees no point forcing `α 0`. -/
-lemma not_dia_α₀_at (hmn : m ≤ n) : World.d (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(α 0) := by
+lemma not_dia_α₀_at (hmn : m ≤ n) : d (n + 1) ⊩[⟨fineFrame, V⟩] ∼◇(α 0) := by
   rw [forces_neg, not_forces_dia];
   intro z hz hzA0;
   obtain ⟨h₁, h₂, h₃, h₄⟩ := forces_α_iff.mp hzA0;
@@ -1209,55 +1231,55 @@ lemma not_dia_α₀_at (hmn : m ≤ n) : World.d (n + 1) ⊩[⟨fineFrame, V⟩]
   obtain ⟨y₂, hzy₂, hy₂⟩ := forces_dia.mp h₂;
   obtain rfl := eq_bn1_of_forces_β₁ hs hmn (Frame.rel_trans hz hzy₁) hy₁;
   obtain rfl := eq_cn1_of_forces_γ₁ hs hmn (Frame.rel_trans hz hzy₂) hy₂;
-  cases z with
-  | d k => exact false_of_neg_dia h₃ (y := .b (n + 2)) (by simp) (forces_β₂_at hs)
+  cases z using casesOn with
+  | d k => exact false_of_neg_dia h₃ (y := b (n + 2)) (by simp) (forces_β₂_at hs)
   | a k =>
     simp at hz;
-    exact false_of_neg_dia h₃ (y := .b (n + 2)) (by simp; omega) (forces_β₂_at hs)
+    exact false_of_neg_dia h₃ (y := b (n + 2)) (by simp; omega) (forces_β₂_at hs)
   | b k =>
     simp at hzy₂;
-    exact false_of_neg_dia h₃ (y := .b (n + 2)) (by simp; omega) (forces_β₂_at hs)
+    exact false_of_neg_dia h₃ (y := b (n + 2)) (by simp; omega) (forces_β₂_at hs)
   | c k =>
     simp at hzy₁;
-    exact false_of_neg_dia h₄ (y := .c (n + 2)) (by simp; omega) (forces_γ₂_at hs)
+    exact false_of_neg_dia h₄ (y := c (n + 2)) (by simp; omega) (forces_γ₂_at hs)
 
 /-- A point forcing `α 0` and seeing `b_{n+1}` and `c_{n+1}` is `a_n`. -/
-lemma apex_eq (hzA0 : z ⊩[⟨fineFrame, V⟩] α 0) (hRzb : z ≺ .b (n + 1)) (hRzc : z ≺ .c (n + 1)) :
-    z = .a n := by
+lemma apex_eq (hzA0 : z ⊩[⟨fineFrame, V⟩] α 0) (hRzb : z ≺ b (n + 1)) (hRzc : z ≺ c (n + 1)) :
+    z = a n := by
   obtain ⟨-, -, h₁, h₂⟩ := forces_α_iff.mp hzA0;
-  cases z with
-  | d k => exact (false_of_neg_dia h₁ (y := .b (n + 2)) (by simp) (forces_β₂_at hs)).elim;
+  cases z using casesOn with
+  | d k => exact (false_of_neg_dia h₁ (y := b (n + 2)) (by simp) (forces_β₂_at hs)).elim;
   | b k =>
     simp at hRzb hRzc;
-    exact (false_of_neg_dia h₁ (y := .b (n + 2)) (by simp; omega) (forces_β₂_at hs)).elim;
+    exact (false_of_neg_dia h₁ (y := b (n + 2)) (by simp; omega) (forces_β₂_at hs)).elim;
   | c k =>
     simp at hRzb hRzc;
-    exact (false_of_neg_dia h₂ (y := .c (n + 2)) (by simp; omega) (forces_γ₂_at hs)).elim;
+    exact (false_of_neg_dia h₂ (y := c (n + 2)) (by simp; omega) (forces_γ₂_at hs)).elim;
   | a k =>
     simp at hRzb hRzc;
     have hkn : k ≤ n := by
       by_contra hc;
-      exact false_of_neg_dia h₁ (y := .b (n + 2)) (by simp; omega) (forces_β₂_at hs);
-    exact congrArg World.a (by omega)
+      exact false_of_neg_dia h₁ (y := b (n + 2)) (by simp; omega) (forces_β₂_at hs);
+    exact congrArg a (by omega)
 
 end
 
 /-! ### Assembly: the frame validates `θ` -/
 
 lemma forces_ψ_of_shapeAndApex (hs : ShapeData m n V) {t : fineFrame.World}
-    (hwt : .d m ≺ t) (htA0 : t ⊩[⟨fineFrame, V⟩] α 0)
-    (hRtb : t ≺ .b (n + 1)) (hRtc : t ≺ .c (n + 1)) :
-    World.d m ⊩[⟨fineFrame, V⟩] ψ := by
+    (hwt : d m ≺ t) (htA0 : t ⊩[⟨fineFrame, V⟩] α 0)
+    (hRtb : t ≺ b (n + 1)) (hRtc : t ≺ c (n + 1)) :
+    d m ⊩[⟨fineFrame, V⟩] ψ := by
   obtain rfl := apex_eq hs htA0 hRtb hRtc;
   have hmn : m ≤ n := by simpa using hwt;
   rw [ψ, forces_dia];
-  use World.d (n + 1);
+  use d (n + 1);
   rw [forces_and, forces_and];
   and_intros;
   · simp; omega;
   · exact forces_p01_at hs.hwδ (by omega);
   · exact not_dia_α₀_at hs hmn;
-  · exact forces_dia.mpr ⟨.a (n + 1), by simp, forces_α₁_at hs hmn⟩
+  · exact forces_dia.mpr ⟨a (n + 1), by simp, forces_α₁_at hs hmn⟩
 
 end Cone
 
@@ -1429,7 +1451,7 @@ lemma logicS4Fine_le_fineModel_logic : logicS4Fine ≤ fineModel.logic :=
 - [Fin74a, Lemma 2] -/
 lemma neg_ε_not_mem_logicS4Fine : ∼ε ∉ logicS4Fine := by
   by_contra h;
-  exact Model.validates_of_mem_logic (logicS4Fine_le_fineModel_logic h) (fineFrame.World.d 0)
+  exact Model.validates_of_mem_logic (logicS4Fine_le_fineModel_logic h) (fineFrame.d 0)
     fineModel.forces_ε_d0
 
 /-- `∼ε` is valid in every frame validating Fine's logic.
