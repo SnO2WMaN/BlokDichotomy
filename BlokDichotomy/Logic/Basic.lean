@@ -128,20 +128,14 @@ inductive FormulaSet.axiomsK : FormulaSet α
 abbrev logicK : NormalLogic α := NormalLogic.ofSet FormulaSet.axiomsK
 notation "𝐊" => logicK
 
-/-- The axiom scheme `4`. -/
-inductive FormulaSet.axiomsFour : FormulaSet α
-| four {φ} : axiomsFour <| □φ 🡒 □□φ
-
-/-- The axiom scheme `T`. -/
-inductive FormulaSet.axiomsT : FormulaSet α
-| t {φ} : axiomsT <| □φ 🡒 φ
-
-/-- The normal logic `𝐊𝟒 = 𝐊 ⊕ 4`. -/
-abbrev logicK4 : NormalLogic α := (𝐊 : NormalLogic α) + (FormulaSet.axiomsFour : FormulaSet α)
+/-- The normal logic `𝐊𝟒 = 𝐊 ⊕ □φ 🡒 □□φ`. -/
+abbrev logicK4 : NormalLogic α :=
+  (𝐊 : NormalLogic α) + {□φ 🡒 □□φ | (φ : Formula α)}
 notation "𝐊𝟒" => logicK4
 
-/-- The normal logic `𝐒𝟒 = 𝐊𝟒 ⊕ T`. -/
-abbrev logicS4 : NormalLogic α := (𝐊𝟒 : NormalLogic α) + (FormulaSet.axiomsT : FormulaSet α)
+/-- The normal logic `𝐒𝟒 = 𝐊𝟒 ⊕ □φ 🡒 φ`. -/
+abbrev logicS4 : NormalLogic α :=
+  (𝐊𝟒 : NormalLogic α) + {□φ 🡒 φ | (φ : Formula α)}
 notation "𝐒𝟒" => logicS4
 
 namespace NormalLogic
