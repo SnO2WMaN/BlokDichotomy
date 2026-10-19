@@ -115,7 +115,10 @@ strict `p0 ⋎ p1`-chain, which reaches every `d`-point index from above. -/
 lemma forces_p01_at {m : ℕ} (hD : World.d m ⊩[⟨frame, ψ⟩] D) {k : ℕ} (hk : m ≤ k) :
     World.d k ⊩[⟨frame, ψ⟩] p0 ⋎ p1 := by
   obtain ⟨u, hu₀, hu⟩ := exists_p01_chain hD;
-  choose kf hkf using fun i => strict_chain_all_d (fun j => (hu j).1) (fun j => (hu j).2.1) i;
+  have hd : ∀ i, ∃ k, u i = World.d k := by
+    intro i;
+    exact strict_chain_all_d (fun j => (hu j).1) (fun j => (hu j).2.1) i;
+  choose kf hkf using hd;
   have hmono : StrictMono kf := by
     apply strictMono_nat_of_lt_succ;
     intro i;

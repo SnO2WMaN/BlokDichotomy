@@ -130,9 +130,18 @@ lemma cone_finite {w : World} (hw : ∀ k, w ≠ .d k) : {z | R w z}.Finite := b
   obtain ⟨m, hm⟩ : ∃ m, ∀ z, R w z → ∃ k ≤ m, z = .a k ∨ z = .b k ∨ z = .c k := by
     cases w with
     | d k => exact absurd rfl (hw k);
-    | a m => exact ⟨m + 1, fun z hz => by cases z <;> simp_all⟩;
-    | b m => exact ⟨m + 1, fun z hz => by cases z <;> simp_all <;> omega⟩;
-    | c m => exact ⟨m + 1, fun z hz => by cases z <;> simp_all <;> omega⟩;
+    | a m =>
+      use m + 1;
+      intro z hz;
+      cases z <;> simp_all;
+    | b m =>
+      use m + 1;
+      intro z hz;
+      cases z <;> simp_all <;> omega;
+    | c m =>
+      use m + 1;
+      intro z hz;
+      cases z <;> simp_all <;> omega;
   apply ((Finset.range (m + 1)).image World.a ∪ (Finset.range (m + 1)).image World.b ∪
     (Finset.range (m + 1)).image World.c).finite_toSet.subset;
   intro z hz;
@@ -147,8 +156,11 @@ lemma strict_chain_all_d {u : ℕ → World} (hR : ∀ m, R (u m) (u (m + 1)))
     induction n with
     | zero => simpa using R_refl (u i);
     | succ n ih => exact R_trans ih (hR (i + n));
-  have hinf : {z | R (u i) z}.Infinite :=
-    Set.infinite_of_injective_forall_mem (fun a b hab => by have := hinj hab; omega) hchain;
+  have hinj' : Function.Injective fun n => u (i + n) := by
+    intro a b hab;
+    have := hinj hab;
+    omega;
+  have hinf : {z | R (u i) z}.Infinite := Set.infinite_of_injective_forall_mem hinj' hchain;
   by_contra h;
   push Not at h;
   exact (cone_finite h).not_infinite hinf

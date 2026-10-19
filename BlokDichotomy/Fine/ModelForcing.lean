@@ -264,7 +264,14 @@ lemma exists_phase_chain (h : ∃ σ x, x ⊮[model] H⟦σ⟧) :
       intro m w hw;
       obtain ⟨v, hwv, hvw, hxv, hv⟩ := Y_step hbox m hw.1 hw.2;
       exact ⟨v, ⟨hwv, hvw⟩, hxv, hv⟩;
-  exact ⟨σ, u, fun m => (hu m).2.1, fun m => (hu m).2.2, fun m => Y_imp_phase (hu m).1.2⟩
+  use σ, u;
+  and_intros;
+  · intro m;
+    exact (hu m).2.1;
+  · intro m;
+    exact (hu m).2.2;
+  · intro m;
+    exact Y_imp_phase (hu m).1.2
 
 /-- Fine's model strongly verifies `H`.
 
@@ -318,7 +325,10 @@ lemma forces_swap_iff {ψ : World → ℕ → Prop} {x : World} {X : Formula ℕ
     · rintro ⟨y, hxy, hy⟩;
       exact ⟨swap y, R_swap.mpr hxy, ih.mp hy⟩;
     · rintro ⟨y, hxy, hy⟩;
-      exact ⟨swap y, R_swap.mp (by simpa using hxy), ih.mpr (by simpa using hy)⟩
+      use swap y;
+      and_intros;
+      · exact R_swap.mp (by simpa using hxy);
+      · exact ih.mpr (by simpa using hy)
 
 /-- The valuation whose forcing relation is that of `ψ` seen through `swap` and `tau`. -/
 def mirrorVal (ψ : World → ℕ → Prop) : World → ℕ → Prop :=
