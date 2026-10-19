@@ -34,14 +34,14 @@ variable [Finite α]
 - [CZ98, Lemma 10.55]
 -/
 theorem finite_neg_multidia_top (k : ℕ) :
-    { x : (canonicalModel L).World | x ⊩ ∼◇^[k]⊤ }.Finite := by
+    { x : L.canonicalModel.World | x ⊩ ∼◇^[k]⊤ }.Finite := by
   induction k with
   | zero =>
     apply Set.finite_empty.subset;
     grind;
   | succ k ih =>
-    set S := { x : (canonicalModel L).World | x ⊩ ∼◇^[k]⊤ };
-    let f : (canonicalModel L).World → Set α × Set (canonicalModel L).World :=
+    set S := { x : L.canonicalModel.World | x ⊩ ∼◇^[k]⊤ };
+    let f : L.canonicalModel.World → Set α × Set L.canonicalModel.World :=
       fun x => ({ a | #a ∈ x }, { y | x ≺ y });
     apply Set.Finite.of_finite_image (f := f);
     · apply (Set.finite_univ.prod ih.powerset).subset;
@@ -57,7 +57,7 @@ theorem finite_neg_multidia_top (k : ℕ) :
 /-- There are finitely many points of the canonical model satisfying `farthest k`.
 - [CZ98, Lemma 10.55]
 -/
-theorem finite_farthest (k : ℕ) : { x : (canonicalModel L).World | x ⊩ farthest k }.Finite :=
+theorem finite_farthest (k : ℕ) : { x : L.canonicalModel.World | x ⊩ farthest k }.Finite :=
   (finite_neg_multidia_top (k + 1)).subset <| by
     intro _ hx;
     grind;
@@ -66,12 +66,12 @@ theorem finite_farthest (k : ℕ) : { x : (canonicalModel L).World | x ⊩ farth
 formula.
 - [CZ98, Lemma 10.55]
 -/
-theorem exists_characteristic {k : ℕ} {x : (canonicalModel L).World} (hx : x ⊩ ∼◇^[k]⊤) :
-    ∃ θ : Formula α, ∀ y : (canonicalModel L).World, y ⊩ θ ↔ y = x := by
+theorem exists_characteristic {k : ℕ} {x : L.canonicalModel.World} (hx : x ⊩ ∼◇^[k]⊤) :
+    ∃ θ : Formula α, ∀ y : L.canonicalModel.World, y ⊩ θ ↔ y = x := by
   classical
-  have hd : ∀ y : (canonicalModel L).World, y ≠ x → ∃ φ ∈ x, φ ∉ y := fun y hy =>
+  have hd : ∀ y : L.canonicalModel.World, y ≠ x → ∃ φ ∈ x, φ ∉ y := fun y hy =>
     MaximalConsistentSet.exists_mem_not_mem_of_ne hy.symm;
-  let d : (canonicalModel L).World → Formula α := fun y =>
+  let d : L.canonicalModel.World → Formula α := fun y =>
     if h : y = x then ⊤ else (hd y h).choose;
   let l := (finite_neg_multidia_top (L := L) k).toFinset.toList;
   use ∼◇^[k]⊤ ⋏ ⋀(l.map d);
@@ -97,8 +97,8 @@ theorem exists_characteristic {k : ℕ} {x : (canonicalModel L).World} (hx : x �
 formula.
 - [CZ98, Lemma 10.55]
 -/
-theorem exists_characteristic_of_farthest {k : ℕ} {x : (canonicalModel L).World}
-    (hx : x ⊩ farthest k) : ∃ θ : Formula α, ∀ y : (canonicalModel L).World, y ⊩ θ ↔ y = x :=
+theorem exists_characteristic_of_farthest {k : ℕ} {x : L.canonicalModel.World}
+    (hx : x ⊩ farthest k) : ∃ θ : Formula α, ∀ y : L.canonicalModel.World, y ⊩ θ ↔ y = x :=
   exists_characteristic (forces_and.mp hx).2
 
 end canonicalModel

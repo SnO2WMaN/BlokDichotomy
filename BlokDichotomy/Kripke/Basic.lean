@@ -418,15 +418,4 @@ end Frame
 
 
 
-namespace Logic
-
-structure IncompleteBy (P : {κ : Type u} → Frame κ → Prop) (L : NormalLogic α) (φ : Formula α) where
-  model : ∀ κ : Type u, ∀ F : Frame κ, P F → F ⊧ L → F ⊧ φ
-  unprov : φ ∉ L
-
-def Incomplete (P : {κ : Type u} → Frame κ → Prop) (L : NormalLogic α) : Prop :=
-  ∃ φ, IncompleteBy P L φ
-
-end Logic
-
 end

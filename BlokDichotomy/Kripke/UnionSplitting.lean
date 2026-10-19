@@ -5,13 +5,15 @@ public import BlokDichotomy.Kripke.JankovFine
 public import BlokDichotomy.Kripke.Transport
 public import BlokDichotomy.Kripke.Types
 public import BlokDichotomy.Logic.Restrict
+public import BlokDichotomy.Logic.Splitting
 public import Mathlib.SetTheory.Cardinal.NatCard
 
 /-!
-# Splittings by finite rooted cycle-free frames, and their finite model property
+# Union-splittings by finite rooted cycle-free frames, and their finite model property
 
-Union-splittings `unionSplitting 𝔉` of `K` by sets of finite rooted cycle-free frames, the core of
-a normal logic, and the finite model property of union-splittings.
+Union-splittings `unionSplitting 𝔉` of `K` by sets of finite rooted cycle-free frames, the splitting
+pair given by a single such frame, the core of a normal logic, and the finite model property of
+union-splittings.
 
 ## References
 
@@ -44,19 +46,19 @@ theorem validateLogic_of_definable_pMorphism {L : NormalLogic ℕ} {m : ℕ} {κ
   exact Model.PMorphism.forces_iff (M := M'⥜x) (N := ⟨F, U⟩)
     { f with val_iff := hs _ _ } |>.mp <| h₁ y;
 
-/-- For a rooted cycle-free `F`, `F.2 ⊧ L` iff `F.jfFormula.map Fin.val ∉ L`.
+/-- `F.frame ⊧ L` iff `F.jfFormula.map Fin.val ∉ L`.
 - [CZ98, Theorem 10.53]
 -/
-theorem splitting_of_cycleFree {F : FinFrame} (hF : F.RootedCycleFree) {L : NormalLogic ℕ}
-    [L.IsNExt 𝐊] : F.2 ⊧ L ↔ F.jfFormula.map Fin.val ∉ L := by
+theorem validateLogic_iff_jfFormula_not_mem {F : JFFrame} {L : NormalLogic ℕ}
+    [L.IsNExt 𝐊] : F.frame ⊧ L ↔ F.jfFormula.map Fin.val ∉ L := by
   classical
   constructor;
   · intro hFL hχ;
-    exact FinFrame.not_validates_jfFormula F hF <| validates_map_finVal_iff.mp <| hFL _ hχ;
+    exact F.not_validates_jfFormula <| validates_map_finVal_iff.mp <| hFL _ hχ;
   · intro hχ;
     obtain ⟨x, hx⟩ :=
-      NormalLogic.exists_world_not_forces (L := L.restrict F.1) (φ := F.jfFormula) hχ;
-    obtain ⟨f, hf, hfi⟩ := FinFrame.jfFormula_spec F hx;
+      NormalLogic.exists_world_not_forces (L := L.restrict F.n) (φ := F.jfFormula) hχ;
+    obtain ⟨f, hf, hfi⟩ := F.jfFormula_spec hx;
     apply validateLogic_of_definable_pMorphism
       (fun _ hA => NormalLogic.canonicalModel_validates_of_mem hA) f hf;
     intro U;
@@ -71,20 +73,20 @@ end Frame
 /-- The extension of `K` by the formulas `F.jfFormula.map Fin.val` for `F ∈ 𝔉`.
 - [CZ98, p. 361]
 -/
-noncomputable def unionSplitting (𝔉 : Set FinFrame) : NormalLogic ℕ :=
-  (𝐊 : NormalLogic ℕ) + ((fun F : FinFrame => F.jfFormula.map Fin.val) '' 𝔉)
+noncomputable def unionSplitting (𝔉 : Set JFFrame) : NormalLogic ℕ :=
+  (𝐊 : NormalLogic ℕ) + ((fun F : JFFrame => F.jfFormula.map Fin.val) '' 𝔉)
 
 namespace NormalLogic
 
 open Frame
 
-variable {𝔉 𝔊 : Set FinFrame} {L L₁ : NormalLogic ℕ}
+variable {𝔉 𝔊 : Set JFFrame} {L L' : NormalLogic ℕ}
 
 instance : (unionSplitting 𝔉).IsNExt 𝐊 := by
   unfold unionSplitting;
   infer_instance;
 
-lemma jfFormula_mem_unionSplitting {F : FinFrame} (h : F ∈ 𝔉) :
+lemma jfFormula_mem_unionSplitting {F : JFFrame} (h : F ∈ 𝔉) :
     F.jfFormula.map Fin.val ∈ unionSplitting 𝔉 :=
   NormalLogic.mem_add ⟨F, h, rfl⟩
 
@@ -92,67 +94,78 @@ lemma jfFormula_mem_unionSplitting {F : FinFrame} (h : F ∈ 𝔉) :
 lemma unionSplitting_mono (h : 𝔉 ⊆ 𝔊) : unionSplitting 𝔉 ≤ unionSplitting 𝔊 :=
   NormalLogic.add_mono le_rfl <| Set.image_mono h
 
-/-- `unionSplitting 𝔉 ≤ L` iff `F.2 ⊭ L` for every `F ∈ 𝔉`.
+/-- `unionSplitting 𝔉 ≤ L` iff `F.frame ⊭ L` for every `F ∈ 𝔉`.
 - [CZ98, Proposition 10.50]
 -/
-theorem unionSplitting_le_iff (h𝔉 : ∀ F ∈ 𝔉, FinFrame.RootedCycleFree F) [L.IsNExt 𝐊] :
-    unionSplitting 𝔉 ≤ L ↔ ∀ F ∈ 𝔉, F.2 ⊭ L := by
+theorem unionSplitting_le_iff [L.IsNExt 𝐊] :
+    unionSplitting 𝔉 ≤ L ↔ ∀ F ∈ 𝔉, F.frame ⊭ L := by
   constructor;
   · intro hle F hF hFL;
-    exact (splitting_of_cycleFree (h𝔉 F hF)).mp hFL <|
-      hle <| jfFormula_mem_unionSplitting hF;
+    exact validateLogic_iff_jfFormula_not_mem.mp hFL <| hle <| jfFormula_mem_unionSplitting hF;
   · intro h;
     apply NormalLogic.add_le IsNExt.logic_le;
     rintro _ ⟨F, hF, rfl⟩;
     by_contra hχ;
-    exact h F hF <| (splitting_of_cycleFree (h𝔉 F hF)).mpr hχ;
+    exact h F hF <| validateLogic_iff_jfFormula_not_mem.mpr hχ;
 
-/-- `F.2 ⊭ unionSplitting 𝔉` for every `F ∈ 𝔉`.
+/-- `F.frame ⊭ unionSplitting 𝔉` for every `F ∈ 𝔉`.
 - [CZ98, Proposition 10.50]
 -/
-lemma not_validates_unionSplitting (h𝔉 : ∀ F ∈ 𝔉, F.RootedCycleFree)
-    {F : FinFrame} (hF : F ∈ 𝔉) : F.2 ⊭ unionSplitting 𝔉 :=
-  (unionSplitting_le_iff h𝔉).mp le_rfl F hF
+lemma not_validates_unionSplitting {F : JFFrame} (hF : F ∈ 𝔉) :
+    F.frame ⊭ unionSplitting 𝔉 :=
+  unionSplitting_le_iff.mp le_rfl F hF
+
+/-- `(F.frame.logic, unionSplitting {F})` is a splitting pair of the normal extensions of `𝐊`.
+- [CZ98, Proposition 10.50, Theorem 10.53]
+-/
+theorem isSplittingPair_unionSplitting_singleton (F : JFFrame) :
+    IsSplittingPair 𝐊 F.frame.logic (unionSplitting {F}) where
+  isNExt_left := ⟨fun _ hφ => validates_logicK _ hφ⟩
+  isNExt_right := inferInstance
+  not_le h := not_validates_unionSplitting (Set.mem_singleton F) fun _ hφ => h hφ
+  le_or_le L _ := by
+    by_cases hFL : F.frame ⊧ L;
+    · exact Or.inl fun _ hφ => hFL _ hφ;
+    · exact Or.inr <| unionSplitting_le_iff.mpr (by simpa);
+
+/-- `F.frame.logic` splits the normal extensions of `𝐊`.
+- [CZ98, Proposition 10.50, Theorem 10.53]
+-/
+lemma splits_logic (F : JFFrame) : Splits (𝐊 : NormalLogic ℕ) F.frame.logic :=
+  ⟨_, isSplittingPair_unionSplitting_singleton F⟩
 
 /-- `L = unionSplitting 𝔉` for some set `𝔉` of rooted cycle-free frames.
 - [CZ98, p. 361]
 -/
-def IsUnionSplitting (L : NormalLogic ℕ) : Prop :=
-  ∃ 𝔉 : Set FinFrame, (∀ F ∈ 𝔉, F.RootedCycleFree) ∧ L = unionSplitting 𝔉
+def IsUnionSplitting (L : NormalLogic ℕ) : Prop := ∃ 𝔉, L = unionSplitting 𝔉
 
-def coreFrames (L : NormalLogic ℕ) : Set FinFrame :=
-  {F | FinFrame.RootedCycleFree F ∧ F.2 ⊭ L}
-
-lemma rootedCycleFree_of_mem_coreFrames {F : FinFrame} (h : F ∈ coreFrames L) :
-    F.RootedCycleFree :=
-  h.1
+def coreFrames (L : NormalLogic ℕ) : Set JFFrame := {F | F.frame ⊭ L}
 
 noncomputable def coreUnionSplitting (L : NormalLogic ℕ) : NormalLogic ℕ :=
-  unionSplitting (coreFrames L)
+  unionSplitting L.coreFrames
 
-lemma isUnionSplitting_coreUnionSplitting : (coreUnionSplitting L).IsUnionSplitting :=
-  ⟨coreFrames L, fun _ hF => hF.1, rfl⟩
+lemma isUnionSplitting_coreUnionSplitting : L.coreUnionSplitting.IsUnionSplitting :=
+  ⟨L.coreFrames, rfl⟩
 
-lemma coreUnionSplitting_le [L.IsNExt 𝐊] : coreUnionSplitting L ≤ L :=
-  (unionSplitting_le_iff fun _ hF => hF.1).mpr fun _ hF => hF.2
+lemma coreUnionSplitting_le [L.IsNExt 𝐊] : L.coreUnionSplitting ≤ L :=
+  unionSplitting_le_iff.mpr fun _ hF => hF
 
-lemma le_coreUnionSplitting (h : L₁.IsUnionSplitting) (hle : L₁ ≤ L) :
-    L₁ ≤ coreUnionSplitting L := by
-  obtain ⟨𝔉, h𝔉, rfl⟩ := h;
+lemma le_coreUnionSplitting (h : L'.IsUnionSplitting) (hle : L' ≤ L) :
+    L' ≤ L.coreUnionSplitting := by
+  obtain ⟨𝔉, rfl⟩ := h;
   apply unionSplitting_mono;
-  intro F hF;
-  exact ⟨h𝔉 F hF, fun hFL => not_validates_unionSplitting h𝔉 hF fun φ hA => hFL φ <| hle hA⟩;
+  exact fun F hF hFL => not_validates_unionSplitting hF fun φ hA => hFL φ <| hle hA;
 
 theorem isGreatest_coreUnionSplitting [L.IsNExt 𝐊] :
-    IsGreatest {L₁ | L₁.IsUnionSplitting ∧ L₁ ≤ L} (coreUnionSplitting L) :=
+    IsGreatest {L' | L'.IsUnionSplitting ∧ L' ≤ L} L.coreUnionSplitting :=
   ⟨⟨isUnionSplitting_coreUnionSplitting, coreUnionSplitting_le⟩,
-    fun _ hL₁ => le_coreUnionSplitting hL₁.1 hL₁.2⟩
+    fun _ hL' => le_coreUnionSplitting hL'.1 hL'.2⟩
 
-/-- `L.IsUnionSplitting` iff `L = coreUnionSplitting L`.
+/-- `L.IsUnionSplitting` iff `L = L.coreUnionSplitting`.
 - [CZ98, p. 361]
 -/
 theorem isUnionSplitting_iff_eq_core [L.IsNExt 𝐊] :
-    L.IsUnionSplitting ↔ L = coreUnionSplitting L :=
+    L.IsUnionSplitting ↔ L = L.coreUnionSplitting :=
   ⟨fun h => le_antisymm (le_coreUnionSplitting h le_rfl) coreUnionSplitting_le,
     fun h => h ▸ isUnionSplitting_coreUnionSplitting⟩
 
@@ -168,17 +181,17 @@ open Formula Model.World Frame NormalLogic
 variable {m : ℕ} {L : NormalLogic (Fin m)} (φ : Formula (Fin m)) (k : ℕ)
 
 open Classical in
-noncomputable def profile (x : (canonicalModel L).World) : Finset (Formula (Fin m)) :=
+noncomputable def profile (x : L.canonicalModel.World) : Finset (Formula (Fin m)) :=
   φ.subformulas.filter (x ⊩ ·)
 
 variable {φ k}
 
-lemma mem_profile {x : (canonicalModel L).World} {ψ : Formula (Fin m)} :
+lemma mem_profile {x : L.canonicalModel.World} {ψ : Formula (Fin m)} :
     ψ ∈ profile φ x ↔ ψ ∈ φ.subformulas ∧ x ⊩ ψ := by
   classical
   simp [profile];
 
-lemma profile_subset {x : (canonicalModel L).World} : profile φ x ⊆ φ.subformulas := by
+lemma profile_subset {x : L.canonicalModel.World} : profile φ x ⊆ φ.subformulas := by
   classical
   exact Finset.filter_subset _ _;
 
@@ -188,8 +201,8 @@ variable (L φ k) in
 - [CZ98, Theorem 10.54]
 -/
 def IsDepth : Prop :=
-  ∀ x : (canonicalModel L).World, x ⊩[canonicalModel L] ◇^[k]⊤ →
-    ∀ j, ∃ y : (canonicalModel L).World, profile φ y = profile φ x ∧ y ⊩[canonicalModel L] ◇^[j]⊤
+  ∀ x : L.canonicalModel.World, x ⊩[L.canonicalModel] ◇^[k]⊤ →
+    ∀ j, ∃ y : L.canonicalModel.World, profile φ y = profile φ x ∧ y ⊩[L.canonicalModel] ◇^[j]⊤
 
 variable (L φ) in
 /-- `IsDepth L φ k` holds for some `k`.
@@ -198,12 +211,12 @@ variable (L φ) in
 lemma exists_isDepth : ∃ k, IsDepth L φ k := by
   classical
   let g : Finset (Formula (Fin m)) → ℕ := fun P =>
-    if h : ∃ j, ∀ y : (canonicalModel L).World, profile φ y = P → y ⊩ ∼◇^[j]⊤ then h.choose
+    if h : ∃ j, ∀ y : L.canonicalModel.World, profile φ y = P → y ⊩ ∼◇^[j]⊤ then h.choose
     else 0;
   use φ.subformulas.powerset.sup g;
   intro x hx j;
   by_contra! hc;
-  have hb : ∃ j, ∀ y : (canonicalModel L).World, profile φ y = profile φ x → y ⊩ ∼◇^[j]⊤ :=
+  have hb : ∃ j, ∀ y : L.canonicalModel.World, profile φ y = profile φ x → y ⊩ ∼◇^[j]⊤ :=
     ⟨j, hc⟩;
   have h₁ : x ⊩ ∼◇^[g (profile φ x)]⊤ := by
     simp only [g, hb, dite_true];
@@ -216,23 +229,23 @@ lemma exists_isDepth : ∃ k, IsDepth L φ k := by
 
 variable (φ k) in
 open Classical in
-noncomputable def cls (x : (canonicalModel L).World) :
-    (canonicalModel L).World ⊕ Finset (Formula (Fin m)) :=
+noncomputable def cls (x : L.canonicalModel.World) :
+    L.canonicalModel.World ⊕ Finset (Formula (Fin m)) :=
   if x ⊩ ∼◇^[k]⊤ then .inl x else .inr (profile φ x)
 
 variable (L φ k) in
 abbrev Point := Set.range (cls (L := L) φ k)
 
 variable (φ k) in
-noncomputable def proj (x : (canonicalModel L).World) : Point L φ k := ⟨cls φ k x, x, rfl⟩
+noncomputable def proj (x : L.canonicalModel.World) : Point L φ k := ⟨cls φ k x, x, rfl⟩
 
 variable (L φ k) in
-/-- The filtration of `canonicalModel L` through `proj φ k`.
+/-- The filtration of `L.canonicalModel` through `proj φ k`.
 - [CZ98, Theorem 10.54]
 -/
-noncomputable def model : Model (Point L φ k) (Fin m) := (canonicalModel L).filtration (proj φ k)
+noncomputable def model : Model (Point L φ k) (Fin m) := L.canonicalModel.filtration (proj φ k)
 
-variable {x y : (canonicalModel L).World}
+variable {x y : L.canonicalModel.World}
 
 lemma cls_of_forces (hx : x ⊩ ∼◇^[k]⊤) : cls φ k x = .inl x := by
   classical
@@ -284,7 +297,7 @@ instance [L.IsNExt 𝐊] : Finite (Point L φ k) := by
 lemma forces_model_iff : x ⊩ φ ↔ proj φ k x ⊩[model L φ k] φ :=
   forces_filtration fun _ _ h => forces_iff_of_proj_eq h
 
-lemma forces_of_mem_reach (hx : x ⊩ ∼◇^[k]⊤) (hy : y ∈ (canonicalModel L).Reach x) :
+lemma forces_of_mem_reach (hx : x ⊩ ∼◇^[k]⊤) (hy : y ∈ L.canonicalModel.Reach x) :
     y ⊩ ∼◇^[k]⊤ := by
   obtain ⟨j, Rxy⟩ := hy;
   rw [forces_neg_multidia_top] at hx ⊢;
@@ -292,15 +305,15 @@ lemma forces_of_mem_reach (hx : x ⊩ ∼◇^[k]⊤) (hy : y ∈ (canonicalModel
   obtain ⟨w, Rxw⟩ := exists_relItr_of_le (relItr_trans Rxy Ryz) (Nat.le_add_left k j);
   exact hx w Rxw;
 
-lemma proj_mem_reach (hy : y ∈ (canonicalModel L).Reach x) :
+lemma proj_mem_reach (hy : y ∈ L.canonicalModel.Reach x) :
     proj φ k y ∈ (model L φ k).Reach (proj φ k x) := by
   obtain ⟨j, Rxy⟩ := hy;
   exact ⟨j, Model.filtration_relItr Rxy⟩;
 
-/-- For `x ⊩ ∼◇^[k]⊤`, the p-morphism from the subframe of `canonicalModel L` generated by `x` to
+/-- For `x ⊩ ∼◇^[k]⊤`, the p-morphism from the subframe of `L.canonicalModel` generated by `x` to
 the subframe of `model L φ k` generated by `proj φ k x`. -/
 noncomputable def embed (hx : x ⊩ ∼◇^[k]⊤) :
-    (canonicalModel L).toFrame⥜x →ₚ (model L φ k).toFrame⥜(proj φ k x) where
+    L.canonicalModel.toFrame⥜x →ₚ (model L φ k).toFrame⥜(proj φ k x) where
   toFun y := ⟨proj φ k y.1, proj_mem_reach y.2⟩
   forth Rxy := Model.filtration_rel Rxy
   back {y b} Ryb := by
@@ -326,23 +339,23 @@ lemma exists_relItr_proj (hk : IsDepth L φ k) (hx : x ⊮ ∼◇^[k]⊤) (j : �
   rw [← proj_eq_of_not_forces hx hy' hy];
   exact ⟨_, Model.filtration_relItr Ryw₁⟩;
 
-/-- For `x ⊩ ∼◇^[k]⊤`, `f : (canonicalModel L).Reach x → ι` and `U : ι → ℕ → Prop`, some
+/-- For `x ⊩ ∼◇^[k]⊤`, `f : L.canonicalModel.Reach x → ι` and `U : ι → ℕ → Prop`, some
 substitution `s` satisfies `y.1 ⊩ s q ↔ U (f y) q`. -/
 lemma exists_definable [L.IsNExt 𝐊] {ι : Type*} (hx : x ⊩ ∼◇^[k]⊤)
-    (f : (canonicalModel L).Reach x → ι) (U : ι → ℕ → Prop) :
-    ∃ s : Substitution ℕ (Fin m), ∀ (y : (canonicalModel L).Reach x) q,
+    (f : L.canonicalModel.Reach x → ι) (U : ι → ℕ → Prop) :
+    ∃ s : Substitution ℕ (Fin m), ∀ (y : L.canonicalModel.Reach x) q,
       y.1 ⊩ s q ↔ U (f y) q := by
   classical
-  have hfin : ((canonicalModel L).Reach x).Finite :=
+  have hfin : (L.canonicalModel.Reach x).Finite :=
     (canonicalModel.finite_neg_multidia_top k).subset fun _ hy => forces_of_mem_reach hx hy;
-  let θ : (canonicalModel L).World → Formula (Fin m) := fun y =>
+  let θ : L.canonicalModel.World → Formula (Fin m) := fun y =>
     if hy : y ⊩ ∼◇^[k]⊤ then (canonicalModel.exists_characteristic hy).choose else ⊥;
-  have hθ : ∀ y, y ∈ (canonicalModel L).Reach x → ∀ y', y' ⊩ θ y ↔ y' = y := by
+  have hθ : ∀ y, y ∈ L.canonicalModel.Reach x → ∀ y', y' ⊩ θ y ↔ y' = y := by
     intro y hy;
     have hy' := forces_of_mem_reach hx hy;
     simp only [θ, hy', dite_true];
     exact (canonicalModel.exists_characteristic hy').choose_spec;
-  use fun q => ⋁((hfin.toFinset.filter fun y => ∃ hy : y ∈ (canonicalModel L).Reach x,
+  use fun q => ⋁((hfin.toFinset.filter fun y => ∃ hy : y ∈ L.canonicalModel.Reach x,
     U (f ⟨y, hy⟩) q).toList.map θ);
   intro y q;
   simp only [forces_disj_map, Finset.mem_toList, Finset.mem_filter, Set.Finite.mem_toFinset];
@@ -360,14 +373,14 @@ namespace NormalLogic
 
 open Formula Model.World Frame PartialFiltration
 
-variable {𝔉 : Set FinFrame}
+variable {𝔉 : Set JFFrame}
 
 /-- If `IsDepth ((unionSplitting 𝔉).restrict m) φ k`, then
 `model ((unionSplitting 𝔉).restrict m) φ k` validates `unionSplitting 𝔉`.
 - [CZ98, Theorem 10.54]
 -/
-lemma validates_partialFiltration (h𝔉 : ∀ F ∈ 𝔉, FinFrame.RootedCycleFree F) {m k : ℕ}
-    {φ : Formula (Fin m)} (hk : IsDepth ((unionSplitting 𝔉).restrict m) φ k) :
+lemma validates_partialFiltration {m k : ℕ} {φ : Formula (Fin m)}
+    (hk : IsDepth ((unionSplitting 𝔉).restrict m) φ k) :
     (model ((unionSplitting 𝔉).restrict m) φ k).toFrame ⊧ unionSplitting 𝔉 := by
   set G := (model ((unionSplitting 𝔉).restrict m) φ k).toFrame;
   by_contra hG;
@@ -379,32 +392,32 @@ lemma validates_partialFiltration (h𝔉 : ∀ F ∈ 𝔉, FinFrame.RootedCycleF
   obtain ⟨F, hF, hχ⟩ := this;
   replace hχ : G ⊭ F.jfFormula := fun h => hχ <| validates_map_finVal_iff.mpr h;
   obtain ⟨V, z, hz⟩ := Frame.not_validates_iff'.mp hχ;
-  obtain ⟨g, hg, -⟩ := FinFrame.jfFormula_spec F (M := ⟨G, V⟩) hz;
+  obtain ⟨g, hg, -⟩ := F.jfFormula_spec (M := ⟨G, V⟩) hz;
   rcases exists_forces_farthest_or_reach_cycle (M := ⟨G, V⟩) (x := z) with
     ⟨t, ht⟩ | ⟨y, hy, j, hj, Ryy⟩;
   · obtain ⟨_, x, rfl⟩ := z;
     by_cases hx : x ⊩ ∼◇^[k]⊤;
-    · apply not_validates_unionSplitting h𝔉 hF;
+    · apply not_validates_unionSplitting hF;
       exact validateLogic_of_definable_pMorphism
         (fun _ hA => canonicalModel_validates_of_mem hA) (g.comp (embed hx))
         (hg.comp (embed_surjective hx)) (exists_definable hx _);
     · obtain ⟨w, Rxw⟩ := exists_relItr_proj hk hx (t + 1);
       exact (iff_forces_farthest.mp ht).2 w Rxw;
-  · exact (h𝔉 F hF).cycleFree <|
+  · exact F.cycleFree <|
       HasCycle.of_pMorphism g ⟨⟨y, hy⟩, j, hj, pointGenerate_relItr.mpr Ryy⟩;
 
 /-- If `φ ∉ unionSplitting 𝔉`, some finite frame `G` has `G ⊧ unionSplitting 𝔉` and `G ⊭ φ`.
 - [CZ98, Theorem 10.54]
 -/
-theorem exists_finite_frame_of_not_mem_unionSplitting
-    (h𝔉 : ∀ F ∈ 𝔉, FinFrame.RootedCycleFree F) {φ : Formula ℕ} (hφ : φ ∉ unionSplitting 𝔉) :
+theorem exists_finite_frame_of_not_mem_unionSplitting {φ : Formula ℕ}
+    (hφ : φ ∉ unionSplitting 𝔉) :
     ∃ (ι : Type) (_ : Finite ι) (G : Frame ι), G ⊧ unionSplitting 𝔉 ∧ G ⊭ φ := by
   obtain ⟨m, φ', rfl⟩ := φ.exists_map_finVal;
   obtain ⟨k, hk⟩ := exists_isDepth ((unionSplitting 𝔉).restrict m) φ';
   use Point ((unionSplitting 𝔉).restrict m) φ' k, inferInstance,
     (model ((unionSplitting 𝔉).restrict m) φ' k).toFrame;
   constructor;
-  · exact validates_partialFiltration h𝔉 hk;
+  · exact validates_partialFiltration hk;
   · rw [Frame.NotValidates, validates_map_finVal_iff];
     intro h;
     obtain ⟨x, hx⟩ := exists_world_not_forces (L := (unionSplitting 𝔉).restrict m) hφ;
@@ -415,10 +428,9 @@ theorem exists_finite_frame_of_not_mem_unionSplitting
 `G ⊭ φ`.
 - [CZ98, Theorem 10.54]
 -/
-theorem unionSplitting_fmp (h𝔉 : ∀ F ∈ 𝔉, FinFrame.RootedCycleFree F) {φ : Formula ℕ}
-    (hφ : φ ∉ unionSplitting 𝔉) :
+theorem unionSplitting_fmp {φ : Formula ℕ} (hφ : φ ∉ unionSplitting 𝔉) :
     ∃ (m : ℕ) (G : Frame (Fin m)), G ⊧ unionSplitting 𝔉 ∧ G ⊭ φ := by
-  obtain ⟨ι, _, G, hG, hφ⟩ := exists_finite_frame_of_not_mem_unionSplitting h𝔉 hφ;
+  obtain ⟨ι, _, G, hG, hφ⟩ := exists_finite_frame_of_not_mem_unionSplitting hφ;
   let e := Finite.equivFin ι;
   exact ⟨Nat.card ι, G.transport e, validateLogic_transport_iff.mpr hG,
     fun h => hφ <| validates_transport_iff.mp h⟩;

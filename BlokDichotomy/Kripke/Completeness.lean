@@ -76,7 +76,7 @@ structure MaximalConsistentSet (L : NormalLogic α) where
 
 namespace MaximalConsistentSet
 
-instance : SetLike (MaximalConsistentSet L) (Formula α) where
+instance : SetLike L.MaximalConsistentSet (Formula α) where
   coe x := x.carrier
   coe_injective _ _ h := MaximalConsistentSet.ext h
 
@@ -110,7 +110,7 @@ lemma consistent_empty_iff [L.IsNExt 𝐊] : (∅ : FormulaSet α).Consistent L 
 /-- Every `L`-consistent set is contained in a maximal `L`-consistent set.
 - [CZ98, Lemma 5.1]
 -/
-theorem lindenbaum (h : Γ.Consistent L) : ∃ x : MaximalConsistentSet L, Γ ⊆ x.carrier := by
+theorem lindenbaum (h : Γ.Consistent L) : ∃ x : L.MaximalConsistentSet, Γ ⊆ x.carrier := by
   obtain ⟨Δ, hΓΔ, hΔ⟩ := zorn_subset_nonempty { Δ : FormulaSet α | Δ.Consistent L } (by
     intro c hc hchain hne;
     use ⋃₀ c;
@@ -131,7 +131,7 @@ namespace NormalLogic.MaximalConsistentSet
 open Formula Derives
 
 variable {α : Type v} {L : NormalLogic α} {φ ψ : Formula α} {l : List (Formula α)}
-  (x : MaximalConsistentSet L)
+  (x : L.MaximalConsistentSet)
 
 lemma consistent : x.carrier.Consistent L := x.maximal.prop
 
@@ -194,7 +194,7 @@ def toBoolEval : BoolEval α where
 @[grind =] lemma conj_mem_iff : ⋀l ∈ x ↔ ∀ φ ∈ l, φ ∈ x := x.toBoolEval.eval_conj
 @[grind =] lemma disj_mem_iff : ⋁l ∈ x ↔ ∃ φ ∈ l, φ ∈ x := x.toBoolEval.eval_disj
 
-lemma exists_mem_not_mem_of_ne {x y : MaximalConsistentSet L} (hxy : x ≠ y) :
+lemma exists_mem_not_mem_of_ne {x y : L.MaximalConsistentSet} (hxy : x ≠ y) :
     ∃ φ ∈ x, φ ∉ y := by
   contrapose! hxy;
   ext φ;
@@ -213,14 +213,14 @@ open Formula Derives
 variable {α : Type v} {L : NormalLogic α} {φ : Formula α} [L.IsNExt 𝐊]
 
 lemma exists_maximalConsistentSet_not_mem (h : φ ∉ L) :
-    ∃ x : MaximalConsistentSet L, φ ∉ x := by
+    ∃ x : L.MaximalConsistentSet, φ ∉ x := by
   obtain ⟨x, hsub⟩ := FormulaSet.lindenbaum <| FormulaSet.consistent_singleton_neg_iff.mpr h;
   exact ⟨x, x.neg_mem_iff.mp <| hsub rfl⟩;
 
 /-- `φ ∈ L` iff `φ ∈ x` for every maximal `L`-consistent set `x`.
 - [CZ98, Theorem 5.5]
 -/
-lemma mem_iff_forall_maximalConsistentSet : φ ∈ L ↔ ∀ x : MaximalConsistentSet L, φ ∈ x := by
+lemma mem_iff_forall_maximalConsistentSet : φ ∈ L ↔ ∀ x : L.MaximalConsistentSet, φ ∈ x := by
   constructor;
   · exact fun h x => x.mem_of_mem_logic h;
   · intro h;
@@ -236,14 +236,14 @@ theorem mem_of_isTautology (h : φ.IsTautology) : φ ∈ L :=
   mem_iff_forall_maximalConsistentSet.mpr fun x => h x.toBoolEval
 
 lemma Consistent.nonempty_maximalConsistentSet (h : L.Consistent) :
-    Nonempty (MaximalConsistentSet L) := by
+    Nonempty L.MaximalConsistentSet := by
   obtain ⟨x, -⟩ := FormulaSet.lindenbaum
     <| FormulaSet.consistent_empty_iff.mpr
     <| consistent_iff_bot_not_mem.mp h;
   exact ⟨x⟩;
 
 lemma consistent_iff_nonempty_maximalConsistentSet :
-    L.Consistent ↔ Nonempty (MaximalConsistentSet L) := by
+    L.Consistent ↔ Nonempty L.MaximalConsistentSet := by
   constructor;
   · exact Consistent.nonempty_maximalConsistentSet;
   · rintro ⟨x⟩;
@@ -253,19 +253,19 @@ lemma consistent_iff_nonempty_maximalConsistentSet :
 `◇φ ∈ x` for every `φ ∈ y`, and `#a` is true at `x` iff `#a ∈ x`.
 - [CZ98, §5.1]
 -/
-def canonicalModel (L : NormalLogic α) : Model (MaximalConsistentSet L) α where
+def canonicalModel (L : NormalLogic α) : Model L.MaximalConsistentSet α where
   Rel' x y := ∀ φ ∈ y, ◇φ ∈ x
   Val' x a := #a ∈ x
 
 namespace canonicalModel
 
-variable {x y : (canonicalModel L).World}
+variable {x y : L.canonicalModel.World}
 
 omit [L.IsNExt 𝐊] in
 lemma rel_def : x ≺ y ↔ ∀ φ ∈ y, ◇φ ∈ x := Iff.rfl
 
 omit [L.IsNExt 𝐊] in
-lemma val_def {a : α} : (canonicalModel L).Val x a ↔ #a ∈ x := Iff.rfl
+lemma val_def {a : α} : L.canonicalModel.Val x a ↔ #a ∈ x := Iff.rfl
 
 lemma rel_iff_box : x ≺ y ↔ ∀ φ, □φ ∈ x → φ ∈ y := by
   constructor;
@@ -322,15 +322,15 @@ end canonicalModel
 /-- `φ ∈ L` iff `φ` is valid in the canonical model of `L`.
 - [CZ98, Theorem 5.5]
 -/
-theorem mem_iff_canonicalModel_validates : φ ∈ L ↔ canonicalModel L ⊧ φ := by
+theorem mem_iff_canonicalModel_validates : φ ∈ L ↔ L.canonicalModel ⊧ φ := by
   rw [mem_iff_forall_maximalConsistentSet];
   exact ⟨fun h x => canonicalModel.truthlemma.mpr <| h x,
     fun h x => canonicalModel.truthlemma.mp <| h x⟩;
 
-lemma canonicalModel_validates_of_mem (h : φ ∈ L) : canonicalModel L ⊧ φ :=
+lemma canonicalModel_validates_of_mem (h : φ ∈ L) : L.canonicalModel ⊧ φ :=
   mem_iff_canonicalModel_validates.mp h
 
-lemma exists_world_not_forces (h : φ ∉ L) : ∃ x : (canonicalModel L).World, x ⊮ φ := by
+lemma exists_world_not_forces (h : φ ∉ L) : ∃ x : L.canonicalModel.World, x ⊮ φ := by
   contrapose! h;
   apply mem_iff_canonicalModel_validates.mpr;
   apply h;

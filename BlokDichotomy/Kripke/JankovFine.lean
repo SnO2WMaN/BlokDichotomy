@@ -8,7 +8,7 @@ public import Mathlib.Data.Fintype.Basic
 /-!
 # Jankov–Fine formulas
 
-The Jankov–Fine formula `F.jfFormula` of a finite frame `F : FinFrame`.
+The Jankov–Fine formula `F.jfFormula` of a rooted cycle-free finite frame `F : JFFrame`.
 
 ## References
 
@@ -17,11 +17,14 @@ The Jankov–Fine formula `F.jfFormula` of a finite frame `F : FinFrame`.
 
 @[expose] public section
 
-abbrev FinFrame := Σ n, Frame (Fin n)
-
-structure FinFrame.RootedCycleFree (F : FinFrame) : Prop where
-  isRooted : F.2.IsRooted
-  cycleFree : F.2.CycleFree
+/-- A rooted cycle-free frame on `Fin n`.
+- [CZ98, p. 362]
+-/
+structure JFFrame where
+  n : ℕ
+  frame : Frame (Fin n)
+  isRooted : frame.IsRooted
+  cycleFree : frame.CycleFree
 
 namespace Frame
 
@@ -32,7 +35,6 @@ lemma validates_map_finVal_iff {κ : Type*} {F : Frame κ} {m : ℕ} {φ : Formu
     have := h (fun w a => ∃ h : a < m, V w ⟨a, h⟩) x;
     rw [Model.World.forces_map] at this;
     convert this using 2;
-    funext w a;
     simp [Model.Val];
   · intro h V x;
     rw [Model.World.forces_map];
@@ -40,44 +42,44 @@ lemma validates_map_finVal_iff {κ : Type*} {F : Frame κ} {m : ℕ} {φ : Formu
 
 end Frame
 
-namespace FinFrame
+namespace JFFrame
 
 open Formula Model.World Frame
 
-variable (F : FinFrame)
+variable (F : JFFrame)
 
 open Classical in
-noncomputable def jfEdge (i j : F.2.World) : Formula (Fin F.1) :=
+noncomputable def jfEdge (i j : F.frame.World) : Formula (Fin F.n) :=
   if i ≺ j then #i 🡒 ◇#j else #i 🡒 ∼◇#j
 
 open Classical in
-noncomputable def jfDistinct (i j : F.2.World) : Formula (Fin F.1) :=
+noncomputable def jfDistinct (i j : F.frame.World) : Formula (Fin F.n) :=
   if i = j then ⊤ else ∼(#i ⋏ #j)
 
 /-- The diagram `δ(F)` of `F`.
 - [CZ98, p. 362]
 -/
-noncomputable def jfDiagram : Formula (Fin F.1) :=
-  ⋀((Finset.univ : Finset (Fin F.1 × Fin F.1)).toList.map fun p => F.jfEdge p.1 p.2) ⋏
-  ⋀((Finset.univ : Finset (Fin F.1 × Fin F.1)).toList.map fun p => F.jfDistinct p.1 p.2) ⋏
-  ⋁((Finset.univ : Finset (Fin F.1)).toList.map fun i => #i)
+noncomputable def jfDiagram : Formula (Fin F.n) :=
+  ⋀((Finset.univ : Finset (Fin F.n × Fin F.n)).toList.map fun p => F.jfEdge p.1 p.2) ⋏
+  ⋀((Finset.univ : Finset (Fin F.n × Fin F.n)).toList.map fun p => F.jfDistinct p.1 p.2) ⋏
+  ⋁((Finset.univ : Finset (Fin F.n)).toList.map fun i => #i)
 
 open Classical in
-noncomputable def jfRoot : Formula (Fin F.1) :=
-  ⋁((Finset.univ : Finset F.2.Root).toList.map fun i => #i.1)
+noncomputable def jfRoot : Formula (Fin F.n) :=
+  ⋁((Finset.univ : Finset F.frame.Root).toList.map fun i => #i.1)
 
 /-- The Jankov–Fine formula `χ(F)` of `F`.
 - [CZ98, p. 362]
 -/
-noncomputable def jfFormula : Formula (Fin F.1) :=
-  ◇^[F.1]⊤ ⋎ ⋁((List.range F.1).map fun k => ◇^[k](∼F.jfDiagram)) ⋎ ∼F.jfRoot
+noncomputable def jfFormula : Formula (Fin F.n) :=
+  ◇^[F.n]⊤ ⋎ ⋁((List.range F.n).map fun k => ◇^[k](∼F.jfDiagram)) ⋎ ∼F.jfRoot
 
-variable {κ : Type*} {M : Model κ (Fin F.1)} {x : M.World}
+variable {κ : Type*} {M : Model κ (Fin F.n)} {x : M.World}
 
 lemma forces_jfDiagram : x ⊩ F.jfDiagram ↔
-    (∀ i j : F.2.World, x ⊩ #i → (x ⊩ ◇#j ↔ i ≺ j)) ∧
+    (∀ i j : F.frame.World, x ⊩ #i → (x ⊩ ◇#j ↔ i ≺ j)) ∧
       (∀ i j, i ≠ j → x ⊩ #i → x ⊮ #j) ∧ ∃ i, x ⊩ #i := by
-  have h₁ : ∀ i j : F.2.World, x ⊩ F.jfEdge i j ↔
+  have h₁ : ∀ i j : F.frame.World, x ⊩ F.jfEdge i j ↔
       (x ⊩ #i → (x ⊩ ◇#j ↔ i ≺ j)) := by
     intro i j;
     unfold jfEdge;
@@ -92,29 +94,30 @@ lemma forces_jfDiagram : x ⊩ F.jfDiagram ↔
   simp only [jfDiagram, forces_and, forces_conj_map, forces_disj_map, Finset.mem_toList,
     Finset.mem_univ, true_imp_iff, true_and, Prod.forall, h₁, h₂];
 
-lemma forces_jfRoot : x ⊩ F.jfRoot ↔ ∃ i : F.2.Root, x ⊩ #i.1 := by
+lemma forces_jfRoot : x ⊩ F.jfRoot ↔ ∃ i : F.frame.Root, x ⊩ #i.1 := by
   classical
   simp [jfRoot];
 
 lemma not_forces_jfFormula_iff : x ⊮ F.jfFormula ↔
-    (∀ y, x ⊀^[F.1] y) ∧
-      (∀ k < F.1, ∀ y, (x ≺^[k] y) → y ⊩ F.jfDiagram) ∧
-      ∃ i : F.2.Root, x ⊩ #i.1 := by
+    (∀ y, x ⊀^[F.n] y) ∧
+      (∀ k < F.n, ∀ y, (x ≺^[k] y) → y ⊩ F.jfDiagram) ∧
+      ∃ i : F.frame.Root, x ⊩ #i.1 := by
   simp only [jfFormula, not_forces_or, forces_jfRoot, NotForces, forces_disj_map,
     List.mem_range, forces_multidia, forces_neg, forces_top, not_true_eq_false, imp_false,
     not_exists, not_and, not_not, not_forall];
 
-/-- If `F` is rooted and cycle-free, then `F.2 ⊭ F.jfFormula`.
+/-- `F.frame ⊭ F.jfFormula`.
 - [CZ98, p. 362]
 -/
-theorem not_validates_jfFormula (hF : F.RootedCycleFree) : F.2 ⊭ F.jfFormula := by
-  obtain ⟨⟨r, hr⟩⟩ := hF.isRooted;
+theorem not_validates_jfFormula : F.frame ⊭ F.jfFormula := by
+  obtain ⟨⟨r, hr⟩⟩ := F.isRooted;
   by_contra h;
-  apply not_forces_jfFormula_iff (M := ⟨F.2, fun w a => w = a⟩) |>.mpr _ (h _ r);
+  apply not_forces_jfFormula_iff (M := ⟨F.frame, fun w a => w = a⟩) |>.mpr _ (h _ r);
   and_intros;
   · intro y Rry;
-    obtain ⟨z, -, k, hk, Rzz⟩ := Frame.exists_cycle_of_relItr_card (F := F.2) (by simpa using Rry);
-    exact hF.cycleFree ⟨z, k, hk, Rzz⟩;
+    obtain ⟨z, -, k, hk, Rzz⟩ :=
+      Frame.exists_cycle_of_relItr_card (F := F.frame) (by simpa using Rry);
+    exact F.cycleFree ⟨z, k, hk, Rzz⟩;
   · intro k _ y _;
     apply (forces_jfDiagram F).mpr;
     and_intros;
@@ -134,19 +137,19 @@ theorem not_validates_jfFormula (hF : F.RootedCycleFree) : F.2 ⊭ F.jfFormula :
 lemma exists_forces_of_forces_jfDiagram (hx : x ⊩ F.jfDiagram) : ∃ i, x ⊩ #i :=
   ((forces_jfDiagram F).mp hx).2.2
 
-lemma eq_of_forces_of_forces_jfDiagram (hx : x ⊩ F.jfDiagram) {i j : Fin F.1}
+lemma eq_of_forces_of_forces_jfDiagram (hx : x ⊩ F.jfDiagram) {i j : Fin F.n}
     (hi : x ⊩ #i) (hj : x ⊩ #j) : i = j := by
   by_contra hij;
   exact ((forces_jfDiagram F).mp hx).2.1 i j hij hi hj;
 
 variable {u₀ : M.World}
 
-/-- The p-morphism `M.toFrame⥜u₀ →ₚ F.2` sending `u` to the `i` with `u.1 ⊩[M] #i`, given
+/-- The p-morphism `M.toFrame⥜u₀ →ₚ F.frame` sending `u` to the `i` with `u.1 ⊩[M] #i`, given
 `F.jfDiagram` at every point of `M.toFrame.Reach u₀`.
 - [CZ98, p. 362]
 -/
 noncomputable def jfPMorphism (hδ : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.jfDiagram) :
-    M.toFrame⥜u₀ →ₚ F.2 where
+    M.toFrame⥜u₀ →ₚ F.frame where
   toFun u := (exists_forces_of_forces_jfDiagram F (hδ u)).choose
   forth := by
     intro u v Ruv;
@@ -162,7 +165,7 @@ noncomputable def jfPMorphism (hδ : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.
       (exists_forces_of_forces_jfDiagram F (hδ ⟨v, reach_of_rel u.2 Ruv⟩)).choose_spec hv;
 
 lemma jfPMorphism_eq_iff (hδ : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.jfDiagram)
-    (u : (M.toFrame⥜u₀).World) (i : Fin F.1) :
+    (u : (M.toFrame⥜u₀).World) (i : Fin F.n) :
     jfPMorphism F hδ u = i ↔ u.1 ⊩[M] #i := by
   constructor;
   · rintro rfl;
@@ -171,7 +174,7 @@ lemma jfPMorphism_eq_iff (hδ : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.jfDia
       (exists_forces_of_forces_jfDiagram F (hδ u)).choose_spec hi;
 
 lemma jfPMorphism_surjective (hδ : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.jfDiagram)
-    (r : F.2.Root) (hr₀ : u₀ ⊩[M] #r.1) :
+    (r : F.frame.Root) (hr₀ : u₀ ⊩[M] #r.1) :
     Function.Surjective (jfPMorphism F hδ) := by
   have hf₀ : jfPMorphism F hδ (pointGenerate.root M.toFrame u₀) = r.1 :=
     (jfPMorphism_eq_iff F hδ _ _).mpr hr₀;
@@ -181,12 +184,12 @@ lemma jfPMorphism_surjective (hδ : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.j
   obtain ⟨u, -, hu⟩ := (jfPMorphism F hδ).back_relItr Rrj;
   exact ⟨u, hu⟩;
 
-/-- If `u₀ ⊮[M] F.jfFormula`, there is a surjective p-morphism `f : M.toFrame⥜u₀ →ₚ F.2` with
+/-- If `u₀ ⊮[M] F.jfFormula`, there is a surjective p-morphism `f : M.toFrame⥜u₀ →ₚ F.frame` with
 `f u = i ↔ u.1 ⊩[M] #i`.
 - [CZ98, p. 362]
 -/
 theorem jfFormula_spec (h : u₀ ⊮[M] F.jfFormula) :
-    ∃ f : M.toFrame⥜u₀ →ₚ F.2, Function.Surjective f ∧
+    ∃ f : M.toFrame⥜u₀ →ₚ F.frame, Function.Surjective f ∧
       ∀ u i, f u = i ↔ u.1 ⊩[M] #i := by
   obtain ⟨hn, hδ, r, hr₀⟩ := (not_forces_jfFormula_iff (F := F)).mp h;
   have hδ' : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.jfDiagram := by
@@ -197,6 +200,6 @@ theorem jfFormula_spec (h : u₀ ⊮[M] F.jfFormula) :
     exact hn y Ru₀y;
   exact ⟨jfPMorphism F hδ', jfPMorphism_surjective F hδ' r hr₀, jfPMorphism_eq_iff F hδ'⟩;
 
-end FinFrame
+end JFFrame
 
 end

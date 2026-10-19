@@ -6,7 +6,7 @@ public import BlokDichotomy.Kripke.Basic
 public import BlokDichotomy.Kripke.Cycle
 public import BlokDichotomy.Kripke.Degree
 public import BlokDichotomy.Kripke.Makinson
-public import BlokDichotomy.Kripke.Splitting
+public import BlokDichotomy.Kripke.UnionSplitting
 public import BlokDichotomy.Kripke.Transport
 public import Mathlib.Basic.Finite.Sum
 public import Mathlib.Data.Set.Card
@@ -339,7 +339,7 @@ structure HookInterface (H : GeneralFrame κ) where
   not_validates_xi {i : ℕ} (hi : i ∈ I) : H ⊭ xi N m e φ i
 
 variable {L N m e φ I} {H : GeneralFrame κ} [L.IsNExt 𝐊]
-variable {P : {κ : Type u} → Frame κ → Prop}
+variable {P : ⦃κ : Type u⦄ → Frame κ → Prop}
 
 namespace HookInterface
 
@@ -527,13 +527,13 @@ theorem HookInterface.inter_logic_ne {J : Set ℕ} {κ' : Type*} {H' : GeneralFr
     rw [he] at h;
     exact hJ.not_validates_xi hiJ h.2;
 
-/-- `Cardinal.continuum ≤ degree P L`.
+/-- `Cardinal.continuum ≤ L.degree P`.
 - [CZ98, p. 367, p. 368]
 -/
 theorem HookInterface.continuum_le_degree {κ : Set ℕ → Type w} {H : ∀ I, GeneralFrame (κ I)}
     (hH : ∀ I, HookInterface L N m e φ I (H I)) (hφ : φ ∈ L) (hN : 1 ≤ N) :
-    Cardinal.continuum ≤ degree P L := by
-  let f : Set ℕ → Companion P L := fun I =>
+    Cardinal.continuum ≤ L.degree P := by
+  let f : Set ℕ → L.Companion P := fun I =>
     ⟨L ∩ (H I).logic, inferInstance, (hH I).frameEquiv hN⟩;
   have hf : Function.Injective f := fun I J h => by
     by_contra hIJ;
@@ -1637,19 +1637,19 @@ open Frame Model.World
 variable {L : NormalLogic ℕ} [L.IsNExt 𝐊]
 
 private def IsCounter (L : NormalLogic ℕ) (n : ℕ) : Prop :=
-  ∃ F : Frame (Fin n), F ⊧ coreUnionSplitting L ∧ F ⊭ L
+  ∃ F : Frame (Fin n), F ⊧ L.coreUnionSplitting ∧ F ⊭ L
 
 omit [L.IsNExt 𝐊] in
 private lemma isCounter_card {ι : Type*} {G : Frame ι} [Finite G.World]
-    (h₁ : G ⊧ coreUnionSplitting L) (h₂ : G ⊭ L) : IsCounter L (Nat.card G.World) :=
+    (h₁ : G ⊧ L.coreUnionSplitting) (h₂ : G ⊭ L) : IsCounter L (Nat.card G.World) :=
   ⟨G.transport (Finite.equivFin G.World), validateLogic_transport_iff.mpr h₁,
     fun h => h₂ <| validateLogic_transport_iff.mp h⟩
 
 private lemma exists_isCounter (hL : ¬L.IsUnionSplitting) : ∃ n, IsCounter L n := by
-  obtain ⟨φ, hφ, hφc⟩ : ∃ φ ∈ L, φ ∉ coreUnionSplitting L := by
+  obtain ⟨φ, hφ, hφc⟩ : ∃ φ ∈ L, φ ∉ L.coreUnionSplitting := by
     by_contra! h;
     exact hL <| isUnionSplitting_iff_eq_core.mpr <| le_antisymm h coreUnionSplitting_le;
-  obtain ⟨n, G, hG, hGφ⟩ := unionSplitting_fmp (𝔉 := coreFrames L) (fun _ hF => hF.1) hφc;
+  obtain ⟨n, G, hG, hGφ⟩ := unionSplitting_fmp (𝔉 := L.coreFrames) hφc;
   exact ⟨n, G, hG, fun h => hGφ <| h φ hφ⟩;
 
 private lemma card_reach_lt {n : ℕ} {F : Frame (Fin n)} {u : Fin n} (hu : ¬F.IsRootedBy u) :
@@ -1686,8 +1686,9 @@ theorem exists_minimal_counterexample (hL : ¬L.IsUnionSplitting) :
   use Nat.find hex, F, ⟨r, hroot⟩;
   and_intros;
   · by_contra hc;
-    have hmem : (⟨_, F⟩ : FinFrame) ∈ coreFrames L := ⟨⟨⟨r, hroot⟩, hc⟩, hnL⟩;
-    exact FinFrame.not_validates_jfFormula (F := ⟨_, F⟩) ⟨⟨r, hroot⟩, hc⟩ <|
+    let G : JFFrame := ⟨_, F, ⟨r, hroot⟩, hc⟩;
+    have hmem : G ∈ L.coreFrames := hnL;
+    exact G.not_validates_jfFormula <|
       validates_map_finVal_iff.mp <| hcore _ <| jfFormula_mem_unionSplitting hmem;
   · intro u hu;
     by_contra h;
@@ -1717,16 +1718,16 @@ end
 section
 open Cardinal
 
-variable {L : NormalLogic ℕ} {P : {κ : Type u} → Frame κ → Prop}
+variable {L : NormalLogic ℕ} {P : ⦃κ : Type u⦄ → Frame κ → Prop}
 
 /--
-`degree P L ≤ 𝔠` for `L : NormalLogic ℕ`.
+`L.degree P ≤ 𝔠` for `L : NormalLogic ℕ`.
 - [CZ98, §10.5]
 -/
-theorem degree_le_continuum : degree P L ≤ 𝔠 :=
+theorem degree_le_continuum : L.degree P ≤ 𝔠 :=
   calc
     _ ≤ Cardinal.mk (Set (Formula ℕ)) :=
-        mk_le_of_injective (f := fun L₁ : Companion P L => (L₁.1 : Set (Formula ℕ)))
+        mk_le_of_injective (f := fun L' : L.Companion P => (L'.1 : Set (Formula ℕ)))
           fun _ _ h => Subtype.ext <| SetLike.coe_injective h
     _ = 2 ^ Cardinal.mk (Formula ℕ) := mk_set
     _ ≤ 2 ^ ℵ₀ := power_le_power_left two_ne_zero mk_le_aleph0
@@ -1740,7 +1741,7 @@ If `L` is consistent and not a union-splitting of `𝐊`, then its degree is `�
 - [Blok78, Theorem 4.9]
 -/
 theorem degree_eq_continuum (hc : L.Consistent) (hL : ¬L.IsUnionSplitting)
-  : L.degree.{u} (fun _ => True) = 𝔠 := by
+  : L.degree.{u} (fun _ _ => True) = 𝔠 := by
   obtain ⟨n, D, hrefl, hgen, φ, hφ, hdepth, V, hV⟩ := exists_hookData hL;
   apply le_antisymm degree_le_continuum;
   exact Naming.HookInterface.continuum_le_degree (H := D.hooked)
@@ -1752,7 +1753,7 @@ For consistent `L`, the degree of `L` is `1` iff `L` is a union-splitting of `�
 - [Blok78, Theorem 4.9]
 -/
 theorem degree_eq_one_iff_isUnionSplitting (hc : L.Consistent)
-  : L.degree (fun _ => True) = 1 ↔ L.IsUnionSplitting := by
+  : L.degree (fun _ _ => True) = 1 ↔ L.IsUnionSplitting := by
   constructor;
   · intro h;
     by_contra hL;
@@ -1765,7 +1766,8 @@ Blok's dichotomy: the degree of Kripke incompleteness of `L` is `1` or `𝔠`.
 - [CZ98, Theorem 10.59]
 - [Blok78, Theorem 4.9]
 -/
-theorem blok_dichotomy : L.degree.{u} (fun _ => True) = 1 ∨ L.degree.{u} (fun _ => True) = 𝔠 := by
+theorem blok_dichotomy :
+    L.degree.{u} (fun _ _ => True) = 1 ∨ L.degree.{u} (fun _ _ => True) = 𝔠 := by
   by_cases hc : L.Consistent;
   · by_cases hL : L.IsUnionSplitting;
     · exact Or.inl <| degree_eq_one_of_isUnionSplitting hL;

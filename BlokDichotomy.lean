@@ -12,9 +12,10 @@ public import BlokDichotomy.Kripke.Generated
 public import BlokDichotomy.Kripke.JankovFine
 public import BlokDichotomy.Kripke.Makinson
 public import BlokDichotomy.Kripke.PMorphism
-public import BlokDichotomy.Kripke.Splitting
 public import BlokDichotomy.Kripke.Transport
 public import BlokDichotomy.Kripke.Types
+public import BlokDichotomy.Kripke.UnionSplitting
 public import BlokDichotomy.Logic.Basic
 public import BlokDichotomy.Logic.Restrict
+public import BlokDichotomy.Logic.Splitting
 public import BlokDichotomy.Logic.Uncountable
