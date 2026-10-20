@@ -74,6 +74,12 @@ lemma exists_relItr_of_le (Rxy : x ≺^[n] y) (hmn : m ≤ n) : ∃ z, x ≺^[m]
 lemma exists_relItr_of_lt (Rxy : x ≺^[n] y) (hmn : m < n) : ∃ z, x ≺^[m] z :=
   exists_relItr_of_le Rxy hmn.le
 
+@[simp, grind .] lemma rel_refl [Std.Refl F.Rel'] (x : F.World) : x ≺ x := refl x
+
+@[grind →]
+lemma rel_trans [IsTrans κ F.Rel'] (Rxy : x ≺ y) (Ryz : y ≺ z) : x ≺ z :=
+  _root_.trans (r := F.Rel') Rxy Ryz
+
 end Frame
 
 
@@ -228,6 +234,17 @@ lemma not_forces_farthest_of_ne {m : ℕ} (hnm : n ≠ m) (h : x ⊩ farthest n)
   · rintro -;
     exact Frame.exists_relItr_of_le Rxy hlt;
 
+@[grind →]
+lemma forces_box_of_rel [IsTrans κ M.Rel'] {A : Formula α} (h : x ⊩ □A) (Rxy : x ≺ y) :
+    y ⊩ □A :=
+  forces_box.mpr fun _ Ryz => forces_box.mp h _ <| Frame.rel_trans Rxy Ryz
+
+@[grind →]
+lemma forces_dia_of_rel [IsTrans κ M.Rel'] {A : Formula α} (h : y ⊩ ◇A) (Rxy : x ≺ y) :
+    x ⊩ ◇A := by
+  obtain ⟨z, Ryz, hz⟩ := forces_dia.mp h;
+  exact forces_dia.mpr ⟨z, Frame.rel_trans Rxy Ryz, hz⟩
+
 lemma forces_neg_multidia_top_of_rel (hx : x ⊩ ∼◇^[n + 1]⊤) (Rxy : x ≺ y) : y ⊩ ∼◇^[n]⊤ := by
   rw [forces_neg_multidia_top] at hx ⊢;
   exact fun z Ryz => hx z <| Frame.relItr_head Rxy Ryz;
@@ -329,6 +346,24 @@ infix:50 " ⊧ " => Model.Validates
 lemma not_validates_iff : ¬ M ⊧ φ ↔ ∃ x : M.World, x ⊮ φ := by
   simp [Validates]
 
+/-- The formulas strongly valid in `M`, i.e. those all of whose substitution instances are valid
+in `M`, form a normal logic.
+
+- [Fin74a] -/
+def logic (M : Model κ α) : NormalLogic α where
+  carrier := {A | ∀ s : Formula.Substitution α α, M ⊧ A⟦s⟧}
+  mdp hA hAB s x := hAB s x <| hA s x
+  nec hA s x := World.forces_box.mpr fun y _ => hA s y
+  subst {A t} hA s x := by
+    rw [Formula.subst_subst];
+    exact hA _ x
+
+lemma mem_logic {A : Formula α} : A ∈ M.logic ↔ ∀ s : Formula.Substitution α α, M ⊧ A⟦s⟧ :=
+  Iff.rfl
+
+lemma validates_of_mem_logic {A : Formula α} (h : A ∈ M.logic) : M ⊧ A := by
+  simpa using h (#·)
+
 end Model
 
 
@@ -381,6 +416,10 @@ abbrev logic (F : Frame κ) : NormalLogic α where
   mdp := mdp
   nec := nec
   subst := subst
+
+/-- A formula valid in a frame is strongly valid in every model on it. -/
+lemma logic_le_model_logic {V : κ → α → Prop} : F.logic ≤ (Model.mk F V).logic :=
+  fun _ h s => subst (s := s) h V
 
 section Soundness
 
