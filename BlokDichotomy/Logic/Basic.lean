@@ -133,6 +133,11 @@ abbrev logicK4 : NormalLogic α :=
   (𝐊 : NormalLogic α) + {□A 🡒 □□A | (A : Formula α)}
 notation "𝐊𝟒" => logicK4
 
+/-- The normal logic `𝐊𝐃 = 𝐊 ⊕ □A 🡒 ◇A`. -/
+abbrev logicKD : NormalLogic α :=
+  (𝐊 : NormalLogic α) + {□A 🡒 ◇A | (A : Formula α)}
+notation "𝐊𝐃" => logicKD
+
 /-- The normal logic `𝐒𝟒 = 𝐊𝟒 ⊕ □A 🡒 A`. -/
 abbrev logicS4 : NormalLogic α :=
   (𝐊𝟒 : NormalLogic α) + {□A 🡒 A | (A : Formula α)}
@@ -167,6 +172,9 @@ instance [L₁.IsNExt L₀] [L₂.IsNExt L₀] : (L₁ ∩ L₂).IsNExt L₀ :=
 
 instance [L.IsNExt L₀] : (L + X).IsNExt L₀ :=
   ⟨fun _ hA => le_add (IsNExt.logic_le hA)⟩
+
+lemma IsNExt.trans (L₁ : NormalLogic α) [L.IsNExt L₁] [L₁.IsNExt L₀] : L.IsNExt L₀ :=
+  ⟨le_trans (IsNExt.logic_le (L := L₁)) IsNExt.logic_le⟩
 
 /-- `L` contains every formula. -/
 def Inconsistent (L : NormalLogic α) : Prop := ¬L.Consistent
@@ -637,6 +645,8 @@ lemma multidia_mono (h : φ 🡒 ψ ∈ L) : ◇^[n]φ 🡒 ◇^[n]ψ ∈ L := b
 end Modal
 
 end Reasoning
+
+lemma diaTop_mem_logicKD : ◇⊤ ∈ (𝐊𝐃 : NormalLogic α) := mem_mdp box_top <| mem_add ⟨⊤, rfl⟩
 
 end NormalLogic
 
