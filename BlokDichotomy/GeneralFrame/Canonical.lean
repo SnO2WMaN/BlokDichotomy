@@ -64,18 +64,22 @@ lemma mem_adm_iff {X : Set L.MaximalConsistentSet} :
   · rintro ⟨B, rfl⟩;
     exact ⟨B, rfl⟩
 
-lemma truthSet_eq (B : Formula α) :
-    {x : L.MaximalConsistentSet | B ∈ x} = {x | x ⊩[L.canonicalModel] B} := by
-  ext x;
-  exact canonicalModel.truthlemma.symm
+/-- A valuation whose truth sets are the sets `{x | C a ∈ x}` makes `a` true at `x` exactly when
+`C a` is forced at `x` in the canonical model. -/
+lemma eq_forces_of_forall_setOf_eq {V : L.MaximalConsistentSet → α → Prop} {C : α → Formula α}
+    (h : ∀ a, {w | V w a} = {x | C a ∈ x}) :
+    V = fun w a => w ⊩[L.canonicalModel] C a := by
+  funext w a;
+  apply propext;
+  have h₁ := congrArg (w ∈ ·) (h a);
+  simpa [canonicalModel.truthlemma] using h₁
 
 lemma canonicalVal_isAdmissible :
     L.canonicalGeneralFrame.IsAdmissible L.canonicalModel.Val :=
   fun a => ⟨#a, rfl⟩
 
-lemma model_canonicalVal :
-    L.canonicalGeneralFrame.model L.canonicalModel.Val = L.canonicalModel := rfl
-
+/-- A formula is valid in the canonical general frame of `L` iff it belongs to `L`.
+- [CZ98, §8.4] -/
 theorem validates_iff {A : Formula α} : L.canonicalGeneralFrame ⊧ A ↔ A ∈ L := by
   constructor;
   · intro h;
@@ -83,16 +87,8 @@ theorem validates_iff {A : Formula α} : L.canonicalGeneralFrame ⊧ A ↔ A ∈
     exact h _ canonicalVal_isAdmissible;
   · intro h V hV;
     choose B hB using hV;
-    have h₁ : L.canonicalGeneralFrame.model V =
-        ⟨L.canonicalModel.toFrame, fun w a => w ⊩[L.canonicalModel] B a⟩ := by
-      have h₂ : V = fun w a => w ⊩[L.canonicalModel] B a := by
-        funext w a;
-        apply propext;
-        have h₃ := congrArg (w ∈ ·) (hB a);
-        simpa [canonicalModel.truthlemma] using h₃.symm;
-      subst h₂;
-      rfl;
-    rw [h₁];
+    have h₁ := eq_forces_of_forall_setOf_eq fun a => (hB a).symm;
+    subst h₁;
     intro x;
     exact (forces_subst B).mp <| canonicalModel_validates_of_mem (mem_subst h) x
 

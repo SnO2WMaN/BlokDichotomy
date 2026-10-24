@@ -61,28 +61,12 @@ namespace canonicalGeneralFrame
 
 variable {L}
 
-lemma mem_adm_iff {X : Set L.PrimeTheory} :
-    X ∈ L.canonicalGeneralFrame.Adm ↔ ∃ A : Formula α, X = {x | A ∈ x} := by
-  constructor;
-  · rintro ⟨A, rfl⟩;
-    exact ⟨A, rfl⟩;
-  · rintro ⟨A, rfl⟩;
-    exact ⟨A, rfl⟩
-
-lemma truthSet_eq (A : Formula α) :
-    {x : L.PrimeTheory | A ∈ x} = {x | x ⊩[L.canonicalModel] A} := by
-  ext x;
-  exact canonicalModel.truthlemma.symm
-
 lemma canonicalVal_isAdmissible :
     L.canonicalGeneralFrame.IsAdmissible L.canonicalModel.Val :=
   fun a => ⟨#a, rfl⟩
 
-lemma model_canonicalVal :
-    L.canonicalGeneralFrame.model L.canonicalModel.Val canonicalVal_isAdmissible =
-      L.canonicalModel := rfl
-
-/-- - [CZ98, §8.4] -/
+/-- A formula is valid in the canonical general frame of `L` iff it belongs to `L`.
+- [CZ98, §8.4] -/
 theorem validates_iff {A : Formula α} : L.canonicalGeneralFrame ⊧ A ↔ A ∈ L := by
   constructor;
   · intro h;

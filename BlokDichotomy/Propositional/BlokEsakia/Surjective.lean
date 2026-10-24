@@ -1,7 +1,6 @@
 module
 
 public import BlokDichotomy.GeneralFrame.Canonical
-public import BlokDichotomy.Propositional.BlokEsakia.Injective
 public import BlokDichotomy.Propositional.BlokEsakia.MainLemma
 public import BlokDichotomy.Propositional.BlokEsakia.NormalForm
 public import BlokDichotomy.ToMathlib.Data.Fintype.EquivFin
@@ -81,15 +80,11 @@ theorem exists_subst_not_mem [Nonempty α] (L₂ : NormalLogic α) [L₂.IsNExt 
   · intro p;
     exact ⟨(hβ p).1, rfl⟩;
   · by_contra hmem;
-    have h₂ : V = fun w p => w ⊩[L₂.canonicalModel] (β p)⟦(□·)⟧ := by
-      funext w p;
-      apply propext;
-      have h₃ := congrArg (w ∈ ·) (hβ p).2;
-      simpa [NormalLogic.canonicalModel.truthlemma] using h₃;
-    have h₄ := NormalLogic.canonicalModel_validates_of_mem hmem x;
-    have h₅ := (_root_.Model.World.forces_subst (fun p => (β p)⟦(□·)⟧)).mp h₄;
+    have h₂ := NormalLogic.canonicalGeneralFrame.eq_forces_of_forall_setOf_eq fun p => (hβ p).2;
+    have h₃ := NormalLogic.canonicalModel_validates_of_mem hmem x;
+    have h₄ := (_root_.Model.World.forces_subst (fun p => (β p)⟦(□·)⟧)).mp h₃;
     subst h₂;
-    exact hx h₅
+    exact hx h₄
 
 /-- Substituting boxed formulas for the variables of `A`, and then the original formulas back
 along a left inverse of the renaming, gives the original substitution instance. -/
@@ -106,7 +101,8 @@ private lemma subst_box_map_subst_eq [DecidableEq α] {A : _root_.Formula α}
   intro B hB;
   simp [hg p hp B hB]
 
-/-- - [CZ98, Theorem 9.66]
+/-- Every normal extension `L₁` of `𝐆𝐫𝐳` over infinitely many variables is `σ ρ L₁`.
+- [CZ98, Theorem 9.66]
 - [BC22, Theorem 4.2] -/
 theorem sigma_rho_eq [Infinite α] (L₁ : NormalLogic α) [L₁.IsNExt 𝐆𝐫𝐳] : L₁.rho.sigma = L₁ := by
   classical

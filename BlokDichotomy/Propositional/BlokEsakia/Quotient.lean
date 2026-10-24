@@ -8,10 +8,10 @@ public import BlokDichotomy.ToMathlib.Order.BooleanSubalgebra
 
 For a formula `A` and a valuation `V` on a general frame `G`, the type of a point is the set of
 subformulas of `A` true at it. Types are preordered by the `◇`-subformulas they contain, and the
-preimage of a cluster of types is a Boolean combination of admissible upsets. A point is moved to a
-type of its cluster that is realized in the frame so that the preimages of the new types are Boolean
-combinations of admissible upsets: a passive point keeps its type, and any other point is sent to a
-fixed representative of its cluster.
+preimage of a cluster of types is a Boolean combination of admissible upsets. The definable type of
+a point is its own type if the point is passive in the set of points of that type, and a fixed
+realized representative of its cluster otherwise; the preimages of definable types are Boolean
+combinations of admissible upsets.
 
 ## References
 

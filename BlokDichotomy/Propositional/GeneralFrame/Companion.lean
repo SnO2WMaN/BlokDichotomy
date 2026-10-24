@@ -183,7 +183,8 @@ theorem toModal_validates_grz (A : _root_.Formula α) :
     · exact h₂ h₁;
     · exact hz h₂
 
-/-- - [CZ98, §8.3]
+/-- `σ H` validates `𝐆𝐫𝐳`.
+- [CZ98, §8.3]
 - [BC22, §1.5] -/
 theorem toModal_validates_logicGrz : H.toModal ⊧ (𝐆𝐫𝐳 : NormalLogic α) := by
   apply _root_.GeneralFrame.validatesLogic_add _root_.GeneralFrame.validates_logicS4;
