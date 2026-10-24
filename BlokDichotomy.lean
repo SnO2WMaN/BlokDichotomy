@@ -26,6 +26,7 @@ public import BlokDichotomy.Kripke.Transport
 public import BlokDichotomy.Kripke.Types
 public import BlokDichotomy.Kripke.UnionSplitting
 public import BlokDichotomy.Logic.Basic
+public import BlokDichotomy.Logic.CNF
 public import BlokDichotomy.Logic.Fine
 public import BlokDichotomy.Logic.Restrict
 public import BlokDichotomy.Logic.Splitting
