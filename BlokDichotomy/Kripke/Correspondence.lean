@@ -74,7 +74,7 @@ variable {α : Type v} {A : Formula α}
 
 namespace canonicalFrame
 
-instance : IsPreorder (𝐒𝟒.MaximalConsistentSet (α := α)) 𝐒𝟒.canonicalFrame.Rel where
+instance : IsPreorder (𝐒𝟒.canonicalFrame (α := α) |>.World) (· ≺ ·) where
   refl x := by
     rw [rel_iff_box];
     intro A hA;
@@ -91,7 +91,7 @@ end canonicalFrame
 /-- `𝐒𝟒` is sound and complete for the reflexive transitive frames.
 - [CZ98, Corollary 5.18] -/
 theorem mem_logicS4_iff :
-    A ∈ 𝐒𝟒 ↔ ∀ {κ : Type v} (F : Frame κ) [IsPreorder κ F.Rel], F ⊧ A := by
+    A ∈ 𝐒𝟒 ↔ ∀ {κ : Type v} (F : Frame κ) [IsPreorder _ F.Rel], F ⊧ A := by
   constructor;
   · intro h κ F _;
     exact Frame.validates_logicS4 _ h;
