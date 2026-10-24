@@ -16,10 +16,12 @@ public import Mathlib.SetTheory.Cardinal.Continuum
 # Blok's dichotomy theorem
 
 The degree of Kripke incompleteness of a normal logic extending `𝐊` is `1` or the continuum.
+The same holds for a normal logic extending `𝐊𝐃`, with the degree taken in the normal extensions
+of `𝐊𝐃`.
 
 ## References
 
-- [CZ98, Theorem 10.59]
+- [CZ98, Theorem 10.59, §10.7]
 - [Blo78, Theorem 4.9]
 -/
 
@@ -361,6 +363,16 @@ private lemma diaTop_mem (h : deadEnd ⊭ L) : ◇⊤ ∈ L ∩ H.logic := by
     obtain ⟨y, hy⟩ := hH.serial h x;
     exact forces_dia.mpr ⟨y, hy, forces_top⟩;
 
+omit [L.IsNExt 𝐊] in
+/-- If `deadEnd ⊭ L`, then `𝐊𝐃 ≤ H.logic`.
+- [CZ98, §10.7]
+-/
+lemma logicKD_le (h : deadEnd ⊭ L) : (𝐊𝐃 : NormalLogic ℕ) ≤ H.logic := by
+  apply add_le IsNExt.logic_le;
+  rintro _ ⟨A, rfl⟩ V _ x hx;
+  obtain ⟨y, hy⟩ := hH.serial h x;
+  exact forces_dia.mpr ⟨y, hy, forces_box.mp hx y hy⟩;
+
 /-- `∼ψ ⋏ ∼tau N 🡒 ◇^≤[N] gamma N m ∈ L ∩ H.logic` for `ψ ∈ L`.
 - [CZ98, (10.12)]
 -/
@@ -527,14 +539,15 @@ theorem HookInterface.inter_logic_ne {J : Set ℕ} {κ' : Type*} {H' : GeneralFr
     rw [he] at h;
     exact hJ.not_validates_xi hiJ h.2;
 
-/-- `Cardinal.continuum ≤ L.degree 𝐊 P`.
+/-- If `L₀ ≤ L` and `L₀ ≤ (H I).logic` for every `I`, then `Cardinal.continuum ≤ L.degree L₀ P`.
 - [CZ98, p. 367, p. 368]
 -/
-theorem HookInterface.continuum_le_degree {κ : Set ℕ → Type w} {H : ∀ I, GeneralFrame (κ I)}
-    (hH : ∀ I, HookInterface L N m e φ I (H I)) (hφ : φ ∈ L) (hN : 1 ≤ N) :
-    Cardinal.continuum ≤ L.degree 𝐊 P := by
-  let f : Set ℕ → L.Companion 𝐊 P := fun I =>
-    ⟨L ∩ (H I).logic, inferInstance, (hH I).frameEquiv hN⟩;
+theorem HookInterface.continuum_le_degree {L₀ : NormalLogic ℕ} [L.IsNExt L₀] {κ : Set ℕ → Type w}
+    {H : ∀ I, GeneralFrame (κ I)} (hH : ∀ I, HookInterface L N m e φ I (H I))
+    (hH₀ : ∀ I, L₀ ≤ (H I).logic) (hφ : φ ∈ L) (hN : 1 ≤ N) :
+    Cardinal.continuum ≤ L.degree L₀ P := by
+  let f : Set ℕ → L.Companion L₀ P := fun I =>
+    ⟨L ∩ (H I).logic, ⟨fun _ hA => ⟨IsNExt.logic_le hA, hH₀ I hA⟩⟩, (hH I).frameEquiv hN⟩;
   have hf : Function.Injective f := fun I J h => by
     by_contra hIJ;
     exact inter_logic_ne hφ (hH I) (hH J) hIJ <| congrArg Subtype.val h;
@@ -1721,13 +1734,13 @@ open Cardinal
 variable {L : NormalLogic ℕ} {P : ⦃κ : Type u⦄ → Frame κ → Prop}
 
 /--
-`L.degree 𝐊 P ≤ 𝔠` for `L : NormalLogic ℕ`.
+`L.degree L₀ P ≤ 𝔠` for `L : NormalLogic ℕ`.
 - [CZ98, §10.5]
 -/
-theorem degree_le_continuum : L.degree 𝐊 P ≤ 𝔠 :=
+theorem degree_le_continuum {L₀ : NormalLogic ℕ} : L.degree L₀ P ≤ 𝔠 :=
   calc
     _ ≤ Cardinal.mk (Set (Formula ℕ)) :=
-        mk_le_of_injective (f := fun L' : L.Companion 𝐊 P => (L'.1 : Set (Formula ℕ)))
+        mk_le_of_injective (f := fun L' : L.Companion L₀ P => (L'.1 : Set (Formula ℕ)))
           fun _ _ h => Subtype.ext <| SetLike.coe_injective h
     _ = 2 ^ Cardinal.mk (Formula ℕ) := mk_set
     _ ≤ 2 ^ ℵ₀ := power_le_power_left two_ne_zero mk_le_aleph0
@@ -1745,7 +1758,8 @@ theorem degree_eq_continuum (hc : L.Consistent) (hL : ¬L.IsUnionSplitting)
   obtain ⟨n, D, hrefl, hgen, φ, hφ, hdepth, V, hV⟩ := exists_hookData hL;
   apply le_antisymm degree_le_continuum;
   exact Naming.HookInterface.continuum_le_degree (H := D.hooked)
-    (fun I => D.hookInterface hc hgen hrefl hV hdepth I) (Naming.shift_mem hφ) (by omega);
+    (fun I => D.hookInterface hc hgen hrefl hV hdepth I) (fun _ => IsNExt.logic_le)
+    (Naming.shift_mem hφ) (by omega);
 
 /--
 For consistent `L`, the degree of `L` is `1` iff `L` is a union-splitting of `𝐊`.
@@ -1774,6 +1788,57 @@ theorem blok_dichotomy :
     · exact Or.inr <| degree_eq_continuum hc hL;
   · exact Or.inl <| Inconsistent.degree_eq_one hc;
 
+end
+
+/-! ## Blok dichotomy over `𝐊𝐃` -/
+
+section
+open Cardinal
+
+variable {L : NormalLogic ℕ} [L.IsNExt 𝐊𝐃]
+
+/--
+If `L ⊇ 𝐊𝐃` is consistent and not a union-splitting of `𝐊`, then its degree in the normal
+extensions of `𝐊𝐃` is `𝔠`.
+- [CZ98, §10.7]
+-/
+theorem degree_logicKD_eq_continuum (hc : L.Consistent) (hL : ¬L.IsUnionSplitting)
+  : L.degree.{u} 𝐊𝐃 (fun _ _ => True) = 𝔠 := by
+  have : L.IsNExt 𝐊 := IsNExt.trans 𝐊𝐃;
+  have hd : deadEnd ⊭ L := fun h => not_mem_of_deadEnd_validates h <|
+    IsNExt.logic_le diaTop_mem_logicKD;
+  obtain ⟨n, D, hrefl, hgen, φ, hφ, hdepth, V, hV⟩ := exists_hookData hL;
+  have hH := fun I => D.hookInterface hc hgen hrefl hV hdepth I;
+  apply le_antisymm degree_le_continuum;
+  exact Naming.HookInterface.continuum_le_degree (H := D.hooked) hH (fun I => (hH I).logicKD_le hd)
+    (Naming.shift_mem hφ) (by omega);
+
+/--
+For consistent `L ⊇ 𝐊𝐃`, the degree of `L` in the normal extensions of `𝐊𝐃` is `1` iff `L` is a
+union-splitting of `𝐊`.
+- [CZ98, §10.7]
+-/
+theorem degree_logicKD_eq_one_iff_isUnionSplitting (hc : L.Consistent)
+  : L.degree 𝐊𝐃 (fun _ _ => True) = 1 ↔ L.IsUnionSplitting := by
+  constructor;
+  · intro h;
+    by_contra hL;
+    apply (one_lt_aleph0.trans aleph0_lt_continuum).ne';
+    rwa [degree_logicKD_eq_continuum hc hL] at h;
+  · exact fun h => degree_eq_one_of_isNExt <| degree_eq_one_of_isUnionSplitting h
+
+/--
+Blok's dichotomy over `𝐊𝐃`: the degree of Kripke incompleteness of `L ⊇ 𝐊𝐃` in the normal
+extensions of `𝐊𝐃` is `1` or `𝔠`.
+- [CZ98, §10.7]
+-/
+theorem blok_dichotomy_logicKD :
+    L.degree.{u} 𝐊𝐃 (fun _ _ => True) = 1 ∨ L.degree.{u} 𝐊𝐃 (fun _ _ => True) = 𝔠 := by
+  by_cases hc : L.Consistent;
+  · by_cases hL : L.IsUnionSplitting;
+    · exact Or.inl <| (degree_logicKD_eq_one_iff_isUnionSplitting hc).mpr hL;
+    · exact Or.inr <| degree_logicKD_eq_continuum hc hL;
+  · exact Or.inl <| Inconsistent.degree_eq_one hc;
 
 end
 

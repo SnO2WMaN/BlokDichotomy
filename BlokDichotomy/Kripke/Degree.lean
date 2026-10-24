@@ -139,6 +139,15 @@ lemma degree_eq_one_iff [L.IsNExt L₀] :
       exact Subtype.ext <| (h L₁ hL₁ h₁).trans (h L₂ hL₂ h₂).symm;
     · exact ⟨Companion.frameLogic L L₀⟩;
 
+lemma degree_le_degree_of_isNExt [L₁.IsNExt L₀] : L.degree L₁ P ≤ L.degree L₀ P :=
+  Cardinal.mk_le_of_injective (f := fun L' : L.Companion L₁ P =>
+      ⟨L'.1, ⟨le_trans IsNExt.logic_le L'.2.1.logic_le⟩, L'.2.2⟩)
+    fun _ _ h => Subtype.ext <| congrArg (·.1) h
+
+lemma degree_eq_one_of_isNExt [L.IsNExt L₁] [L₁.IsNExt L₀] (h : L.degree L₀ P = 1) :
+    L.degree L₁ P = 1 :=
+  le_antisymm (h ▸ degree_le_degree_of_isNExt) one_le_degree
+
 /-- If `L.degree L₀ P = 1`, then `L = L.frameLogic P`.
 - [CZ98, §10.5] -/
 lemma eq_frameLogic_of_degree_eq_one [L.IsNExt L₀] (h : L.degree L₀ P = 1) :
