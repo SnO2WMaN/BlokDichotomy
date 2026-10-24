@@ -27,8 +27,8 @@ variable {κ : Type u} {α : Type v}
 that contains `∅` and is closed under `∩`, `∪` and `Frame.himpSet`.
 - [CZ98, §8.1] -/
 structure GeneralFrame (κ : Type u) extends Frame κ where
-  refl (x : κ) : Rel' x x
-  trans {x y z : κ} : Rel' x y → Rel' y z → Rel' x z
+  refl (x : toFrame.World) : x ≺ x
+  trans {x y z : toFrame.World} : x ≺ y → y ≺ z → x ≺ z
   Adm : Set (Set κ)
   isUpset_of_mem {X : Set κ} : X ∈ Adm → toFrame.IsUpset X
   empty_mem : ∅ ∈ Adm
@@ -46,6 +46,13 @@ instance : IsPreorder κ H.Rel where
 
 lemma univ_mem : Set.univ ∈ H.Adm := by
   simpa [Frame.himpSet] using H.himpSet_mem H.empty_mem H.empty_mem
+
+lemma isSublattice_adm : IsSublattice H.Adm := by
+  constructor;
+  · intro X hX Y hY;
+    exact H.union_mem hX hY;
+  · intro X hX Y hY;
+    exact H.inter_mem hX hY
 
 /-- `V` is admissible when `{w | V w a} ∈ H.Adm` for every `a`. -/
 def IsAdmissible (H : GeneralFrame κ) (V : H.World → α → Prop) : Prop :=

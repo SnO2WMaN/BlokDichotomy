@@ -88,10 +88,6 @@ lemma boxSet_mem (hX : X ∈ G.Adm) : G.toFrame.boxSet X ∈ G.Adm := by
   rw [Frame.boxSet_eq];
   exact G.compl_mem <| G.diaSet_mem <| G.compl_mem hX;
 
-lemma diff_mem (hX : X ∈ G.Adm) (hY : Y ∈ G.Adm) : X \ Y ∈ G.Adm := by
-  rw [Set.sdiff_eq];
-  exact G.inter_mem hX <| G.compl_mem hY;
-
 /-- `G.Adm` as a Boolean subalgebra of `Set G.World`. -/
 def admSubalgebra (G : GeneralFrame κ) : BooleanSubalgebra (Set G.World) where
   carrier := G.Adm
@@ -99,8 +95,6 @@ def admSubalgebra (G : GeneralFrame κ) : BooleanSubalgebra (Set G.World) where
   infClosed' _ hX _ hY := G.inter_mem hX hY
   bot_mem' := empty_mem
   compl_mem' := G.compl_mem
-
-@[simp] lemma mem_admSubalgebra : X ∈ G.admSubalgebra ↔ X ∈ G.Adm := Iff.rfl
 
 /--
 `V` is admissible when `{w | V w a} ∈ G.Adm` for every `a`.
@@ -160,6 +154,11 @@ infix:50 " ⊧ " => GeneralFrame.ValidatesLogic
 abbrev NotValidateLogic (G : GeneralFrame κ) (L : NormalLogic α) : Prop := ¬(G ⊧ L)
 infix:50 " ⊭ " => GeneralFrame.NotValidateLogic
 
+lemma not_validates_iff : G ⊭ φ ↔ ∃ V, G.IsAdmissible V ∧ ∃ x, x ⊮[G.model V] φ := by
+  change ¬(∀ V, G.IsAdmissible V → ∀ x, x ⊩[G.model V] φ) ↔ _;
+  push Not;
+  rfl
+
 lemma mdp (hA : G ⊧ φ) (hAB : G ⊧ φ 🡒 ψ) : G ⊧ ψ :=
   fun V hV x => hAB V hV x <| hA V hV x
 
@@ -192,9 +191,6 @@ instance : (G.logic : NormalLogic α).IsNExt 𝐊 := ⟨fun _ hA => validates_lo
 lemma ValidatesLogic.le_logic {L : NormalLogic α} (h : G ⊧ L) : L ≤ G.logic := h
 
 lemma validates_of_toFrame (h : G.toFrame ⊧ φ) : G ⊧ φ := fun V _ => h V
-
-lemma validatesLogic_of_le {L₁ L₂ : NormalLogic α} (h : G ⊧ L₂) (hle : L₁ ≤ L₂) : G ⊧ L₁ :=
-  fun _ hA => h _ (hle hA)
 
 lemma validatesLogic_add {L : NormalLogic α} {X : FormulaSet α} (hL : G ⊧ L)
     (hX : ∀ φ ∈ X, G ⊧ φ) : G ⊧ (L + X) :=

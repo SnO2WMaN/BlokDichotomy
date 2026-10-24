@@ -96,9 +96,6 @@ theorem validates_iff {A : Formula α} : L.canonicalGeneralFrame ⊧ A ↔ A ∈
     intro x;
     exact (forces_subst B).mp <| canonicalModel_validates_of_mem (mem_subst h) x
 
-theorem logic_eq : (L.canonicalGeneralFrame.logic : NormalLogic α) = L :=
-  SetLike.ext fun _ => validates_iff
-
 lemma validatesLogic_self : L.canonicalGeneralFrame ⊧ L :=
   fun _ hA => validates_iff.mpr hA
 

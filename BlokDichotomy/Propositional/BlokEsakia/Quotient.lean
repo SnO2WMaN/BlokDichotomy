@@ -93,7 +93,11 @@ lemma typeOf_eq_iff (ha : a ⊆ A.subformulas) :
   constructor;
   · intro h B hB;
     rw [← h, mem_typeOf_iff];
-    exact ⟨fun hx => ⟨hB, hx⟩, fun hx => hx.2⟩;
+    constructor;
+    · intro hx;
+      exact ⟨hB, hx⟩;
+    · intro hx;
+      exact hx.2;
   · intro h;
     ext B;
     rw [mem_typeOf_iff];
@@ -119,14 +123,16 @@ lemma preimage_typeOf_mem_adm (hV : G.IsAdmissible V) (a : Finset (Formula α)) 
           x ∈ if B ∈ a then {x | x ⊩[G.model V] B} else {x | x ⊩[G.model V] B}ᶜ} := by
       ext x;
       rw [Set.mem_ofPred_eq, Set.mem_ofPred_eq, typeOf_eq_iff ha];
-      refine forall₂_congr fun B _ => ?_;
+      apply forall₂_congr;
+      intro B _;
       by_cases hB : B ∈ a <;> simp [hB];
     rw [h₃];
     exact h₂
   · have h₁ : {x | G.typeOf V A x = a} = ∅ := by
       ext x;
       simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false];
-      rintro rfl;
+      by_contra h;
+      subst h;
       exact ha typeOf_subset;
     rw [h₁];
     exact G.empty_mem
@@ -235,21 +241,22 @@ lemma definableType_eq_of_passive
     G.definableType V A x = G.typeOf V A x := by
   simp [definableType, h]
 
+lemma definableType_eq_rep_of_not_passive
+    (h : x ∉ G.toFrame.passive {y | G.typeOf V A y = G.typeOf V A x}) :
+    G.definableType V A x = G.rep V A (G.typeOf V A x) := by
+  simp [definableType, h]
+
 lemma definableType_typeEquiv : A.TypeEquiv (G.definableType V A x) (G.typeOf V A x) := by
   by_cases h : x ∈ G.toFrame.passive {y | G.typeOf V A y = G.typeOf V A x};
   · rw [definableType_eq_of_passive h];
     exact TypeEquiv.refl A _;
-  · have h₁ : G.definableType V A x = G.rep V A (G.typeOf V A x) := by
-      simp [definableType, h];
-    rw [h₁];
+  · rw [definableType_eq_rep_of_not_passive h];
     exact (rep_spec ⟨x, TypeEquiv.refl A _⟩).1
 
 lemma exists_typeOf_eq_definableType : ∃ y : G.World, G.typeOf V A y = G.definableType V A x := by
   by_cases h : x ∈ G.toFrame.passive {y | G.typeOf V A y = G.typeOf V A x};
   · exact ⟨x, (definableType_eq_of_passive h).symm⟩;
-  · have h₁ : G.definableType V A x = G.rep V A (G.typeOf V A x) := by
-      simp [definableType, h];
-    rw [h₁];
+  · rw [definableType_eq_rep_of_not_passive h];
     exact (rep_spec ⟨x, TypeEquiv.refl A _⟩).2
 
 lemma definableType_subset : G.definableType V A x ⊆ A.subformulas := by
@@ -272,8 +279,7 @@ private lemma definableType_eq_iff :
     · rw [definableType_eq_of_passive hx] at h;
       rw [← h];
       exact Or.inl hx;
-    · have h₁ : G.definableType V A x = G.rep V A (G.typeOf V A x) := by
-        simp [definableType, hx];
+    · have h₁ := definableType_eq_rep_of_not_passive hx;
       have h₂ : A.TypeEquiv (G.typeOf V A x) a := by
         have := (rep_spec (G := G) (V := V) (a := G.typeOf V A x) ⟨x, TypeEquiv.refl A _⟩).1;
         rw [← h₁, h] at this;
@@ -294,9 +300,7 @@ private lemma definableType_eq_iff :
       exact definableType_eq_of_passive h;
     · have h₄ : x ∉ G.toFrame.passive {y | G.typeOf V A y = G.typeOf V A x} :=
         h₃ _ (Finset.mem_powerset.mpr typeOf_subset);
-      have h₅ : G.definableType V A x = G.rep V A (G.typeOf V A x) := by
-        simp [definableType, h₄];
-      rw [h₅, rep_congr h₁, h₂]
+      rw [definableType_eq_rep_of_not_passive h₄, rep_congr h₁, h₂]
 
 /-- The set of points sent to a given type is a Boolean combination of admissible upsets. -/
 lemma preimage_definableType_mem (hV : G.IsAdmissible V) (a : Finset (Formula α)) :

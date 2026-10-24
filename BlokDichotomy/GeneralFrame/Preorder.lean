@@ -58,9 +58,6 @@ lemma IsUpset.boxSet_eq (h : F.IsUpset X) : F.boxSet X = X := by
 lemma isUpset_boxSet (X : Set F.World) : F.IsUpset (F.boxSet X) :=
   fun _ _ Rxy hx v Ryv => hx v <| rel_trans Rxy Ryv
 
-lemma isUpset_himpSet : F.IsUpset (F.himpSet X Y) :=
-  fun _ _ Rxy hx v Ryv => hx v <| rel_trans Rxy Ryv
-
 end
 
 lemma IsUpset.inter (hX : F.IsUpset X) (hY : F.IsUpset Y) : F.IsUpset (X ∩ Y) :=
@@ -70,8 +67,6 @@ lemma IsUpset.union (hX : F.IsUpset X) (hY : F.IsUpset Y) : F.IsUpset (X ∪ Y) 
   fun _ _ Rxy hx => hx.imp (hX Rxy) (hY Rxy)
 
 lemma isUpset_empty : F.IsUpset (∅ : Set F.World) := fun _ _ _ hx => hx.elim
-
-lemma isUpset_univ : F.IsUpset (Set.univ : Set F.World) := fun _ _ _ _ => trivial
 
 end Frame
 
@@ -108,91 +103,53 @@ section BoolClosure
 open BooleanSubalgebra
 
 variable {F : Frame κ} {𝒜 : Set (Set F.World)} {X : Set F.World}
-  (hunion : ∀ Y ∈ 𝒜, ∀ Z ∈ 𝒜, Y ∪ Z ∈ 𝒜) (hinter : ∀ Y ∈ 𝒜, ∀ Z ∈ 𝒜, Y ∩ Z ∈ 𝒜)
-  (hhimp : ∀ Y ∈ 𝒜, ∀ Z ∈ 𝒜, F.himpSet Y Z ∈ 𝒜) (hempty : ∅ ∈ 𝒜)
 
-include hhimp hempty in
-lemma Frame.univ_mem_of_himp : Set.univ ∈ 𝒜 := by
-  have h₁ := hhimp ∅ hempty ∅ hempty;
-  simpa [Frame.himpSet] using h₁
+lemma Frame.univ_mem_of_himp (hhimp : ∀ {Y Z : Set F.World}, Y ∈ 𝒜 → Z ∈ 𝒜 → F.himpSet Y Z ∈ 𝒜)
+    (hempty : ∅ ∈ 𝒜) : Set.univ ∈ 𝒜 := by
+  simpa [Frame.himpSet] using hhimp hempty hempty
 
-include hunion hinter hhimp hempty
-
-lemma Frame.diaSet_mem_closure (hX : X ∈ closure 𝒜) : F.diaSet X ∈ closure 𝒜 := by
-  have hsub : IsSublattice 𝒜 :=
-    ⟨fun _ hY _ hZ => hunion _ hY _ hZ, fun _ hY _ hZ => hinter _ hY _ hZ⟩;
+lemma Frame.diaSet_mem_closure (hsub : IsSublattice 𝒜)
+    (hhimp : ∀ {Y Z : Set F.World}, Y ∈ 𝒜 → Z ∈ 𝒜 → F.himpSet Y Z ∈ 𝒜) (hempty : ∅ ∈ 𝒜)
+    (hX : X ∈ closure 𝒜) : F.diaSet X ∈ closure 𝒜 := by
+  have h₁ : ∀ Y ∈ 𝒜, ∀ Z ∈ 𝒜, F.diaSet (Y \ Z) ∈ closure 𝒜 := by
+    intro Y hY Z hZ;
+    rw [Frame.diaSet_diff_eq];
+    exact compl_mem <| subset_closure <| hhimp hY hZ;
+  have h₂ : ∀ Y Z, F.diaSet Y ∈ closure 𝒜 → F.diaSet Z ∈ closure 𝒜 →
+      F.diaSet (Y ⊔ Z) ∈ closure 𝒜 := by
+    intro Y Z hY hZ;
+    change F.diaSet (Y ∪ Z) ∈ closure 𝒜;
+    rw [Frame.diaSet_union];
+    exact sup_mem hY hZ;
   exact closure_sdiff_sup_induction (p := fun Y _ => F.diaSet Y ∈ closure 𝒜) hsub hempty
-    (Frame.univ_mem_of_himp hhimp hempty)
-    (fun Y hY Z hZ => by
-      rw [Frame.diaSet_diff_eq];
-      exact compl_mem <| subset_closure <| hhimp Y hY Z hZ)
-    (fun Y _ Z _ hY hZ => by
-      change F.diaSet (Y ∪ Z) ∈ closure 𝒜;
-      rw [Frame.diaSet_union];
-      exact sup_mem hY hZ)
-    X hX
+    (Frame.univ_mem_of_himp hhimp hempty) h₁ (fun Y _ Z _ => h₂ Y Z) X hX
 
 /-- An upset in the Boolean closure of a family of upsets belongs to the family. -/
-lemma Frame.mem_of_isUpset_of_mem_closure [IsPreorder κ F.Rel] (hX : X ∈ closure 𝒜)
-    (hX' : F.IsUpset X) : X ∈ 𝒜 := by
-  have hsub : IsSublattice 𝒜 :=
-    ⟨fun _ hY _ hZ => hunion _ hY _ hZ, fun _ hY _ hZ => hinter _ hY _ hZ⟩;
-  have h₁ : F.boxSet Xᶜᶜ ∈ 𝒜 := by
-    exact closure_sdiff_sup_induction (p := fun Y _ => F.boxSet Yᶜ ∈ 𝒜) hsub hempty
-      (Frame.univ_mem_of_himp hhimp hempty)
-      (fun Y hY Z hZ => by
-        have h₂ : F.boxSet (Y \ Z)ᶜ = F.himpSet Y Z := by
-          rw [Frame.himpSet_eq_boxSet, Set.compl_sdiff, Set.union_comm];
-        rw [h₂];
-        exact hhimp Y hY Z hZ)
-      (fun Y _ Z _ hY hZ => by
-        change F.boxSet (Y ∪ Z)ᶜ ∈ 𝒜;
-        rw [Set.compl_union, Frame.boxSet_inter];
-        exact hinter _ hY _ hZ)
-      Xᶜ (compl_mem hX)
-  rw [compl_compl, hX'.boxSet_eq] at h₁;
-  exact h₁
+lemma Frame.mem_of_isUpset_of_mem_closure [IsPreorder κ F.Rel] (hsub : IsSublattice 𝒜)
+    (hhimp : ∀ {Y Z : Set F.World}, Y ∈ 𝒜 → Z ∈ 𝒜 → F.himpSet Y Z ∈ 𝒜) (hempty : ∅ ∈ 𝒜)
+    (hX : X ∈ closure 𝒜) (hX' : F.IsUpset X) : X ∈ 𝒜 := by
+  have h₁ : ∀ Y ∈ 𝒜, ∀ Z ∈ 𝒜, F.boxSet (Y \ Z)ᶜ ∈ 𝒜 := by
+    intro Y hY Z hZ;
+    have h : F.boxSet (Y \ Z)ᶜ = F.himpSet Y Z := by
+      rw [Frame.himpSet_eq_boxSet, Set.compl_sdiff, Set.union_comm];
+    rw [h];
+    exact hhimp hY hZ;
+  have h₂ : ∀ Y Z, F.boxSet Yᶜ ∈ 𝒜 → F.boxSet Zᶜ ∈ 𝒜 → F.boxSet (Y ⊔ Z)ᶜ ∈ 𝒜 := by
+    intro Y Z hY hZ;
+    change F.boxSet (Y ∪ Z)ᶜ ∈ 𝒜;
+    rw [Set.compl_union, Frame.boxSet_inter];
+    exact hsub.infClosed hY hZ;
+  have h₃ : F.boxSet Xᶜᶜ ∈ 𝒜 :=
+    closure_sdiff_sup_induction (p := fun Y _ => F.boxSet Yᶜ ∈ 𝒜) hsub hempty
+      (Frame.univ_mem_of_himp hhimp hempty) h₁ (fun Y _ Z _ => h₂ Y Z) Xᶜ (compl_mem hX);
+  rw [compl_compl, hX'.boxSet_eq] at h₃;
+  exact h₃
 
 end BoolClosure
 
 section Signature
 
-open BooleanSubalgebra
-
-variable {κ : Type u} {F : Frame κ} {𝒜 : Set (Set F.World)} {X : Set F.World}
-
-/-- An element of the Boolean closure of `𝒜` is determined by finitely many members of `𝒜`. -/
-lemma Frame.exists_finset_determines (hX : X ∈ closure 𝒜) :
-    ∃ 𝒵 : Finset (Set F.World), ↑𝒵 ⊆ 𝒜 ∧
-      ∀ u v, (∀ Z ∈ 𝒵, u ∈ Z ↔ v ∈ Z) → (u ∈ X ↔ v ∈ X) := by
-  classical
-  induction hX using closure_bot_sup_induction with
-  | mem Y hY =>
-    use {Y};
-    and_intros;
-    · simpa using hY;
-    · simp;
-  | bot =>
-    use ∅;
-    and_intros <;> simp;
-  | sup Y _ Z _ ihY ihZ =>
-    obtain ⟨𝒵₁, h₁, d₁⟩ := ihY;
-    obtain ⟨𝒵₂, h₂, d₂⟩ := ihZ;
-    use 𝒵₁ ∪ 𝒵₂;
-    and_intros;
-    · rw [Finset.coe_union];
-      exact Set.union_subset h₁ h₂;
-    · intro u v h;
-      have e₁ := d₁ u v fun W hW => h W <| Finset.mem_union_left _ hW;
-      have e₂ := d₂ u v fun W hW => h W <| Finset.mem_union_right _ hW;
-      simp [e₁, e₂];
-  | compl Y _ ih =>
-    obtain ⟨𝒵, h₁, d⟩ := ih;
-    use 𝒵;
-    and_intros;
-    · exact h₁;
-    · intro u v h;
-      simpa using not_congr (d u v h)
+variable {F : Frame κ} {X : Set F.World}
 
 /-- Above a point outside `X`, there is a point outside `X` from which one never re-enters `X`,
 provided `X` is determined by finitely many upsets. -/
@@ -203,6 +160,10 @@ lemma Frame.exists_rel_not_mem_of_finset_determines [IsPreorder κ F.Rel]
   classical
   let S : F.World → Finset (Set F.World) := fun u => 𝒵.filter (u ∈ ·)
   let P : Set F.World := {z | x ≺ z ∧ z ∉ X}
+  have hS : ∀ u v, u ≺ v → S u ⊆ S v := by
+    intro u v Ruv Z hZ;
+    simp only [S, Finset.mem_filter] at hZ ⊢;
+    exact ⟨hZ.1, h𝒵 Z hZ.1 Ruv hZ.2⟩;
   have hfin : (S '' P).Finite := by
     apply Set.Finite.subset (𝒵.powerset : Set (Finset (Set F.World))).toFinite;
     rintro _ ⟨z, -, rfl⟩;
@@ -216,14 +177,8 @@ lemma Frame.exists_rel_not_mem_of_finset_determines [IsPreorder κ F.Rel]
   · intro u v Rzu Ruv hu;
     by_contra hv;
     have h₁ : v ∈ P := ⟨rel_trans Rxz (rel_trans Rzu Ruv), hv⟩;
-    have h₂ : S z ⊆ S u := by
-      intro Z hZ;
-      simp only [S, Finset.mem_filter] at hZ ⊢;
-      exact ⟨hZ.1, h𝒵 Z hZ.1 Rzu hZ.2⟩;
-    have h₃ : S u ⊆ S v := by
-      intro Z hZ;
-      simp only [S, Finset.mem_filter] at hZ ⊢;
-      exact ⟨hZ.1, h𝒵 Z hZ.1 Ruv hZ.2⟩;
+    have h₂ : S z ⊆ S u := hS z u Rzu;
+    have h₃ : S u ⊆ S v := hS u v Ruv;
     have h₄ : S v ⊆ S z := hmax ⟨v, h₁, rfl⟩ (h₂.trans h₃);
     have h₅ : ∀ Z ∈ 𝒵, z ∈ Z ↔ u ∈ Z := by
       intro Z hZ;

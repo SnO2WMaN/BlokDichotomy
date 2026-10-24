@@ -2,6 +2,7 @@ module
 
 public import BlokDichotomy.Propositional.GeneralFrame.Basic
 public import BlokDichotomy.Propositional.ModalCompanion
+public import BlokDichotomy.ToMathlib.Order.BooleanSubalgebra
 
 /-!
 # Modal and intuitionistic general frames
@@ -52,8 +53,7 @@ def toModal (H : Propositional.GeneralFrame κ) : _root_.GeneralFrame κ where
   univ_mem := (closure H.Adm).top_mem
   inter_mem hX hY := (closure H.Adm).inf_mem hX hY
   compl_mem hX := (closure H.Adm).compl_mem hX
-  diaSet_mem hX := Frame.diaSet_mem_closure (fun _ hY _ hZ => H.union_mem hY hZ)
-    (fun _ hY _ hZ => H.inter_mem hY hZ) (fun _ hY _ hZ => H.himpSet_mem hY hZ) H.empty_mem hX
+  diaSet_mem hX := Frame.diaSet_mem_closure H.isSublattice_adm H.himpSet_mem H.empty_mem hX
 
 variable {H : Propositional.GeneralFrame κ}
 
@@ -65,13 +65,7 @@ lemma subset_toModal_adm : H.Adm ⊆ H.toModal.Adm := subset_closure
 /-- An admissible upset of `σ H` is admissible in `H`. -/
 lemma mem_adm_of_isUpset_of_mem_toModal {X : Set κ} (hX : X ∈ H.toModal.Adm)
     (h : H.toFrame.IsUpset X) : X ∈ H.Adm :=
-  Frame.mem_of_isUpset_of_mem_closure (fun _ hY _ hZ => H.union_mem hY hZ)
-    (fun _ hY _ hZ => H.inter_mem hY hZ) (fun _ hY _ hZ => H.himpSet_mem hY hZ) H.empty_mem hX h
-
-lemma toModal_upAdm : H.toModal.upAdm = H.Adm := by
-  apply Set.Subset.antisymm;
-  · exact fun X hX => mem_adm_of_isUpset_of_mem_toModal hX.1 hX.2;
-  · exact fun X hX => ⟨subset_toModal_adm hX, H.isUpset_of_mem hX⟩
+  Frame.mem_of_isUpset_of_mem_closure H.isSublattice_adm H.himpSet_mem H.empty_mem hX h
 
 end GeneralFrame
 
@@ -118,12 +112,7 @@ theorem toModal_validates_gödelTranslate_iff : H.toModal ⊧ Aᵍ ↔ H ⊧ A :
   · intro h V hV x;
     have hW : H.IsAdmissible fun w a => w ⊩[H.toModal.model V] □(#a) := by
       intro a;
-      have h₁ : {w | w ⊩[H.toModal.model V] □(#a)} = H.toFrame.boxSet {w | V w a} := by
-        ext w;
-        simp only [Set.mem_ofPred_eq, Frame.boxSet];
-        rw [_root_.Model.World.forces_box];
-        exact Iff.rfl;
-      rw [h₁];
+      rw [_root_.GeneralFrame.truthSet_box];
       exact mem_adm_of_isUpset_of_mem_toModal (_root_.GeneralFrame.boxSet_mem (hV a))
         (Frame.isUpset_boxSet _);
     exact (Model.forces_gödelTranslate_iff_of_val (F := H.toFrame) (V := V)
@@ -147,12 +136,7 @@ theorem _root_.GeneralFrame.validates_gödelTranslate_iff_toIntuitionistic :
   · intro h V hV x;
     have hW : G.toIntuitionistic.IsAdmissible fun w a => w ⊩[G.model V] □(#a) := by
       intro a;
-      have h₁ : {w | w ⊩[G.model V] □(#a)} = G.toFrame.boxSet {w | V w a} := by
-        ext w;
-        simp only [Set.mem_ofPred_eq, Frame.boxSet];
-        rw [_root_.Model.World.forces_box];
-        exact Iff.rfl;
-      rw [h₁];
+      rw [_root_.GeneralFrame.truthSet_box];
       exact _root_.GeneralFrame.boxSet_mem_upAdm (hV a);
     exact (Model.forces_gödelTranslate_iff_of_val (F := G.toFrame) (V := V)
       (hW := hW.hereditary) (fun _ _ => Iff.rfl)).mp (h _ hW x)
@@ -168,7 +152,7 @@ variable {H : Propositional.GeneralFrame κ}
 lemma exists_rel_not_mem_of_mem_toModal_adm {X : Set H.World} (hX : X ∈ H.toModal.Adm)
     {x : H.World} (hx : x ∉ X) :
     ∃ z : H.World, x ≺ z ∧ z ∉ X ∧ ∀ u v : H.World, z ≺ u → u ≺ v → u ∈ X → v ∈ X := by
-  obtain ⟨𝒵, h𝒵, hdet⟩ := Frame.exists_finset_determines hX;
+  obtain ⟨𝒵, h𝒵, hdet⟩ := BooleanSubalgebra.exists_finset_determines hX;
   exact Frame.exists_rel_not_mem_of_finset_determines
     (fun Z hZ => H.isUpset_of_mem (h𝒵 hZ)) hdet hx
 

@@ -53,33 +53,40 @@ lemma box_clause_iff (I J : List (Formula α)) :
 
 end
 
+/-- The box of a `◇`-free combination of translations is the conjunction of the translations of
+the clauses of its conjunctive normal form. -/
+private lemma box_subst_gödelTranslate_iff_conj [DecidableEq (Formula α)]
+    {γ : _root_.Formula (Formula α)} (hγ : γ.depth = 0) {s : Finset (Formula α)}
+    (hs : γ.atoms ⊆ s) :
+    □(γ⟦(·ᵍ)⟧) 🡘 ⋀ ((Formula.refutingSets s γ).toList.map fun I =>
+      (Formula.conj I.toList 🡒 Formula.disj (s \ I).toList)ᵍ) ∈ (𝐊 : NormalLogic α) := by
+  have h₁ := NormalLogic.box_congr <| Formula.cnf_iff_mem (L := (𝐊 : NormalLogic α)) hγ hs (·ᵍ);
+  rw [Formula.subst_cnf] at h₁;
+  have h₂ := NormalLogic.box_conj (L := (𝐊 : NormalLogic α))
+    (l := (Formula.refutingSets s γ).toList.map
+      fun I => ⋀ (I.toList.map (·ᵍ)) 🡒 ⋁ ((s \ I).toList.map (·ᵍ)));
+  have h₃ := NormalLogic.conj_map_iff_congr (L := (𝐊 : NormalLogic α))
+    (l := (Formula.refutingSets s γ).toList)
+    (f := fun I => □(⋀ (I.toList.map (·ᵍ)) 🡒 ⋁ ((s \ I).toList.map (·ᵍ))))
+    (g := fun I => (Formula.conj I.toList 🡒 Formula.disj (s \ I).toList)ᵍ)
+    fun I _ => box_clause_iff I.toList (s \ I).toList;
+  simp only [List.map_map, Function.comp_def] at h₂;
+  exact NormalLogic.iff_trans h₁ <| NormalLogic.iff_trans h₂ h₃
+
 /-- Boxing a `◇`-free combination of translations gives again such a combination. -/
 theorem exists_box_subst_gödelTranslate_iff (γ : _root_.Formula (Formula α)) (hγ : γ.depth = 0) :
     ∃ γ' : _root_.Formula (Formula α), γ'.depth = 0 ∧
       □(γ⟦(·ᵍ)⟧) 🡘 γ'⟦(·ᵍ)⟧ ∈ (𝐊 : NormalLogic α) := by
   classical
-  let s := γ.atoms
-  let c : Finset (Formula α) → Formula α := fun I =>
-    Formula.conj I.toList 🡒 Formula.disj (s \ I).toList
-  use ⋀ ((Formula.refutingSets s γ).toList.map fun I => #(c I));
+  use ⋀ ((Formula.refutingSets γ.atoms γ).toList.map fun I =>
+    #(Formula.conj I.toList 🡒 Formula.disj (γ.atoms \ I).toList));
   and_intros;
   · apply Formula.depth_conj_eq_zero;
     intro B hB;
     obtain ⟨I, -, rfl⟩ := List.mem_map.mp hB;
     rfl;
-  · have h₁ := NormalLogic.box_congr <| Formula.cnf_iff_mem (L := (𝐊 : NormalLogic α)) hγ
-      (subset_refl s) (·ᵍ);
-    rw [Formula.subst_cnf] at h₁;
-    have h₂ := NormalLogic.box_conj (L := (𝐊 : NormalLogic α))
-      (l := (Formula.refutingSets s γ).toList.map
-        fun I => ⋀ (I.toList.map (·ᵍ)) 🡒 ⋁ ((s \ I).toList.map (·ᵍ)));
-    have h₃ := NormalLogic.conj_map_iff_congr (L := (𝐊 : NormalLogic α))
-      (l := (Formula.refutingSets s γ).toList)
-      (f := fun I => □(⋀ (I.toList.map (·ᵍ)) 🡒 ⋁ ((s \ I).toList.map (·ᵍ))))
-      (g := fun I => (c I)ᵍ) fun I _ => box_clause_iff I.toList (s \ I).toList;
-    simp only [List.map_map, Function.comp_def] at h₂;
-    have h₄ := NormalLogic.iff_trans h₁ <| NormalLogic.iff_trans h₂ h₃;
-    simpa [List.map_map, Function.comp_def] using h₄;
+  · simpa [List.map_map, Function.comp_def] using
+      box_subst_gödelTranslate_iff_conj hγ (subset_refl γ.atoms)
 
 /-- Every formula whose variables are replaced by boxed variables is equivalent in `𝐊` to a
 `◇`-free combination of translations. -/
@@ -112,10 +119,10 @@ theorem subst_gödelTranslate_mem_tau_rho {L₁ : NormalLogic α} [L₁.IsNExt �
     (γ : _root_.Formula (Formula α)) (hγ : γ.depth = 0) (h : γ⟦(·ᵍ)⟧ ∈ L₁) :
     γ⟦(·ᵍ)⟧ ∈ L₁.rho.tau := by
   classical
-  let s := γ.atoms
-  have h₁ := Formula.cnf_iff_mem (L := L₁) hγ (subset_refl s) (·ᵍ)
-  have h₂ := (NormalLogic.mem_iff_of_iff h₁).mp h
-  rw [Formula.subst_cnf, NormalLogic.conj_mem_iff] at h₂
+  let s := γ.atoms;
+  have h₁ := Formula.cnf_iff_mem (L := L₁) hγ (subset_refl s) (·ᵍ);
+  have h₂ := (NormalLogic.mem_iff_of_iff h₁).mp h;
+  rw [Formula.subst_cnf, NormalLogic.conj_mem_iff] at h₂;
   have h₃ : (γ.cnf s)⟦(·ᵍ)⟧ ∈ L₁.rho.tau := by
     rw [Formula.subst_cnf, NormalLogic.conj_mem_iff];
     intro C hC;
@@ -129,7 +136,18 @@ theorem subst_gödelTranslate_mem_tau_rho {L₁ : NormalLogic α} [L₁.IsNExt �
     exact NormalLogic.mem_mdp
       ((NormalLogic.mem_iff_of_iff (box_clause_iff I.toList (s \ I).toList)).mpr h₆)
       NormalLogic.axiomT;
-  exact (NormalLogic.mem_iff_of_iff (Formula.cnf_iff_mem hγ (subset_refl s) (·ᵍ))).mpr h₃
+  exact (NormalLogic.mem_iff_of_iff
+    (Formula.cnf_iff_mem (L := L₁.rho.tau) hγ (subset_refl s) (·ᵍ))).mpr h₃
+
+/-- A substitution instance by boxed variables that lies in an extension `L₁` of `𝐒𝟒` lies in
+`σ ρ L₁`. -/
+theorem subst_box_mem_sigma_rho {L₁ : NormalLogic α} [L₁.IsNExt 𝐒𝟒] (E : _root_.Formula α)
+    (h : E⟦fun q => □(#q)⟧ ∈ L₁) : E⟦fun q => □(#q)⟧ ∈ L₁.rho.sigma := by
+  obtain ⟨γ, hγ, hiff⟩ := exists_subst_box_iff_gödelTranslate E;
+  have h₁ : γ⟦(·ᵍ)⟧ ∈ L₁ := (NormalLogic.mem_iff_of_iff (NormalLogic.mem_of_mem_logicK hiff)).mp h;
+  have h₂ : γ⟦(·ᵍ)⟧ ∈ L₁.rho.sigma :=
+    Logic.tau_le_sigma <| subst_gödelTranslate_mem_tau_rho γ hγ h₁;
+  exact (NormalLogic.mem_iff_of_iff (NormalLogic.mem_of_mem_logicK hiff)).mpr h₂
 
 end Propositional
 

@@ -29,7 +29,6 @@ def evalAtoms (ε : ι → Prop) : Formula ι → Prop
   | A 🡒 B => evalAtoms ε A → evalAtoms ε B
   | ◇_ => False
 
-@[simp] lemma evalAtoms_atom {ε : ι → Prop} {a : ι} : evalAtoms ε (#a) = ε a := rfl
 @[simp] lemma evalAtoms_bot {ε : ι → Prop} : evalAtoms ε (⊥ : Formula ι) = False := rfl
 @[simp] lemma evalAtoms_imp {ε : ι → Prop} :
     evalAtoms ε (A 🡒 B) = (evalAtoms ε A → evalAtoms ε B) := rfl
@@ -88,9 +87,16 @@ lemma evalAtoms_iff_forall_clause (hA : A.atoms ⊆ s) (ε : ι → Prop) :
     · exact h;
     · intro a ha;
       by_cases haI : a ∈ I;
-      · exact ⟨fun _ => hε a haI, fun _ => haI⟩;
-      · exact ⟨fun h' => absurd h' haI, fun h' => absurd h' (hex a (Finset.mem_sdiff.mpr
-          ⟨hA ha, haI⟩))⟩;
+      · constructor;
+        · intro _;
+          exact hε a haI;
+        · intro _;
+          exact haI;
+      · constructor;
+        · intro h';
+          exact absurd h' haI;
+        · intro h';
+          exact absurd h' (hex a (Finset.mem_sdiff.mpr ⟨hA ha, haI⟩));
   · intro h;
     by_contra hε;
     have h₁ := h (s.filter ε) (Finset.mem_powerset.mpr (Finset.filter_subset _ _));
@@ -102,22 +108,6 @@ lemma evalAtoms_iff_forall_clause (hA : A.atoms ⊆ s) (ε : ι → Prop) :
     obtain ⟨a, ha, haε⟩ := h₁ h₂ (fun a ha => (Finset.mem_filter.mp ha).2);
     rw [Finset.mem_sdiff, Finset.mem_filter] at ha;
     exact ha.2 ⟨ha.1, haε⟩;
-
-lemma depth_cnf : (A.cnf s).depth = 0 := by
-  classical
-  apply depth_conj_eq_zero;
-  intro B hB;
-  obtain ⟨I, -, rfl⟩ := List.mem_map.mp hB;
-  simp only [depth_imp, Nat.max_eq_zero_iff];
-  constructor;
-  · apply depth_conj_eq_zero;
-    intro C hC;
-    obtain ⟨a, -, rfl⟩ := List.mem_map.mp hC;
-    rfl;
-  · apply depth_disj_eq_zero;
-    intro C hC;
-    obtain ⟨a, -, rfl⟩ := List.mem_map.mp hC;
-    rfl;
 
 /-- A `◇`-free formula is Boolean-equivalent to its conjunctive normal form. -/
 theorem isTautology_iff_cnf (h : A.depth = 0) (hA : A.atoms ⊆ s) :
@@ -171,14 +161,6 @@ lemma conj_map_iff_congr (h : ∀ i ∈ l, f i 🡘 g i ∈ L) :
   | cons i l ih =>
     simp only [List.map_cons, Formula.conj_cons];
     exact and_iff_congr (h i List.mem_cons_self) (ih fun j hj => h j (List.mem_cons_of_mem _ hj));
-
-lemma disj_map_iff_congr (h : ∀ i ∈ l, f i 🡘 g i ∈ L) :
-    ⋁ (l.map f) 🡘 ⋁ (l.map g) ∈ L := by
-  induction l with
-  | nil => exact iff_refl;
-  | cons i l ih =>
-    simp only [List.map_cons, Formula.disj_cons];
-    exact or_iff_congr (h i List.mem_cons_self) (ih fun j hj => h j (List.mem_cons_of_mem _ hj));
 
 end NormalLogic
 

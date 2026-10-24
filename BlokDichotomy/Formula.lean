@@ -239,45 +239,35 @@ end
 
 section
 
-variable {α β : Type*} {φ ψ : Formula α} {l : List (Formula α)}
+variable {α β : Type*} {A B : Formula α} {l : List (Formula α)}
 
-@[simp] lemma depth_neg : (∼φ).depth = φ.depth := by simp
-@[simp] lemma depth_and : (φ ⋏ ψ).depth = max φ.depth ψ.depth := by simp
-@[simp] lemma depth_or : (φ ⋎ ψ).depth = max φ.depth ψ.depth := by simp
+@[simp] lemma depth_neg : (∼A).depth = A.depth := by simp
+@[simp] lemma depth_and : (A ⋏ B).depth = max A.depth B.depth := by simp
+@[simp] lemma depth_or : (A ⋎ B).depth = max A.depth B.depth := by simp
 
-lemma depth_conj_eq_zero (h : ∀ φ ∈ l, φ.depth = 0) : (⋀l).depth = 0 := by
+lemma depth_conj_eq_zero (h : ∀ A ∈ l, A.depth = 0) : (⋀l).depth = 0 := by
   induction l with
   | nil => simp [depth, Formula.verum_eq];
-  | cons φ l ih =>
-    simp only [conj_cons, depth_and, h φ List.mem_cons_self, ih fun ψ hψ => h ψ <| .tail _ hψ];
+  | cons A l ih =>
+    simp only [conj_cons, depth_and, h A List.mem_cons_self, ih fun B hB => h B <| .tail _ hB];
     simp;
 
-lemma depth_disj_eq_zero (h : ∀ φ ∈ l, φ.depth = 0) : (⋁l).depth = 0 := by
+lemma depth_disj_eq_zero (h : ∀ A ∈ l, A.depth = 0) : (⋁l).depth = 0 := by
   induction l with
   | nil => simp;
-  | cons φ l ih =>
-    simp only [disj_cons, depth_or, h φ List.mem_cons_self, ih fun ψ hψ => h ψ <| .tail _ hψ];
+  | cons A l ih =>
+    simp only [disj_cons, depth_or, h A List.mem_cons_self, ih fun B hB => h B <| .tail _ hB];
     simp;
 
-lemma depth_subst_eq_zero (h : φ.depth = 0) {s : Substitution α β} (hs : ∀ a, (s a).depth = 0) :
-    (φ⟦s⟧).depth = 0 := by
-  induction φ with
-  | atom a => exact hs a;
-  | falsum => simp;
-  | imp φ ψ ihφ ihψ =>
-    simp only [depth_imp, Nat.max_eq_zero_iff] at h;
-    simp [ihφ h.1, ihψ h.2];
-  | dia φ ih => simp at h;
-
 lemma subst_congr_of_atoms [DecidableEq α] {s s' : Substitution α β}
-    (h : ∀ a ∈ φ.atoms, s a = s' a) : φ⟦s⟧ = φ⟦s'⟧ := by
-  induction φ with
+    (h : ∀ a ∈ A.atoms, s a = s' a) : A⟦s⟧ = A⟦s'⟧ := by
+  induction A with
   | atom a => exact h a <| by simp;
   | falsum => rfl;
-  | imp φ ψ ihφ ihψ =>
+  | imp A B ihA ihB =>
     simp only [subst_imp];
-    rw [ihφ fun a ha => h a <| by simp [ha], ihψ fun a ha => h a <| by simp [ha]];
-  | dia φ ih => simp only [subst_dia]; rw [ih h];
+    rw [ihA fun a ha => h a <| by simp [ha], ihB fun a ha => h a <| by simp [ha]];
+  | dia A ih => simp only [subst_dia]; rw [ih h];
 
 end
 
@@ -319,9 +309,6 @@ lemma map_conj : (⋀l).map f = ⋀(l.map (·.map f)) := by
 @[simp, grind =]
 lemma map_disj : (⋁l).map f = ⋁(l.map (·.map f)) := by
   induction l <;> simp_all
-
-@[simp] lemma depth_map : (φ.map f).depth = φ.depth := by
-  induction φ <;> simp_all [map];
 
 @[simp]
 lemma map_id : φ.map id = φ := subst_id

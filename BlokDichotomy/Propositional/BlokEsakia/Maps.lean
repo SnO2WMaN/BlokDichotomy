@@ -110,9 +110,6 @@ lemma tau_le_sigma : L.tau ≤ L.sigma :=
 lemma sigma_mono (h : L₁ ≤ L₂) : L₁.sigma ≤ L₂.sigma :=
   NormalLogic.add_mono le_rfl <| Set.image_mono h
 
-lemma tau_mono (h : L₁ ≤ L₂) : L₁.tau ≤ L₂.tau :=
-  NormalLogic.add_mono le_rfl <| Set.image_mono h
-
 lemma le_rho_sigma : L ≤ L.sigma.rho := fun _ hA => gödelTranslate_mem_sigma hA
 
 lemma le_rho_tau : L ≤ L.tau.rho := fun _ hA => gödelTranslate_mem_tau hA

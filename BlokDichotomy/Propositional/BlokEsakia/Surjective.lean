@@ -41,9 +41,11 @@ lemma exists_of_mem_toIntuitionistic_toModal_adm {L₂ : NormalLogic α} [L₂.I
     obtain ⟨B, rfl⟩ := NormalLogic.canonicalGeneralFrame.mem_upAdm_iff.mp hY;
     exact ⟨#B, rfl, rfl⟩;
   | bot =>
-    refine ⟨⊥, rfl, ?_⟩;
-    ext x;
-    simp [x.bot_not_mem];
+    use ⊥;
+    and_intros;
+    · rfl;
+    · ext x;
+      simp [x.bot_not_mem];
   | sup Y _ Z _ ihY ihZ =>
     obtain ⟨β₁, h₁, rfl⟩ := ihY;
     obtain ⟨β₂, h₂, rfl⟩ := ihZ;
@@ -68,29 +70,41 @@ theorem exists_subst_not_mem [Nonempty α] (L₂ : NormalLogic α) [L₂.IsNExt 
       (∀ p, (β p).depth = 0 ∧ s p = (β p)⟦(□·)⟧) ∧ A⟦s⟧ ∉ L₂ := by
   have hGrz : L₂.canonicalGeneralFrame ⊧ (𝐆𝐫𝐳 : NormalLogic α) := fun B hB =>
     NormalLogic.canonicalGeneralFrame.validates_iff.mpr (NormalLogic.IsNExt.logic_le hB);
-  have hA : L₂.canonicalGeneralFrame ⊭ A := fun h₀ =>
-    h (NormalLogic.canonicalGeneralFrame.validates_iff.mp h₀);
-  have h₁ := GeneralFrame.not_validates_toIntuitionistic_toModal_of_not_validates hGrz hA;
-  obtain ⟨V, hV, x, hx⟩ : ∃ V, L₂.canonicalGeneralFrame.toIntuitionistic.toModal.IsAdmissible V ∧
-      ∃ x, ¬ x ⊩[L₂.canonicalGeneralFrame.toIntuitionistic.toModal.model V] A := by
-    by_contra h₂;
-    push Not at h₂;
-    exact h₁ fun V hV x => h₂ V hV x;
+  have hA : L₂.canonicalGeneralFrame ⊭ A := by
+    by_contra h₀;
+    exact h (NormalLogic.canonicalGeneralFrame.validates_iff.mp h₀);
+  obtain ⟨V, hV, x, hx⟩ := _root_.GeneralFrame.not_validates_iff.mp
+    (_root_.GeneralFrame.not_validates_toIntuitionistic_toModal_of_not_validates hGrz hA);
   choose β hβ using fun p => exists_of_mem_toIntuitionistic_toModal_adm (hV p);
   use fun p => (β p)⟦(□·)⟧, β;
   and_intros;
-  · exact fun p => ⟨(hβ p).1, rfl⟩;
-  · intro hmem;
+  · intro p;
+    exact ⟨(hβ p).1, rfl⟩;
+  · by_contra hmem;
     have h₂ : V = fun w p => w ⊩[L₂.canonicalModel] (β p)⟦(□·)⟧ := by
       funext w p;
       apply propext;
       have h₃ := congrArg (w ∈ ·) (hβ p).2;
       simpa [NormalLogic.canonicalModel.truthlemma] using h₃;
-    apply hx;
     have h₄ := NormalLogic.canonicalModel_validates_of_mem hmem x;
     have h₅ := (_root_.Model.World.forces_subst (fun p => (β p)⟦(□·)⟧)).mp h₄;
     subst h₂;
-    exact h₅
+    exact hx h₅
+
+/-- Substituting boxed formulas for the variables of `A`, and then the original formulas back
+along a left inverse of the renaming, gives the original substitution instance. -/
+private lemma subst_box_map_subst_eq [DecidableEq α] {A : _root_.Formula α}
+    {β : α → _root_.Formula (_root_.Formula α)} {s : _root_.Formula.Substitution α α}
+    (hs : ∀ p, s p = (β p)⟦(□·)⟧) {f : _root_.Formula α → α} {g : α → _root_.Formula α}
+    (hg : ∀ p ∈ A.atoms, ∀ B ∈ (β p).atoms, g (f B) = B) :
+    (A⟦fun p => (β p).map f⟧⟦fun q => □(#q)⟧)⟦g⟧ = A⟦s⟧ := by
+  simp only [_root_.Formula.subst_subst];
+  apply Formula.subst_congr_of_atoms;
+  intro p hp;
+  rw [hs p, _root_.Formula.subst_map];
+  apply Formula.subst_congr_of_atoms;
+  intro B hB;
+  simp [hg p hp B hB]
 
 /-- - [CZ98, Theorem 9.66]
 - [BC22, Theorem 4.2] -/
@@ -100,30 +114,16 @@ theorem sigma_rho_eq [Infinite α] (L₁ : NormalLogic α) [L₁.IsNExt 𝐆𝐫
   intro A hA;
   by_contra hA₂;
   obtain ⟨s, β, hβ, hs⟩ := exists_subst_not_mem L₁.rho.sigma hA₂;
-  let t : Finset (_root_.Formula α) := A.atoms.biUnion fun p => (β p).atoms;
-  obtain ⟨f, hf⟩ := Infinite.exists_injOn (α := α) t;
-  let g : α → _root_.Formula α := Function.invFunOn f t;
-  have hg : ∀ B ∈ t, g (f B) = B := fun B hB => hf.leftInvOn_invFunOn hB;
-  let E : _root_.Formula α := A⟦fun p => (β p).map f⟧;
-  have h₁ : E⟦fun q => □(#q)⟧ ∈ L₁ := NormalLogic.mem_subst <| NormalLogic.mem_subst hA;
-  obtain ⟨γ, hγ, hiff⟩ := exists_subst_box_iff_gödelTranslate E;
-  have h₂ : γ⟦(·ᵍ)⟧ ∈ L₁ :=
-    (NormalLogic.mem_iff_of_iff (NormalLogic.mem_of_mem_logicK hiff)).mp h₁;
-  have h₃ : γ⟦(·ᵍ)⟧ ∈ L₁.rho.sigma :=
-    Logic.tau_le_sigma <| subst_gödelTranslate_mem_tau_rho γ hγ h₂;
-  have h₄ : E⟦fun q => □(#q)⟧ ∈ L₁.rho.sigma :=
-    (NormalLogic.mem_iff_of_iff (NormalLogic.mem_of_mem_logicK hiff)).mpr h₃;
-  have h₅ := NormalLogic.mem_subst (s := g) h₄;
-  have h₆ : (E⟦fun q => □(#q)⟧)⟦g⟧ = A⟦s⟧ := by
-    simp only [E, _root_.Formula.subst_subst];
-    apply Formula.subst_congr_of_atoms;
-    intro p hp;
-    rw [(hβ p).2, _root_.Formula.subst_map];
-    apply Formula.subst_congr_of_atoms;
-    intro B hB;
-    have hB' : B ∈ t := Finset.mem_biUnion.mpr ⟨p, hp, hB⟩;
-    simp [hg B hB'];
-  exact hs (h₆ ▸ h₅)
+  obtain ⟨f, hf⟩ := Infinite.exists_injOn (α := α) (A.atoms.biUnion fun p => (β p).atoms);
+  obtain ⟨g, hg⟩ : ∃ g : α → _root_.Formula α, ∀ p ∈ A.atoms, ∀ B ∈ (β p).atoms, g (f B) = B := by
+    use Function.invFunOn f (A.atoms.biUnion fun p => (β p).atoms);
+    intro p hp B hB;
+    exact hf.leftInvOn_invFunOn <| Finset.mem_coe.mpr <| Finset.mem_biUnion.mpr ⟨p, hp, hB⟩;
+  have h₁ : (A⟦fun p => (β p).map f⟧)⟦fun q => □(#q)⟧ ∈ L₁ :=
+    NormalLogic.mem_subst <| NormalLogic.mem_subst hA;
+  have h₂ := NormalLogic.mem_subst (s := g) <| subst_box_mem_sigma_rho _ h₁;
+  rw [subst_box_map_subst_eq (fun p => (hβ p).2) hg] at h₂;
+  exact hs h₂
 
 end Propositional
 

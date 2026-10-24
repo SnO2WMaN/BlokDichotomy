@@ -7,8 +7,8 @@ public import BlokDichotomy.Propositional.BlokEsakia.Surjective
 # The Blok–Esakia theorem
 
 The map `σ L = 𝐆𝐫𝐳 ⊕ Lᵍ` is an order isomorphism from the superintuitionistic logics onto the
-normal extensions of `𝐆𝐫𝐳`, with inverse `ρ`. Consequently `𝐆𝐫𝐳` is the least normal modal
-companion of `𝐈𝐧𝐭` among the extensions of `𝐆𝐫𝐳`, and `ρ 𝐒𝟒 = ρ 𝐆𝐫𝐳 = 𝐈𝐧𝐭`.
+normal extensions of `𝐆𝐫𝐳`, with inverse `ρ`. In particular `σ 𝐈𝐧𝐭 = 𝐆𝐫𝐳`, `τ 𝐈𝐧𝐭 = 𝐒𝟒`, and
+`ρ 𝐒𝟒 = ρ 𝐆𝐫𝐳 = 𝐈𝐧𝐭`.
 
 ## References
 
@@ -53,36 +53,41 @@ noncomputable def blokEsakia (α : Type v) [Infinite α] :
 @[simp] lemma blokEsakia_symm_apply [Infinite α] (L' : {L' : NormalLogic α // L'.IsNExt 𝐆𝐫𝐳}) :
     ((blokEsakia α).symm L').1 = L'.1.rho := rfl
 
+namespace Logic
+
 /-- `τ 𝐈𝐧𝐭 = 𝐒𝟒`.
 - [CZ98, §3.9, Example 9.63] -/
 theorem tau_logicInt : (𝐈𝐧𝐭 : Logic α).tau = 𝐒𝟒 :=
-  le_antisymm (Logic.tau_le fun _ hA => gödelTranslate_mem_logicS4_iff.mp hA) NormalLogic.le_add
+  le_antisymm (tau_le fun _ hA => gödelTranslate_mem_logicS4_iff.mp hA) NormalLogic.le_add
 
 /-- `σ 𝐈𝐧𝐭 = 𝐆𝐫𝐳`.
 - [CZ98, §3.9, Example 9.63] -/
 theorem sigma_logicInt : (𝐈𝐧𝐭 : Logic α).sigma = 𝐆𝐫𝐳 :=
   le_antisymm
-    (Logic.sigma_le fun _ hA =>
-      NormalLogic.logicS4_le_logicGrz (gödelTranslate_mem_logicS4_iff.mp hA))
+    (sigma_le fun _ hA => NormalLogic.logicS4_le_logicGrz (gödelTranslate_mem_logicS4_iff.mp hA))
     NormalLogic.le_add
+
+end Logic
 
 /-- `ρ 𝐒𝟒 = 𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem rho_logicS4 : (𝐒𝟒 : NormalLogic α).rho = 𝐈𝐧𝐭 :=
+theorem _root_.NormalLogic.rho_logicS4 : (𝐒𝟒 : NormalLogic α).rho = 𝐈𝐧𝐭 :=
   SetLike.ext fun _ => gödelTranslate_mem_logicS4_iff.symm
 
 /-- `ρ 𝐆𝐫𝐳 = 𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem rho_logicGrz : (𝐆𝐫𝐳 : NormalLogic α).rho = 𝐈𝐧𝐭 :=
-  calc (𝐆𝐫𝐳 : NormalLogic α).rho
-      = (𝐈𝐧𝐭 : Logic α).sigma.rho :=
-        SetLike.ext fun _ => by simp only [NormalLogic.mem_rho, sigma_logicInt]
-    _ = 𝐈𝐧𝐭 := Logic.rho_sigma_eq _
+theorem _root_.NormalLogic.rho_logicGrz : (𝐆𝐫𝐳 : NormalLogic α).rho = 𝐈𝐧𝐭 := by
+  apply SetLike.ext;
+  intro A;
+  have h : Aᵍ ∈ (𝐈𝐧𝐭 : Logic α).sigma ↔ A ∈ 𝐈𝐧𝐭 := by
+    rw [← NormalLogic.mem_rho, Logic.rho_sigma_eq];
+  rw [NormalLogic.mem_rho, ← Logic.sigma_logicInt];
+  exact h
 
 /-- `𝐆𝐫𝐳` is a modal companion of `𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
 theorem logicInt_isModalCompanion_logicGrz : 𝐈𝐧𝐭.IsModalCompanion (α := α) 𝐆𝐫𝐳 :=
-  fun A => (Iff.of_eq (congrArg (A ∈ ·) rho_logicGrz.symm)).trans NormalLogic.mem_rho
+  fun A => (Iff.of_eq (congrArg (A ∈ ·) NormalLogic.rho_logicGrz.symm)).trans NormalLogic.mem_rho
 
 end Propositional
 
