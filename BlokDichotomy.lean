@@ -42,6 +42,7 @@ public import BlokDichotomy.Propositional.Kripke.Completeness
 public import BlokDichotomy.Propositional.Logic.Basic
 public import BlokDichotomy.Propositional.ModalCompanion
 public import BlokDichotomy.ToMathlib.Data.Fintype.EquivFin
+public import BlokDichotomy.ToMathlib.Data.List.Induction
 public import BlokDichotomy.ToMathlib.Order.BooleanSubalgebra
 public import BlokDichotomy.ToMathlib.Order.Monotone.Basic
 public import BlokDichotomy.ToMathlib.Order.Notation

@@ -42,19 +42,25 @@ variable {L : NormalLogic α} [L.IsNExt 𝐊]
 
 lemma gödelTranslate_conj (l : List (Formula α)) :
     (Formula.conj l)ᵍ 🡘 ⋀ (l.map (·ᵍ)) ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil =>
     exact NormalLogic.iff_of_imp (NormalLogic.imp_of_mem NormalLogic.verum_mem)
       (NormalLogic.imp_of_mem NormalLogic.box_top);
-  | cons A l ih =>
-    simpa [Formula.conj] using NormalLogic.and_iff_congr NormalLogic.iff_refl ih;
+  | singleton => exact NormalLogic.iff_refl;
+  | cons A l hl ih =>
+    rw [Formula.conj_cons_of_ne_nil hl, List.map_cons, _root_.Formula.conj_cons_of_ne_nil
+      (by simpa using hl), Formula.gödelTranslate_and];
+    exact NormalLogic.and_iff_congr NormalLogic.iff_refl ih;
 
 lemma gödelTranslate_disj (l : List (Formula α)) :
     (Formula.disj l)ᵍ 🡘 ⋁ (l.map (·ᵍ)) ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact NormalLogic.iff_refl;
-  | cons A l ih =>
-    simpa [Formula.disj] using NormalLogic.or_iff_congr NormalLogic.iff_refl ih;
+  | singleton => exact NormalLogic.iff_refl;
+  | cons A l hl ih =>
+    rw [Formula.disj_cons_of_ne_nil hl, List.map_cons, _root_.Formula.disj_cons_of_ne_nil
+      (by simpa using hl), Formula.gödelTranslate_or];
+    exact NormalLogic.or_iff_congr NormalLogic.iff_refl ih;
 
 /-- A clause of the conjunctive normal form over translations is the translation of an
 implication, up to a box. -/

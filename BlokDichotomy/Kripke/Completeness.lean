@@ -42,11 +42,16 @@ variable (v : BoolEval α)
 @[simp, grind =] lemma eval_and : v (φ ⋏ ψ) ↔ v φ ∧ v ψ := by simp
 @[simp, grind =] lemma eval_or : v (φ ⋎ ψ) ↔ v φ ∨ v ψ := by simp; tauto
 @[simp, grind =] lemma eval_iff : v (φ 🡘 ψ) ↔ (v φ ↔ v ψ) := by simp; tauto
-@[simp, grind =] lemma eval_conj : v (⋀l) ↔ ∀ φ ∈ l, v φ := by induction l <;> simp_all
+@[simp, grind =] lemma eval_conj : v (⋀l) ↔ ∀ φ ∈ l, v φ := by
+  induction l using List.induction_with_singleton with
+  | nil => simp
+  | singleton => simp
+  | cons a l hl ih => simp [Formula.conj_cons_of_ne_nil hl, ih]
 @[simp, grind =] lemma eval_disj : v (⋁l) ↔ ∃ φ ∈ l, v φ := by
-  induction l with
-  | nil => simp;
-  | cons φ l ih => rw [disj_cons, eval_or, ih, List.exists_mem_cons_iff];
+  induction l using List.induction_with_singleton with
+  | nil => simp
+  | singleton => simp
+  | cons a l hl ih => rw [Formula.disj_cons_of_ne_nil hl, eval_or, ih, List.exists_mem_cons_iff]
 
 end BoolEval
 

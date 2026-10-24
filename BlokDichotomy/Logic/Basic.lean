@@ -432,17 +432,25 @@ lemma iff_left : φ 🡘 ψ 🡒 φ 🡒 ψ ∈ L := and_left
 lemma iff_right : φ 🡘 ψ 🡒 ψ 🡒 φ ∈ L := and_right
 
 lemma imp_disj_of_mem (h : φ ∈ l) : φ 🡒 ⋁l ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => simp at h;
-  | cons a l ih =>
+  | singleton a =>
+    obtain rfl := List.mem_singleton.mp h;
+    exact imp_self;
+  | cons a l hl ih =>
+    rw [disj_cons_of_ne_nil hl];
     rcases List.mem_cons.mp h with rfl | h;
     · exact or_left;
     · exact imp_trans (ih h) or_right;
 
 lemma conj_imp_of_mem (h : φ ∈ l) : ⋀l 🡒 φ ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => simp at h;
-  | cons a l ih =>
+  | singleton a =>
+    obtain rfl := List.mem_singleton.mp h;
+    exact imp_self;
+  | cons a l hl ih =>
+    rw [conj_cons_of_ne_nil hl];
     rcases List.mem_cons.mp h with rfl | h;
     · exact and_left;
     · exact imp_trans and_right (ih h);
@@ -519,24 +527,33 @@ lemma or_iff_congr (h₁ : φ 🡘 χ ∈ L) (h₂ : ψ 🡘 θ ∈ L) : φ ⋎ 
   imp_iff_congr (neg_iff_congr h₁) h₂
 
 lemma conj_mem_iff : ⋀l ∈ L ↔ ∀ φ ∈ l, φ ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => simp [verum_mem];
-  | cons a l ih => simp [and_mem_iff, ih];
+  | singleton => simp;
+  | cons a l hl ih => simp [conj_cons_of_ne_nil hl, and_mem_iff, ih];
 
 lemma imp_conj (h : ∀ φ ∈ l, ψ 🡒 φ ∈ L) : ψ 🡒 ⋀l ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact imp_of_mem verum_mem;
-  | cons a l ih => exact imp_and_intro (h a <| by simp) (ih fun φ hA => h φ <| by simp [hA]);
+  | singleton a => exact h a <| by simp;
+  | cons a l hl ih =>
+    rw [conj_cons_of_ne_nil hl];
+    exact imp_and_intro (h a <| by simp) (ih fun φ hA => h φ <| by simp [hA]);
 
 lemma disj_imp (h : ∀ φ ∈ l, φ 🡒 ψ ∈ L) : ⋁l 🡒 ψ ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact efq;
-  | cons a l ih => exact or_imp_intro (h a <| by simp) (ih fun φ hA => h φ <| by simp [hA]);
+  | singleton a => exact h a <| by simp;
+  | cons a l hl ih =>
+    rw [disj_cons_of_ne_nil hl];
+    exact or_imp_intro (h a <| by simp) (ih fun φ hA => h φ <| by simp [hA]);
 
 lemma Derives.conj (h : ∀ φ ∈ l, Γ ⊢[L] φ) : Γ ⊢[L] ⋀l := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact thm verum_mem;
-  | cons φ l ih =>
+  | singleton a => exact h a <| by simp;
+  | cons a l hl ih =>
+    rw [conj_cons_of_ne_nil hl];
     simp only [List.mem_cons, forall_eq_or_imp] at h;
     exact Derives.and_intro h.1 (ih h.2);
 
@@ -586,10 +603,11 @@ lemma box_and : □(φ ⋏ ψ) 🡘 □φ ⋏ □ψ ∈ L := by
       Derives.mdp (of_imp_mem h <| Derives.and_left <| .mem rfl) <| .thm distribute;
 
 lemma box_conj : □(⋀l) 🡘 ⋀(l.map (□·)) ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact iff_of_imp (imp_of_mem verum_mem) (imp_of_mem box_top);
-  | cons φ l ih =>
-    simp only [List.map_cons, conj_cons];
+  | singleton => exact iff_refl;
+  | cons φ l hl ih =>
+    rw [conj_cons_of_ne_nil hl, List.map_cons, conj_cons_of_ne_nil (by simpa using hl)];
     exact iff_trans box_and <| and_iff_congr iff_refl ih;
 
 lemma box_conj_mem_iff : □(⋀l) ∈ L ↔ ∀ φ ∈ l, □φ ∈ L := by
@@ -664,10 +682,11 @@ lemma dia_or : ◇(φ ⋎ ψ) 🡘 ◇φ ⋎ ◇ψ ∈ L := by
   · exact or_imp_intro (dia_mono or_left) (dia_mono or_right);
 
 lemma dia_disj : ◇(⋁l) 🡘 ⋁(l.map (◇·)) ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact dia_bot;
-  | cons φ l ih =>
-    simp only [List.map_cons, disj_cons];
+  | singleton => exact iff_refl;
+  | cons φ l hl ih =>
+    rw [disj_cons_of_ne_nil hl, List.map_cons, disj_cons_of_ne_nil (by simpa using hl)];
     exact iff_trans dia_or <| or_iff_congr iff_refl ih;
 
 lemma multidia_mono (h : φ 🡒 ψ ∈ L) : ◇^[n]φ 🡒 ◇^[n]ψ ∈ L := by

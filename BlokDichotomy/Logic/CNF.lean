@@ -155,10 +155,12 @@ variable {α ι : Type*} {L : NormalLogic α} [L.IsNExt 𝐊] {l : List ι} {f g
 
 lemma conj_map_iff_congr (h : ∀ i ∈ l, f i 🡘 g i ∈ L) :
     ⋀ (l.map f) 🡘 ⋀ (l.map g) ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact iff_refl;
-  | cons i l ih =>
-    simp only [List.map_cons, Formula.conj_cons];
+  | singleton i => exact h i List.mem_cons_self;
+  | cons i l hl ih =>
+    rw [List.map_cons, List.map_cons, Formula.conj_cons_of_ne_nil (by simpa using hl),
+      Formula.conj_cons_of_ne_nil (by simpa using hl)];
     exact and_iff_congr (h i List.mem_cons_self) (ih fun j hj => h j (List.mem_cons_of_mem _ hj));
 
 end NormalLogic

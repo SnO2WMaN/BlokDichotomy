@@ -183,11 +183,17 @@ lemma forces_multidox : x ⊩ □^[n]φ ↔ ∀ y : M.World, (x ≺^[n] y) → y
 
 @[simp, grind =]
 lemma forces_conj : x ⊩ ⋀l ↔ ∀ φ ∈ l, x ⊩ φ := by
-  induction l <;> simp_all [forces_and]
+  induction l using List.induction_with_singleton with
+  | nil => simp
+  | singleton => simp
+  | cons a l hl ih => simp [Formula.conj_cons_of_ne_nil hl, forces_and, ih]
 
 @[simp, grind =]
 lemma forces_disj : x ⊩ ⋁l ↔ ∃ φ ∈ l, x ⊩ φ := by
-  induction l <;> simp_all [forces_or]
+  induction l using List.induction_with_singleton with
+  | nil => simp
+  | singleton => simp
+  | cons a l hl ih => simp [Formula.disj_cons_of_ne_nil hl, forces_or, ih]
 
 /-- Two worlds with the same true variables and the same successors force the same formulas. -/
 lemma forces_iff_of_same_succ (hval : ∀ a, M.Val x a ↔ M.Val y a)
@@ -295,11 +301,11 @@ lemma forces_map {φ : Formula α} {f : α → β} :
 
 lemma forces_conj_map {ι : Type*} {l : List ι} {g : ι → Formula β} :
     x ⊩[M] ⋀(l.map g) ↔ ∀ i ∈ l, x ⊩[M] g i := by
-  induction l <;> simp_all [forces_and];
+  simp [forces_conj];
 
 lemma forces_disj_map {ι : Type*} {l : List ι} {g : ι → Formula β} :
     x ⊩[M] ⋁(l.map g) ↔ ∃ i ∈ l, x ⊩[M] g i := by
-  induction l <;> simp_all [forces_or];
+  simp [forces_disj];
 
 end Map
 
