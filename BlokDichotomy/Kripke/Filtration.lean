@@ -25,7 +25,7 @@ namespace Model
 - [CZ98, §5.3]
 -/
 def filtration (M : Model κ α) (c : κ → ι) : Model ι α where
-  Rel' a b := ∃ x y : M.World, c x = a ∧ c y = b ∧ x ≺ y
+  toFrame := ⟨fun a b => ∃ x y : M.World, c x = a ∧ c y = b ∧ x ≺ y⟩
   Val' a p := ∃ x, c x = a ∧ M.Val' x p
 
 variable {M : Model κ α} {c : κ → ι}

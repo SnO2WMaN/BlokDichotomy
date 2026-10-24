@@ -46,9 +46,9 @@ end Frame
 
 
 
-abbrev logicMaks (𝔸 : Set ℕ) : NormalLogic ℕ := (𝐊 : NormalLogic ℕ) + 𝔸.image axiomMaks
+abbrev logicMaks (𝔸 : Set ℕ) : NormalLogic ℕ := 𝐊 + 𝔸.image axiomMaks
 
-abbrev logicVer : NormalLogic α := (𝐊 : NormalLogic α) + ({ □φ | φ } : FormulaSet α)
+abbrev logicVer : NormalLogic α := 𝐊 + ({ □φ | φ } : FormulaSet α)
 
 
 section Ver

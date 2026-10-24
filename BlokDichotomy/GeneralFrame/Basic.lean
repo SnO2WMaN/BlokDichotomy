@@ -1,6 +1,7 @@
 module
 
 public import BlokDichotomy.Kripke.Generated
+public import Mathlib.Order.BooleanSubalgebra
 
 /-!
 # General frames
@@ -19,6 +20,33 @@ universe u v
 variable {κ : Type u} {α : Type v}
 
 def Frame.diaSet (F : Frame κ) (X : Set F.World) : Set F.World := {w | ∃ v, w ≺ v ∧ v ∈ X}
+
+/-- The set of points all of whose successors lie in `X`. -/
+def Frame.boxSet (F : Frame κ) (X : Set F.World) : Set F.World := {w | ∀ v, w ≺ v → v ∈ X}
+
+namespace Frame
+
+variable {F : Frame κ} {X Y : Set F.World}
+
+lemma boxSet_eq : F.boxSet X = (F.diaSet Xᶜ)ᶜ := by
+  ext w;
+  simp [boxSet, diaSet];
+
+lemma diaSet_eq : F.diaSet X = (F.boxSet Xᶜ)ᶜ := by
+  ext w;
+  simp [boxSet, diaSet];
+
+lemma diaSet_union : F.diaSet (X ∪ Y) = F.diaSet X ∪ F.diaSet Y := by
+  ext w;
+  simp only [diaSet, Set.mem_union, Set.mem_ofPred_eq];
+  grind;
+
+lemma boxSet_inter : F.boxSet (X ∩ Y) = F.boxSet X ∩ F.boxSet Y := by
+  ext w;
+  simp only [boxSet, Set.mem_inter_iff, Set.mem_ofPred_eq];
+  grind;
+
+end Frame
 
 /--
 A Kripke frame with a set `Adm` of admissible sets closed under intersection, complement and
@@ -56,6 +84,18 @@ lemma union_mem (hX : X ∈ G.Adm) (hY : Y ∈ G.Adm) : X ∪ Y ∈ G.Adm := by
 lemma himp_mem (hX : X ∈ G.Adm) (hY : Y ∈ G.Adm) : Xᶜ ∪ Y ∈ G.Adm :=
   union_mem (G.compl_mem hX) hY
 
+lemma boxSet_mem (hX : X ∈ G.Adm) : G.toFrame.boxSet X ∈ G.Adm := by
+  rw [Frame.boxSet_eq];
+  exact G.compl_mem <| G.diaSet_mem <| G.compl_mem hX;
+
+/-- `G.Adm` as a Boolean subalgebra of `Set G.World`. -/
+def admBooleanSubalgebra (G : GeneralFrame κ) : BooleanSubalgebra (Set G.World) where
+  carrier := G.Adm
+  supClosed' _ hX _ hY := union_mem hX hY
+  infClosed' _ hX _ hY := G.inter_mem hX hY
+  bot_mem' := empty_mem
+  compl_mem' := G.compl_mem
+
 /--
 `V` is admissible when `{w | V w a} ∈ G.Adm` for every `a`.
 - [CZ98, §8.1]
@@ -85,6 +125,11 @@ lemma truthSet_mem (hV : G.IsAdmissible V) (φ : Formula α) :
     ext w;
     simp [Frame.diaSet, forces_dia];
 
+lemma truthSet_box (V : G.World → α → Prop) (φ : Formula α) :
+    {w | w ⊩[G.model V] □φ} = G.toFrame.boxSet {w | w ⊩[G.model V] φ} := by
+  ext w;
+  simp [Frame.boxSet, forces_box];
+
 lemma isAdmissible_subst (hV : G.IsAdmissible V) (s : Formula.Substitution α α) :
     G.IsAdmissible (fun w a => w ⊩[G.model V] s a) :=
   fun a => truthSet_mem hV (s a)
@@ -109,6 +154,11 @@ infix:50 " ⊧ " => GeneralFrame.ValidatesLogic
 abbrev NotValidateLogic (G : GeneralFrame κ) (L : NormalLogic α) : Prop := ¬(G ⊧ L)
 infix:50 " ⊭ " => GeneralFrame.NotValidateLogic
 
+lemma not_validates_iff : G ⊭ φ ↔ ∃ V, G.IsAdmissible V ∧ ∃ x, x ⊮[G.model V] φ := by
+  change ¬(∀ V, G.IsAdmissible V → ∀ x, x ⊩[G.model V] φ) ↔ _;
+  push Not;
+  rfl
+
 lemma mdp (hA : G ⊧ φ) (hAB : G ⊧ φ 🡒 ψ) : G ⊧ ψ :=
   fun V hV x => hAB V hV x <| hA V hV x
 
@@ -132,13 +182,19 @@ def logic (G : GeneralFrame κ) : NormalLogic α where
 
 lemma validatesLogic_logic : G ⊧ (G.logic : NormalLogic α) := fun _ hA => hA
 
-lemma validates_logicK : G ⊧ (𝐊 : NormalLogic α) := by
+lemma validates_logicK : G ⊧ logicK (α := α) := by
   intro φ hA V _;
   exact Frame.validates_logicK φ hA V;
 
 instance : (G.logic : NormalLogic α).IsNExt 𝐊 := ⟨fun _ hA => validates_logicK _ hA⟩
 
 lemma ValidatesLogic.le_logic {L : NormalLogic α} (h : G ⊧ L) : L ≤ G.logic := h
+
+lemma validates_of_toFrame (h : G.toFrame ⊧ φ) : G ⊧ φ := fun V _ => h V
+
+lemma validatesLogic_add {L : NormalLogic α} {X : FormulaSet α} (hL : G ⊧ L)
+    (hX : ∀ φ ∈ X, G ⊧ φ) : G ⊧ (L + X) :=
+  fun _ hA => NormalLogic.add_le (L₂ := G.logic) hL.le_logic hX hA
 
 end GeneralFrame
 

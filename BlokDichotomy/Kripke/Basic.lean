@@ -104,11 +104,11 @@ lemma reflTransRel_trans (Rxy : x ≺^* y) (Ryz : y ≺^* z) : x ≺^* z := by
 lemma ReflTransRel.tail (Rxy : x ≺^* y) (Ryz : y ≺ z) : x ≺^* z :=
   reflTransRel_trans Rxy (reflTransRel_of_rel Ryz)
 
-@[simp, grind .] lemma rel_refl [Std.Refl F.Rel'] (x : F.World) : x ≺ x := refl x
+@[simp, grind .] lemma rel_refl [Std.Refl F.Rel] (x : F.World) : x ≺ x := refl x
 
 @[grind →]
-lemma rel_trans [IsTrans κ F.Rel'] (Rxy : x ≺ y) (Ryz : y ≺ z) : x ≺ z :=
-  _root_.trans (r := F.Rel') Rxy Ryz
+lemma rel_trans [IsTrans _ F.Rel] (Rxy : x ≺ y) (Ryz : y ≺ z) : x ≺ z :=
+  _root_.trans (r := F.Rel) Rxy Ryz
 
 end Frame
 
@@ -183,11 +183,17 @@ lemma forces_multidox : x ⊩ □^[n]φ ↔ ∀ y : M.World, (x ≺^[n] y) → y
 
 @[simp, grind =]
 lemma forces_conj : x ⊩ ⋀l ↔ ∀ φ ∈ l, x ⊩ φ := by
-  induction l <;> simp_all [forces_and]
+  induction l using List.induction_with_singleton with
+  | nil => simp
+  | singleton => simp
+  | cons a l hl ih => simp [Formula.conj_cons_of_ne_nil hl, forces_and, ih]
 
 @[simp, grind =]
 lemma forces_disj : x ⊩ ⋁l ↔ ∃ φ ∈ l, x ⊩ φ := by
-  induction l <;> simp_all [forces_or]
+  induction l using List.induction_with_singleton with
+  | nil => simp
+  | singleton => simp
+  | cons a l hl ih => simp [Formula.disj_cons_of_ne_nil hl, forces_or, ih]
 
 /-- Two worlds with the same true variables and the same successors force the same formulas. -/
 lemma forces_iff_of_same_succ (hval : ∀ a, M.Val x a ↔ M.Val y a)
@@ -265,12 +271,12 @@ lemma not_forces_farthest_of_ne {m : ℕ} (hnm : n ≠ m) (h : x ⊩ farthest n)
     exact Frame.exists_relItr_of_le Rxy hlt;
 
 @[grind →]
-lemma forces_box_of_rel [IsTrans κ M.Rel'] {A : Formula α} (h : x ⊩ □A) (Rxy : x ≺ y) :
+lemma forces_box_of_rel [IsTrans _ M.Rel] {A : Formula α} (h : x ⊩ □A) (Rxy : x ≺ y) :
     y ⊩ □A :=
   forces_box.mpr fun _ Ryz => forces_box.mp h _ <| Frame.rel_trans Rxy Ryz
 
 @[grind →]
-lemma forces_dia_of_rel [IsTrans κ M.Rel'] {A : Formula α} (h : y ⊩ ◇A) (Rxy : x ≺ y) :
+lemma forces_dia_of_rel [IsTrans _ M.Rel] {A : Formula α} (h : y ⊩ ◇A) (Rxy : x ≺ y) :
     x ⊩ ◇A := by
   obtain ⟨z, Ryz, hz⟩ := forces_dia.mp h;
   exact forces_dia.mpr ⟨z, Frame.rel_trans Rxy Ryz, hz⟩
@@ -295,11 +301,11 @@ lemma forces_map {φ : Formula α} {f : α → β} :
 
 lemma forces_conj_map {ι : Type*} {l : List ι} {g : ι → Formula β} :
     x ⊩[M] ⋀(l.map g) ↔ ∀ i ∈ l, x ⊩[M] g i := by
-  induction l <;> simp_all [forces_and];
+  simp [forces_conj];
 
 lemma forces_disj_map {ι : Type*} {l : List ι} {g : ι → Formula β} :
     x ⊩[M] ⋁(l.map g) ↔ ∃ i ∈ l, x ⊩[M] g i := by
-  induction l <;> simp_all [forces_or];
+  simp [forces_disj];
 
 end Map
 
@@ -467,7 +473,7 @@ lemma validates_axiomsK : F ⊧ (FormulaSet.axiomsK : FormulaSet α) := by
   rintro φ hA V x;
   cases hA <;> grind;
 
-lemma validates_logicK : F ⊧ (𝐊 : NormalLogic α) := validates_ofSet validates_axiomsK
+lemma validates_logicK : F ⊧ logicK (α := α) := validates_ofSet validates_axiomsK
 
 lemma validates_add (hL : F ⊧ L) (hX : F ⊧ X) : F ⊧ (L + X) := by
   apply validates_ofSet;

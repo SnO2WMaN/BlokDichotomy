@@ -89,7 +89,9 @@ instance : Inter (NormalLogic α) := ⟨inter⟩
 instance : SupSet (NormalLogic α) where
   sSup F := ofSet <| Set.sUnion ((·.carrier) '' F)
 
-instance : HAdd (NormalLogic α) (FormulaSet α) (NormalLogic α) := ⟨fun L X => ofSet (L.carrier ∪ X)⟩
+@[default_instance]
+instance : HAdd (NormalLogic α) (FormulaSet α) (NormalLogic α) :=
+  ⟨fun L X => ofSet (L.carrier ∪ X)⟩
 
 /-- The join of two normal logics. -/
 instance : Add (NormalLogic α) := ⟨fun L₁ L₂ => L₁ + L₂.carrier⟩
@@ -130,24 +132,35 @@ notation "𝐊" => logicK
 
 /-- The normal logic `𝐊𝟒 = 𝐊 ⊕ □A 🡒 □□A`. -/
 abbrev logicK4 : NormalLogic α :=
-  (𝐊 : NormalLogic α) + {□A 🡒 □□A | (A : Formula α)}
+  𝐊 + {□A 🡒 □□A | (A : Formula α)}
 notation "𝐊𝟒" => logicK4
 
 /-- The normal logic `𝐊𝐃 = 𝐊 ⊕ □A 🡒 ◇A`. -/
 abbrev logicKD : NormalLogic α :=
-  (𝐊 : NormalLogic α) + {□A 🡒 ◇A | (A : Formula α)}
+  𝐊 + {□A 🡒 ◇A | (A : Formula α)}
 notation "𝐊𝐃" => logicKD
 
 /-- The normal logic `𝐒𝟒 = 𝐊𝟒 ⊕ □A 🡒 A`. -/
 abbrev logicS4 : NormalLogic α :=
-  (𝐊𝟒 : NormalLogic α) + {□A 🡒 A | (A : Formula α)}
+  𝐊𝟒 + {□A 🡒 A | (A : Formula α)}
 notation "𝐒𝟒" => logicS4
+
+/-- The normal logic `𝐆𝐫𝐳 = 𝐒𝟒 ⊕ □(□(A 🡒 □A) 🡒 A) 🡒 A`.
+- [CZ98, §3.8] -/
+abbrev logicGrz : NormalLogic α :=
+  𝐒𝟒 + {□(□(A 🡒 □A) 🡒 A) 🡒 A | (A : Formula α)}
+notation "𝐆𝐫𝐳" => logicGrz
 
 namespace NormalLogic
 
 /-- `L` is a normal extension of `L₀`. -/
 class IsNExt (L L₀ : NormalLogic α) : Prop where
   logic_le : L₀ ≤ L
+
+/-- The normal extensions of `L₀`, ordered by inclusion. -/
+abbrev _root_.NExt (L₀ : NormalLogic α) : Type v := {L : NormalLogic α // L.IsNExt L₀}
+
+instance (L₀ : NormalLogic α) (L : NExt L₀) : L.1.IsNExt L₀ := L.2
 
 /-- `Γ ⊢[L] φ`: `φ` is derivable from `Γ` using the theorems of `L` and modus ponens, without
 necessitation on hypotheses. -/
@@ -175,6 +188,28 @@ instance [L.IsNExt L₀] : (L + X).IsNExt L₀ :=
 
 lemma IsNExt.trans (L₁ : NormalLogic α) [L.IsNExt L₁] [L₁.IsNExt L₀] : L.IsNExt L₀ :=
   ⟨le_trans (IsNExt.logic_le (L := L₁)) IsNExt.logic_le⟩
+
+lemma logicK_le_logicS4 : logicK (α := α) ≤ 𝐒𝟒 := le_add.trans le_add
+
+lemma logicS4_le_logicGrz : logicS4 (α := α) ≤ 𝐆𝐫𝐳 := le_add
+
+instance [L.IsNExt 𝐒𝟒] : L.IsNExt 𝐊 := ⟨logicK_le_logicS4.trans IsNExt.logic_le⟩
+
+instance [L.IsNExt 𝐆𝐫𝐳] : L.IsNExt 𝐒𝟒 := ⟨logicS4_le_logicGrz.trans IsNExt.logic_le⟩
+
+section
+
+variable [L.IsNExt 𝐒𝟒] {A : Formula α}
+
+lemma axiomT : □A 🡒 A ∈ L := IsNExt.logic_le (L₀ := 𝐒𝟒) <| mem_add ⟨A, rfl⟩
+
+lemma axiomFour : □A 🡒 □□A ∈ L :=
+  IsNExt.logic_le (L₀ := 𝐒𝟒) <| mem_add_of_mem <| mem_add ⟨A, rfl⟩
+
+end
+
+lemma axiomGrz [L.IsNExt 𝐆𝐫𝐳] {A : Formula α} : □(□(A 🡒 □A) 🡒 A) 🡒 A ∈ L :=
+  IsNExt.logic_le (L₀ := 𝐆𝐫𝐳) <| mem_add ⟨A, rfl⟩
 
 /-- `L` contains every formula. -/
 def Inconsistent (L : NormalLogic α) : Prop := ¬L.Consistent
@@ -399,17 +434,25 @@ lemma iff_left : φ 🡘 ψ 🡒 φ 🡒 ψ ∈ L := and_left
 lemma iff_right : φ 🡘 ψ 🡒 ψ 🡒 φ ∈ L := and_right
 
 lemma imp_disj_of_mem (h : φ ∈ l) : φ 🡒 ⋁l ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => simp at h;
-  | cons a l ih =>
+  | singleton a =>
+    obtain rfl := List.mem_singleton.mp h;
+    exact imp_self;
+  | cons a l hl ih =>
+    rw [disj_cons_of_ne_nil hl];
     rcases List.mem_cons.mp h with rfl | h;
     · exact or_left;
     · exact imp_trans (ih h) or_right;
 
 lemma conj_imp_of_mem (h : φ ∈ l) : ⋀l 🡒 φ ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => simp at h;
-  | cons a l ih =>
+  | singleton a =>
+    obtain rfl := List.mem_singleton.mp h;
+    exact imp_self;
+  | cons a l hl ih =>
+    rw [conj_cons_of_ne_nil hl];
     rcases List.mem_cons.mp h with rfl | h;
     · exact and_left;
     · exact imp_trans and_right (ih h);
@@ -486,24 +529,33 @@ lemma or_iff_congr (h₁ : φ 🡘 χ ∈ L) (h₂ : ψ 🡘 θ ∈ L) : φ ⋎ 
   imp_iff_congr (neg_iff_congr h₁) h₂
 
 lemma conj_mem_iff : ⋀l ∈ L ↔ ∀ φ ∈ l, φ ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => simp [verum_mem];
-  | cons a l ih => simp [and_mem_iff, ih];
+  | singleton => simp;
+  | cons a l hl ih => simp [conj_cons_of_ne_nil hl, and_mem_iff, ih];
 
 lemma imp_conj (h : ∀ φ ∈ l, ψ 🡒 φ ∈ L) : ψ 🡒 ⋀l ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact imp_of_mem verum_mem;
-  | cons a l ih => exact imp_and_intro (h a <| by simp) (ih fun φ hA => h φ <| by simp [hA]);
+  | singleton a => exact h a <| by simp;
+  | cons a l hl ih =>
+    rw [conj_cons_of_ne_nil hl];
+    exact imp_and_intro (h a <| by simp) (ih fun φ hA => h φ <| by simp [hA]);
 
 lemma disj_imp (h : ∀ φ ∈ l, φ 🡒 ψ ∈ L) : ⋁l 🡒 ψ ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact efq;
-  | cons a l ih => exact or_imp_intro (h a <| by simp) (ih fun φ hA => h φ <| by simp [hA]);
+  | singleton a => exact h a <| by simp;
+  | cons a l hl ih =>
+    rw [disj_cons_of_ne_nil hl];
+    exact or_imp_intro (h a <| by simp) (ih fun φ hA => h φ <| by simp [hA]);
 
 lemma Derives.conj (h : ∀ φ ∈ l, Γ ⊢[L] φ) : Γ ⊢[L] ⋀l := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact thm verum_mem;
-  | cons φ l ih =>
+  | singleton a => exact h a <| by simp;
+  | cons a l hl ih =>
+    rw [conj_cons_of_ne_nil hl];
     simp only [List.mem_cons, forall_eq_or_imp] at h;
     exact Derives.and_intro h.1 (ih h.2);
 
@@ -553,10 +605,11 @@ lemma box_and : □(φ ⋏ ψ) 🡘 □φ ⋏ □ψ ∈ L := by
       Derives.mdp (of_imp_mem h <| Derives.and_left <| .mem rfl) <| .thm distribute;
 
 lemma box_conj : □(⋀l) 🡘 ⋀(l.map (□·)) ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact iff_of_imp (imp_of_mem verum_mem) (imp_of_mem box_top);
-  | cons φ l ih =>
-    simp only [List.map_cons, conj_cons];
+  | singleton => exact iff_refl;
+  | cons φ l hl ih =>
+    rw [conj_cons_of_ne_nil hl, List.map_cons, conj_cons_of_ne_nil (by simpa using hl)];
     exact iff_trans box_and <| and_iff_congr iff_refl ih;
 
 lemma box_conj_mem_iff : □(⋀l) ∈ L ↔ ∀ φ ∈ l, □φ ∈ L := by
@@ -631,10 +684,11 @@ lemma dia_or : ◇(φ ⋎ ψ) 🡘 ◇φ ⋎ ◇ψ ∈ L := by
   · exact or_imp_intro (dia_mono or_left) (dia_mono or_right);
 
 lemma dia_disj : ◇(⋁l) 🡘 ⋁(l.map (◇·)) ∈ L := by
-  induction l with
+  induction l using List.induction_with_singleton with
   | nil => exact dia_bot;
-  | cons φ l ih =>
-    simp only [List.map_cons, disj_cons];
+  | singleton => exact iff_refl;
+  | cons φ l hl ih =>
+    rw [disj_cons_of_ne_nil hl, List.map_cons, disj_cons_of_ne_nil (by simpa using hl)];
     exact iff_trans dia_or <| or_iff_congr iff_refl ih;
 
 lemma multidia_mono (h : φ 🡒 ψ ∈ L) : ◇^[n]φ 🡒 ◇^[n]ψ ∈ L := by
@@ -646,7 +700,7 @@ end Modal
 
 end Reasoning
 
-lemma diaTop_mem_logicKD : ◇⊤ ∈ (𝐊𝐃 : NormalLogic α) := mem_mdp box_top <| mem_add ⟨⊤, rfl⟩
+lemma diaTop_mem_logicKD : ◇⊤ ∈ logicKD (α := α) := mem_mdp box_top <| mem_add ⟨⊤, rfl⟩
 
 end NormalLogic
 

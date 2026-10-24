@@ -367,7 +367,7 @@ omit [L.IsNExt 𝐊] in
 /-- If `deadEnd ⊭ L`, then `𝐊𝐃 ≤ H.logic`.
 - [CZ98, §10.7]
 -/
-lemma logicKD_le (h : deadEnd ⊭ L) : (𝐊𝐃 : NormalLogic ℕ) ≤ H.logic := by
+lemma logicKD_le (h : deadEnd ⊭ L) : logicKD (α := ℕ) ≤ H.logic := by
   apply add_le IsNExt.logic_le;
   rintro _ ⟨A, rfl⟩ V _ x hx;
   obtain ⟨y, hy⟩ := hH.serial h x;

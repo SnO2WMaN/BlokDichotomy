@@ -74,7 +74,7 @@ end Frame
 - [CZ98, p. 361]
 -/
 noncomputable def unionSplitting (𝔉 : Set JFFrame) : NormalLogic ℕ :=
-  (𝐊 : NormalLogic ℕ) + ((fun F : JFFrame => F.jfFormula.map Fin.val) '' 𝔉)
+  𝐊 + ((fun F : JFFrame => F.jfFormula.map Fin.val) '' 𝔉)
 
 namespace NormalLogic
 
@@ -133,7 +133,7 @@ theorem isSplittingPair_unionSplitting_singleton (F : JFFrame) :
 /-- `F.frame.logic` splits the normal extensions of `𝐊`.
 - [CZ98, Proposition 10.50, Theorem 10.53]
 -/
-lemma splits_logic (F : JFFrame) : Splits (𝐊 : NormalLogic ℕ) F.frame.logic :=
+lemma splits_logic (F : JFFrame) : Splits (logicK (α := ℕ)) F.frame.logic :=
   ⟨_, isSplittingPair_unionSplitting_singleton F⟩
 
 /-- `L = unionSplitting 𝔉` for some set `𝔉` of rooted cycle-free frames.

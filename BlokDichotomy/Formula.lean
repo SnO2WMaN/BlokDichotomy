@@ -3,6 +3,7 @@ module
 public import Mathlib.Data.Finset.Basic
 public import Mathlib.Data.List.Basic
 public import Mathlib.Tactic.DeriveCountable
+public import BlokDichotomy.ToMathlib.Data.List.Induction
 public import BlokDichotomy.ToMathlib.Order.Notation
 
 /-!
@@ -212,28 +213,90 @@ section
 
 variable {α β : Type*} {φ : Formula α} {l l₁ l₂ : List (Formula α)}
 
+/-- The conjunction of a list of formulas; `⊤` for the empty list and the formula itself for a
+singleton. -/
 def conj : List (Formula α) → Formula α
   | [] => ⊤
-  | φ :: l => φ ⋏ conj l
+  | [φ] => φ
+  | φ :: ψ :: l => φ ⋏ conj (ψ :: l)
 prefix:75 "⋀" => Formula.conj
 
+/-- The disjunction of a list of formulas; `⊥` for the empty list and the formula itself for a
+singleton. -/
 def disj : List (Formula α) → Formula α
   | [] => ⊥
-  | φ :: l => φ ⋎ disj l
+  | [φ] => φ
+  | φ :: ψ :: l => φ ⋎ disj (ψ :: l)
 prefix:75 "⋁" => Formula.disj
 
 @[simp, grind =] lemma conj_nil : ⋀([] : List (Formula α)) = ⊤ := rfl
-@[simp, grind =] lemma conj_cons : ⋀(φ :: l) = φ ⋏ ⋀l := rfl
+@[simp, grind =] lemma conj_singleton : ⋀[φ] = φ := rfl
+@[simp, grind =] lemma conj_cons_cons {ψ : Formula α} : ⋀(φ :: ψ :: l) = φ ⋏ ⋀(ψ :: l) := rfl
 @[simp, grind =] lemma disj_nil : ⋁([] : List (Formula α)) = ⊥ := rfl
-@[simp, grind =] lemma disj_cons : ⋁(φ :: l) = φ ⋎ ⋁l := rfl
+@[simp, grind =] lemma disj_singleton : ⋁[φ] = φ := rfl
+@[simp, grind =] lemma disj_cons_cons {ψ : Formula α} : ⋁(φ :: ψ :: l) = φ ⋎ ⋁(ψ :: l) := rfl
+
+lemma conj_cons_of_ne_nil (h : l ≠ []) : ⋀(φ :: l) = φ ⋏ ⋀l := by
+  obtain ⟨ψ, l, rfl⟩ := List.exists_cons_of_ne_nil h;
+  exact conj_cons_cons
+
+lemma disj_cons_of_ne_nil (h : l ≠ []) : ⋁(φ :: l) = φ ⋎ ⋁l := by
+  obtain ⟨ψ, l, rfl⟩ := List.exists_cons_of_ne_nil h;
+  exact disj_cons_cons
 
 @[simp, grind =]
 lemma subst_conj {s : Substitution α β} : (⋀l)⟦s⟧ = ⋀(l.map (·⟦s⟧)) := by
-  induction l <;> simp_all
+  induction l using List.induction_with_singleton with
+  | nil => simp
+  | singleton => simp
+  | cons a l hl ih =>
+    simp [conj_cons_of_ne_nil hl, conj_cons_of_ne_nil (l := l.map _) (by simpa using hl), ih]
 
 @[simp, grind =]
 lemma subst_disj {s : Substitution α β} : (⋁l)⟦s⟧ = ⋁(l.map (·⟦s⟧)) := by
-  induction l <;> simp_all
+  induction l using List.induction_with_singleton with
+  | nil => simp
+  | singleton => simp
+  | cons a l hl ih =>
+    simp [disj_cons_of_ne_nil hl, disj_cons_of_ne_nil (l := l.map _) (by simpa using hl), ih]
+
+end
+
+section
+
+variable {α β : Type*} {A B : Formula α} {l : List (Formula α)}
+
+@[simp] lemma depth_neg : (∼A).depth = A.depth := by simp
+@[simp] lemma depth_and : (A ⋏ B).depth = max A.depth B.depth := by simp
+@[simp] lemma depth_or : (A ⋎ B).depth = max A.depth B.depth := by simp
+
+lemma depth_conj_eq_zero (h : ∀ A ∈ l, A.depth = 0) : (⋀l).depth = 0 := by
+  induction l using List.induction_with_singleton with
+  | nil => simp [depth, Formula.verum_eq];
+  | singleton A => simpa using h A List.mem_cons_self;
+  | cons A l hl ih =>
+    rw [conj_cons_of_ne_nil hl, depth_and, h A List.mem_cons_self,
+      ih fun B hB => h B <| .tail _ hB];
+    simp;
+
+lemma depth_disj_eq_zero (h : ∀ A ∈ l, A.depth = 0) : (⋁l).depth = 0 := by
+  induction l using List.induction_with_singleton with
+  | nil => simp;
+  | singleton A => simpa using h A List.mem_cons_self;
+  | cons A l hl ih =>
+    rw [disj_cons_of_ne_nil hl, depth_or, h A List.mem_cons_self,
+      ih fun B hB => h B <| .tail _ hB];
+    simp;
+
+lemma subst_congr_of_atoms [DecidableEq α] {s₁ s₂ : Substitution α β}
+    (h : ∀ a ∈ A.atoms, s₁ a = s₂ a) : A⟦s₁⟧ = A⟦s₂⟧ := by
+  induction A with
+  | atom a => exact h a <| by simp;
+  | falsum => rfl;
+  | imp A B ihA ihB =>
+    simp only [subst_imp];
+    rw [ihA fun a ha => h a <| by simp [ha], ihB fun a ha => h a <| by simp [ha]];
+  | dia A ih => simp only [subst_dia]; rw [ih h];
 
 end
 
@@ -269,12 +332,10 @@ lemma map_multibox : (□^[n]φ).map f = □^[n](φ.map f) := by
   induction n <;> simp_all
 
 @[simp, grind =]
-lemma map_conj : (⋀l).map f = ⋀(l.map (·.map f)) := by
-  induction l <;> simp_all
+lemma map_conj : (⋀l).map f = ⋀(l.map (·.map f)) := subst_conj
 
 @[simp, grind =]
-lemma map_disj : (⋁l).map f = ⋁(l.map (·.map f)) := by
-  induction l <;> simp_all
+lemma map_disj : (⋁l).map f = ⋁(l.map (·.map f)) := subst_disj
 
 @[simp]
 lemma map_id : φ.map id = φ := subst_id
@@ -328,6 +389,25 @@ lemma mem_subformulas_imp_right (h : χ ∈ ψ.subformulas) : χ ∈ (φ 🡒 ψ
 
 @[grind <=]
 lemma mem_subformulas_dia (h : ψ ∈ φ.subformulas) : ψ ∈ (◇φ).subformulas := by grind;
+
+lemma subformulas_subset_of_mem (h : χ ∈ φ.subformulas) : χ.subformulas ⊆ φ.subformulas := by
+  induction φ with
+  | atom a => grind;
+  | falsum =>
+    simp only [subformulas, Finset.mem_singleton] at h;
+    subst h;
+    exact Finset.Subset.refl _
+  | imp φ₁ φ₂ ih₁ ih₂ => grind;
+  | dia φ ih => grind;
+
+lemma mem_subformulas_of_imp_left (h : (φ 🡒 ψ) ∈ χ.subformulas) : φ ∈ χ.subformulas :=
+  subformulas_subset_of_mem h <| mem_subformulas_imp_left mem_subformulas_self
+
+lemma mem_subformulas_of_imp_right (h : (φ 🡒 ψ) ∈ χ.subformulas) : ψ ∈ χ.subformulas :=
+  subformulas_subset_of_mem h <| mem_subformulas_imp_right mem_subformulas_self
+
+lemma mem_subformulas_of_dia (h : ◇φ ∈ χ.subformulas) : φ ∈ χ.subformulas :=
+  subformulas_subset_of_mem h <| mem_subformulas_dia mem_subformulas_self
 
 /-- For every `φ : Formula ℕ` there is `m` such that, for all `m' ≥ m`, `φ` is the renaming along
 `Fin.val` of a formula over `Fin m'`. -/

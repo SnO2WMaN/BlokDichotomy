@@ -75,7 +75,7 @@ lemma Validates.range (f : ModalAlgebraHom A B) (h : A ⊧ φ) : f.range ⊧ φ 
   h.of_surjective f.rangeRestrict_surjective
 
 lemma logic_le_of_surjective {f : ModalAlgebraHom A B} (hf : Function.Surjective f) :
-    (logic A : NormalLogic α) ≤ logic B := fun _ => Validates.of_surjective hf
+    logic (α := α) A ≤ logic B := fun _ => Validates.of_surjective hf
 
 end ModalAlgebra
 

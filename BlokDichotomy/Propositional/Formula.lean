@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Tactic.DeriveCountable
 public import Mathlib.Tactic.ScopedNS
+public import BlokDichotomy.ToMathlib.Data.List.Induction
 
 /-!
 # Formulas of intuitionistic propositional logic
@@ -115,6 +116,41 @@ lemma subst_subst {t : Substitution α β} {s : Substitution β γ} :
 
 @[simp, grind =]
 lemma subst_id : A⟦(#·)⟧ = A := by induction A <;> grind
+
+end
+
+section
+
+variable {α : Type u} {A B : Formula α} {l : List (Formula α)}
+
+/-- The conjunction of a list of formulas; `⊤` for the empty list and the formula itself for a
+singleton. -/
+def conj : List (Formula α) → Formula α
+  | [] => ⊤
+  | [A] => A
+  | A :: B :: l => A ⋏ conj (B :: l)
+
+/-- The disjunction of a list of formulas; `⊥` for the empty list and the formula itself for a
+singleton. -/
+def disj : List (Formula α) → Formula α
+  | [] => ⊥
+  | [A] => A
+  | A :: B :: l => A ⋎ disj (B :: l)
+
+@[simp, grind =] lemma conj_nil : conj ([] : List (Formula α)) = ⊤ := rfl
+@[simp, grind =] lemma conj_singleton : conj [A] = A := rfl
+@[simp, grind =] lemma conj_cons_cons : conj (A :: B :: l) = A ⋏ conj (B :: l) := rfl
+@[simp, grind =] lemma disj_nil : disj ([] : List (Formula α)) = ⊥ := rfl
+@[simp, grind =] lemma disj_singleton : disj [A] = A := rfl
+@[simp, grind =] lemma disj_cons_cons : disj (A :: B :: l) = A ⋎ disj (B :: l) := rfl
+
+lemma conj_cons_of_ne_nil (h : l ≠ []) : conj (A :: l) = A ⋏ conj l := by
+  obtain ⟨B, l, rfl⟩ := List.exists_cons_of_ne_nil h;
+  exact conj_cons_cons
+
+lemma disj_cons_of_ne_nil (h : l ≠ []) : disj (A :: l) = A ⋎ disj l := by
+  obtain ⟨B, l, rfl⟩ := List.exists_cons_of_ne_nil h;
+  exact disj_cons_cons
 
 end
 
