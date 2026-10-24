@@ -25,21 +25,21 @@ namespace Frame
 
 open Model.World
 
-lemma validates_T_of_refl [Std.Refl F.Rel'] : F ⊧ □A 🡒 A := by
+lemma validates_T_of_refl [Std.Refl F.Rel] : F ⊧ □A 🡒 A := by
   rintro V x hx;
   exact forces_box.mp hx x <| refl x
 
-lemma validates_four_of_trans [IsTrans _ F.Rel'] {A : Formula α} : F ⊧ □A 🡒 □□A := by
+lemma validates_four_of_trans [IsTrans _ F.Rel] {A : Formula α} : F ⊧ □A 🡒 □□A := by
   rintro V x hx;
   exact forces_box.mpr fun y Rxy => forces_box.mpr fun z Ryz =>
-    forces_box.mp hx z <| _root_.trans (r := F.Rel') Rxy Ryz
+    forces_box.mp hx z <| _root_.trans (r := F.Rel) Rxy Ryz
 
 /-- - [CZ98, Proposition 3.30] -/
-lemma refl_of_validates_T (h : F ⊧ (□#a 🡒 #a)) : Std.Refl F.Rel' where
+lemma refl_of_validates_T (h : F ⊧ (□#a 🡒 #a)) : Std.Refl F.Rel where
   refl x := h (fun y _ => x ≺ y) x <| forces_box.mpr fun _ Rxy => Rxy
 
 /-- - [CZ98, Proposition 3.31] -/
-lemma trans_of_validates_four (h : F ⊧ (□#a 🡒 □□#a)) : IsTrans _ F.Rel' where
+lemma trans_of_validates_four (h : F ⊧ (□#a 🡒 □□#a)) : IsTrans _ F.Rel where
   trans x y z Rxy Ryz :=
     forces_box.mp (forces_box.mp (h (fun w _ => x ≺ w) x <|
       forces_box.mpr fun _ Rxw => Rxw) y Rxy) z Ryz
@@ -56,7 +56,7 @@ lemma validates_logicS4 [Std.Refl F.Rel] [IsTrans _ F.Rel] : F ⊧ logicS4 (α :
 /-- - [CZ98, Proposition 3.30]
 - [CZ98, Proposition 3.31] -/
 lemma validates_logicS4_iff [Inhabited α] :
-    F ⊧ logicS4 (α := α) ↔ Std.Refl F.Rel' ∧ IsTrans _ F.Rel' := by
+    F ⊧ logicS4 (α := α) ↔ Std.Refl F.Rel ∧ IsTrans _ F.Rel := by
   constructor;
   · intro h;
     constructor;

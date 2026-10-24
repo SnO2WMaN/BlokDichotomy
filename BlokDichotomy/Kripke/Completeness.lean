@@ -258,8 +258,8 @@ lemma consistent_iff_nonempty_maximalConsistentSet :
 `◇φ ∈ x` for every `φ ∈ y`.
 - [CZ98, §5.1]
 -/
-def canonicalFrame (L : NormalLogic α) : Frame L.MaximalConsistentSet where
-  Rel' x y := ∀ φ ∈ y, ◇φ ∈ x
+def canonicalFrame (L : NormalLogic α) : Frame L.MaximalConsistentSet :=
+  ⟨fun x y => ∀ φ ∈ y, ◇φ ∈ x⟩
 
 namespace canonicalFrame
 

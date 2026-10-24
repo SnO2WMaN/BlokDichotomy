@@ -236,7 +236,7 @@ lemma forces_ψ_subst_shift :
 
 section
 
-variable [IsTrans _ M.Rel']
+variable [IsTrans _ M.Rel]
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
@@ -285,7 +285,7 @@ lemma chain_step (hG : θ ∈ M.logic) (hx : x ⊩ ε⟦shift m⟧) :
   exact ⟨y, Rxy, hstrict,
     forces_ε_subst_shift.mpr ⟨forces_δ_of_rel hD Rxy hy01, hyA', forces_ι_succ hK Rxy⟩⟩
 
-variable [Std.Refl M.Rel']
+variable [Std.Refl M.Rel]
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
@@ -324,9 +324,9 @@ lemma forces_chainVal_7_iff (hinj : Function.Injective u) (n : ℕ) :
   · rintro ⟨i, rfl⟩;
     use i;
 
-lemma chainVal_forces_neg_χ [IsTrans _ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
+lemma chainVal_forces_neg_χ [IsTrans _ F.Rel] (hR : ∀ m, u m ≺ u (m + 1))
     (hinj : Function.Injective u) : u 0 ⊩[⟨F, chainVal u⟩] ∼χ := by
-  have hlt : ∀ {i j}, i < j → u i ≺ u j := fun h => Nat.rel_of_forall_rel_succ_of_lt F.Rel' hR h;
+  have hlt : ∀ {i j}, i < j → u i ≺ u j := fun h => Nat.rel_of_forall_rel_succ_of_lt F.Rel hR h;
   unfold χ;
   rw [forces_neg, not_forces_neg, forces_and];
   and_intros;
@@ -371,8 +371,7 @@ abbrev logicS4Fine : NormalLogic ℕ := 𝐒𝟒 + ({θ, χ} : FormulaSet ℕ)
 `(3, m) = d_m`.
 
 - [Fin74a, p. 25] -/
-abbrev fineFrame : Frame (Fin 4 × ℕ) where
-  Rel'
+abbrev fineFrame : Frame (Fin 4 × ℕ) := ⟨fun
   | (1, m), (1, k) => k ≤ m
   | (1, m), (2, k) => k + 2 ≤ m
   | (2, m), (2, k) => k ≤ m
@@ -384,7 +383,7 @@ abbrev fineFrame : Frame (Fin 4 × ℕ) where
   | (3, n), (0, m) => n ≤ m
   | (3, _), (1, _) => True
   | (3, _), (2, _) => True
-  | _, _ => False
+  | _, _ => False⟩
 
 namespace fineFrame
 
@@ -431,11 +430,11 @@ theorem casesOn {P : fineFrame.World → Prop} (x : fineFrame.World) (a : ∀ m,
 @[simp] lemma rel_d_c : d n ≺ c k := trivial
 @[simp] lemma rel_d_d : (d n ≺ d k) ↔ n ≤ k := Iff.rfl
 
-instance : Std.Refl fineFrame.Rel' where
+instance : Std.Refl fineFrame.Rel where
   refl w := by
     cases w using casesOn <;> simp
 
-instance : IsTrans fineFrame.World fineFrame.Rel' where
+instance : IsTrans fineFrame.World fineFrame.Rel where
   trans x y z hxy hyz := by
     cases x using casesOn <;> cases y using casesOn <;> cases z using casesOn <;> simp_all <;> omega
 

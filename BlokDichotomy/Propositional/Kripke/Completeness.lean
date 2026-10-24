@@ -120,7 +120,7 @@ theorem exists_primeTheory [L.IsExt 𝐈𝐧𝐭] (h : Γ ⊬[L] A) :
 and `#a` is true at `x` iff `#a ∈ x`.
 - [CZ98, §5.1] -/
 def canonicalModel (L : Logic α) : Model L.PrimeTheory α where
-  Rel' x y := x.carrier ⊆ y.carrier
+  toFrame := ⟨fun x y => x.carrier ⊆ y.carrier⟩
   Val x a := (#a : Formula α) ∈ x
   hereditary Rxy _ h := Rxy h
 
