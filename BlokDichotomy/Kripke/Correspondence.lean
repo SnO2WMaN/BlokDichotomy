@@ -1,17 +1,18 @@
 module
 
-public import BlokDichotomy.Kripke.Basic
+public import BlokDichotomy.Kripke.Completeness
 
 /-!
 # Frame correspondence for `T` and `4`
 
 A frame validates `T` iff it is reflexive, and `4` iff it is transitive. Hence the frames of `𝐒𝟒`
-are exactly the reflexive transitive ones.
+are exactly the reflexive transitive ones, and `𝐒𝟒` is complete for them.
 
 ## References
 
 - [CZ98, Proposition 3.30]
 - [CZ98, Proposition 3.31]
+- [CZ98, Corollary 5.18]
 -/
 
 @[expose] public section
@@ -66,5 +67,38 @@ lemma validates_logicS4_iff [Inhabited α] :
     exact validates_logicS4
 
 end Frame
+
+namespace NormalLogic
+
+variable {α : Type v} {A : Formula α}
+
+namespace canonicalModel
+
+instance : IsPreorder (𝐒𝟒.MaximalConsistentSet (α := α)) 𝐒𝟒.canonicalModel.Rel where
+  refl x := by
+    rw [rel_iff_box];
+    intro A hA;
+    exact x.mem_of_imp_mem (NormalLogic.mem_add ⟨A, rfl⟩) hA;
+  trans x y z Rxy Ryz := by
+    rw [rel_iff_box] at Rxy Ryz ⊢;
+    intro A hA;
+    have h₁ : □□A ∈ x :=
+      x.mem_of_imp_mem (NormalLogic.mem_add_of_mem <| NormalLogic.mem_add ⟨A, rfl⟩) hA;
+    exact Ryz A <| Rxy _ h₁;
+
+end canonicalModel
+
+/-- `𝐒𝟒` is sound and complete for the reflexive transitive frames.
+- [CZ98, Corollary 5.18] -/
+theorem mem_logicS4_iff :
+    A ∈ 𝐒𝟒 ↔ ∀ {κ : Type v} (F : Frame κ) [IsPreorder κ F.Rel], F ⊧ A := by
+  constructor;
+  · intro h κ F _;
+    exact Frame.validates_logicS4 _ h;
+  · intro h;
+    apply NormalLogic.mem_iff_canonicalModel_validates.mpr;
+    exact h 𝐒𝟒.canonicalModel.toFrame _;
+
+end NormalLogic
 
 end
