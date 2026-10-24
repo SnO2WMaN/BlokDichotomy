@@ -28,7 +28,7 @@ open Model.World
 `{x | B ∈ x}`.
 - [CZ98, §8.4] -/
 def canonicalGeneralFrame : GeneralFrame L.MaximalConsistentSet where
-  toFrame := L.canonicalModel.toFrame
+  toFrame := L.canonicalFrame
   Adm := Set.range fun B : Formula α => {x : L.MaximalConsistentSet | B ∈ x}
   univ_mem := by
     use ⊤;
@@ -50,7 +50,8 @@ def canonicalGeneralFrame : GeneralFrame L.MaximalConsistentSet where
     ext x;
     simp only [Frame.diaSet, Set.mem_ofPred_eq];
     rw [← canonicalModel.truthlemma, forces_dia];
-    simp [canonicalModel.truthlemma]
+    simp only [canonicalModel.truthlemma];
+    exact Iff.rfl;
 
 namespace canonicalGeneralFrame
 
@@ -96,7 +97,7 @@ lemma validatesLogic_self : L.canonicalGeneralFrame ⊧ L :=
   fun _ hA => validates_iff.mpr hA
 
 instance [L.IsNExt 𝐒𝟒] : IsPreorder L.MaximalConsistentSet L.canonicalGeneralFrame.Rel :=
-  inferInstanceAs (IsPreorder L.MaximalConsistentSet L.canonicalModel.Rel)
+  inferInstanceAs (IsPreorder L.canonicalFrame.World L.canonicalFrame.Rel)
 
 lemma boxSet_truthSet (B : Formula α) :
     L.canonicalGeneralFrame.toFrame.boxSet {x | B ∈ x} = {x | □B ∈ x} := by
