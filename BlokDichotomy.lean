@@ -21,4 +21,9 @@ public import BlokDichotomy.Logic.Fine
 public import BlokDichotomy.Logic.Restrict
 public import BlokDichotomy.Logic.Splitting
 public import BlokDichotomy.Logic.Uncountable
+public import BlokDichotomy.Propositional.Formula
+public import BlokDichotomy.Propositional.Kripke.Basic
+public import BlokDichotomy.Propositional.Kripke.Completeness
+public import BlokDichotomy.Propositional.Logic.Basic
+public import BlokDichotomy.Propositional.ModalCompanion
 public import BlokDichotomy.ToMathlib.Order.Monotone.Basic
