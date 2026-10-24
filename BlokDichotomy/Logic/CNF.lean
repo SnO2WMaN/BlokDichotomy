@@ -7,8 +7,7 @@ public import BlokDichotomy.Logic.Restrict
 # Conjunctive normal forms
 
 Every `◇`-free formula is equivalent in `𝐊`, under every substitution, to a conjunction of
-clauses over a finite set of variables containing its atoms. The clauses are read off a truth
-table.
+clauses over a finite set of variables containing its atoms.
 
 This is a folklore fact of classical propositional logic.
 -/

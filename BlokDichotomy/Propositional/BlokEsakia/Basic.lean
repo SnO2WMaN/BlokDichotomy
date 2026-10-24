@@ -1,6 +1,6 @@
 module
 
-public import BlokDichotomy.Propositional.GeneralFrame.Canonical
+public import BlokDichotomy.Propositional.GeneralFrame.Basic
 public import BlokDichotomy.Propositional.GeneralFrame.Companion
 public import BlokDichotomy.Propositional.ModalCompanion
 
