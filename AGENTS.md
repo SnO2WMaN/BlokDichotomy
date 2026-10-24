@@ -41,7 +41,7 @@ This is a single-maintainer repository, so the process is lighter than a team pr
   `public import`, and the module docstring precedes `@[expose] public section`.
 - `lake build BlokDichotomy --wfail` must be green — no errors, no warnings.
 - **Never write `sorry` or `axiom`.** A proof that is not finished stays out of the pull request.
-  `lake check` rejects both: it checks that `BlokDichotomy.Modal.Blok` proves the statement in `Challenge.lean` with only the standard axioms.
+  `lake check` rejects both: it checks that `BlokDichotomy.Blok` proves the statement in `Challenge.lean` with only the standard axioms.
 - **Follow Foundation's contribution guidelines**, copied verbatim into this repository as
   [`docs/index.md`](docs/index.md), [`docs/style.md`](docs/style.md), and
   [`docs/refactoring.md`](docs/refactoring.md). [`docs/conventions.md`](docs/conventions.md)
