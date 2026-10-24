@@ -75,23 +75,24 @@ lemma toModal_upAdm : H.toModal.upAdm = H.Adm := by
 
 end GeneralFrame
 
-namespace _root_.GeneralFrame
+section
 
 variable {G : _root_.GeneralFrame κ} [IsPreorder κ G.Rel]
 
 /-- `σ ρ G` has fewer admissible sets than `G`. -/
-lemma toIntuitionistic_toModal_adm_subset : G.toIntuitionistic.toModal.Adm ⊆ G.Adm := by
+lemma _root_.GeneralFrame.toIntuitionistic_toModal_adm_subset :
+    G.toIntuitionistic.toModal.Adm ⊆ G.Adm := by
   intro X hX;
   have h : BooleanSubalgebra.closure G.toIntuitionistic.Adm ≤ G.admSubalgebra :=
     BooleanSubalgebra.closure_le.mpr _root_.GeneralFrame.upAdm_subset_adm;
   exact h hX
 
-lemma logic_le_toIntuitionistic_toModal :
+lemma _root_.GeneralFrame.logic_le_toIntuitionistic_toModal :
     (G.logic : NormalLogic α) ≤ G.toIntuitionistic.toModal.logic := by
   intro A hA V hV;
-  exact hA V fun a => toIntuitionistic_toModal_adm_subset (hV a)
+  exact hA V fun a => _root_.GeneralFrame.toIntuitionistic_toModal_adm_subset (hV a)
 
-end _root_.GeneralFrame
+end
 
 /-- The valuation `V` has the same truth sets as `□#a` in `⟨F, V⟩` when `V` is hereditary. -/
 private lemma iff_forces_box_of_hereditary {F : Frame κ} [Std.Refl F.Rel] {V : κ → α → Prop}
@@ -130,13 +131,14 @@ theorem toModal_validates_gödelTranslate_iff : H.toModal ⊧ Aᵍ ↔ H ⊧ A :
 
 end GeneralFrame
 
-namespace _root_.GeneralFrame
+section
 
 variable {G : _root_.GeneralFrame κ} [IsPreorder κ G.Rel] {A : Formula α}
 
 /-- A modal formula `Aᵍ` is valid in `G` iff `A` is valid in `ρ G`.
 - [CZ98, Lemma 8.28] -/
-theorem validates_gödelTranslate_iff_toIntuitionistic : G ⊧ Aᵍ ↔ G.toIntuitionistic ⊧ A := by
+theorem _root_.GeneralFrame.validates_gödelTranslate_iff_toIntuitionistic :
+    G ⊧ Aᵍ ↔ G.toIntuitionistic ⊧ A := by
   constructor;
   · intro h W hW x;
     have hW' : G.IsAdmissible W := fun a => _root_.GeneralFrame.upAdm_subset_adm (hW a);
@@ -155,7 +157,7 @@ theorem validates_gödelTranslate_iff_toIntuitionistic : G ⊧ Aᵍ ↔ G.toIntu
     exact (Model.forces_gödelTranslate_iff_of_val (F := G.toFrame) (V := V)
       (hW := hW.hereditary) (fun _ _ => Iff.rfl)).mp (h _ hW x)
 
-end _root_.GeneralFrame
+end
 
 namespace GeneralFrame
 

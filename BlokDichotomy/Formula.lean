@@ -376,6 +376,25 @@ lemma mem_subformulas_imp_right (h : χ ∈ ψ.subformulas) : χ ∈ (φ 🡒 ψ
 @[grind <=]
 lemma mem_subformulas_dia (h : ψ ∈ φ.subformulas) : ψ ∈ (◇φ).subformulas := by grind;
 
+lemma subformulas_subset_of_mem (h : χ ∈ φ.subformulas) : χ.subformulas ⊆ φ.subformulas := by
+  induction φ with
+  | atom a => grind;
+  | falsum =>
+    simp only [subformulas, Finset.mem_singleton] at h;
+    subst h;
+    exact Finset.Subset.refl _
+  | imp φ₁ φ₂ ih₁ ih₂ => grind;
+  | dia φ ih => grind;
+
+lemma mem_subformulas_of_imp_left (h : (φ 🡒 ψ) ∈ χ.subformulas) : φ ∈ χ.subformulas :=
+  subformulas_subset_of_mem h <| mem_subformulas_imp_left mem_subformulas_self
+
+lemma mem_subformulas_of_imp_right (h : (φ 🡒 ψ) ∈ χ.subformulas) : ψ ∈ χ.subformulas :=
+  subformulas_subset_of_mem h <| mem_subformulas_imp_right mem_subformulas_self
+
+lemma mem_subformulas_of_dia (h : ◇φ ∈ χ.subformulas) : φ ∈ χ.subformulas :=
+  subformulas_subset_of_mem h <| mem_subformulas_dia mem_subformulas_self
+
 /-- For every `φ : Formula ℕ` there is `m` such that, for all `m' ≥ m`, `φ` is the renaming along
 `Fin.val` of a formula over `Fin m'`. -/
 lemma exists_forall_ge_map_finVal (φ : Formula ℕ) :

@@ -32,7 +32,10 @@ public import BlokDichotomy.Logic.Restrict
 public import BlokDichotomy.Logic.Splitting
 public import BlokDichotomy.Logic.Uncountable
 public import BlokDichotomy.Propositional.BlokEsakia.Injective
+public import BlokDichotomy.Propositional.BlokEsakia.MainLemma
 public import BlokDichotomy.Propositional.BlokEsakia.Maps
+public import BlokDichotomy.Propositional.BlokEsakia.Passive
+public import BlokDichotomy.Propositional.BlokEsakia.Quotient
 public import BlokDichotomy.Propositional.Formula
 public import BlokDichotomy.Propositional.GeneralFrame.Basic
 public import BlokDichotomy.Propositional.GeneralFrame.Canonical
@@ -41,5 +44,6 @@ public import BlokDichotomy.Propositional.Kripke.Basic
 public import BlokDichotomy.Propositional.Kripke.Completeness
 public import BlokDichotomy.Propositional.Logic.Basic
 public import BlokDichotomy.Propositional.ModalCompanion
+public import BlokDichotomy.ToMathlib.Order.BooleanSubalgebra
 public import BlokDichotomy.ToMathlib.Order.Monotone.Basic
 public import BlokDichotomy.ToMathlib.Order.Notation
