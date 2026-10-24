@@ -75,8 +75,8 @@ private lemma box_subst_gödelTranslate_iff_conj [DecidableEq (Formula α)]
 
 /-- Boxing a `◇`-free combination of translations gives again such a combination. -/
 theorem exists_box_subst_gödelTranslate_iff (γ : _root_.Formula (Formula α)) (hγ : γ.depth = 0) :
-    ∃ γ' : _root_.Formula (Formula α), γ'.depth = 0 ∧
-      □(γ⟦(·ᵍ)⟧) 🡘 γ'⟦(·ᵍ)⟧ ∈ (𝐊 : NormalLogic α) := by
+    ∃ δ : _root_.Formula (Formula α), δ.depth = 0 ∧
+      □(γ⟦(·ᵍ)⟧) 🡘 δ⟦(·ᵍ)⟧ ∈ (𝐊 : NormalLogic α) := by
   classical
   use ⋀ ((Formula.refutingSets γ.atoms γ).toList.map fun I =>
     #(Formula.conj I.toList 🡒 Formula.disj (γ.atoms \ I).toList));

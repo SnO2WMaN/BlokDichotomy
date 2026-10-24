@@ -34,9 +34,8 @@ lemma exists_of_mem_toIntuitionistic_toModal_adm {L₂ : NormalLogic α} [L₂.I
     {X : Set L₂.MaximalConsistentSet}
     (hX : X ∈ L₂.canonicalGeneralFrame.toIntuitionistic.toModal.Adm) :
     ∃ β : _root_.Formula (_root_.Formula α), β.depth = 0 ∧ X = {x | β⟦(□·)⟧ ∈ x} := by
-  have hX' : X ∈ BooleanSubalgebra.closure L₂.canonicalGeneralFrame.toIntuitionistic.Adm := hX
-  clear hX
-  induction hX' using BooleanSubalgebra.closure_bot_sup_induction with
+  replace hX : X ∈ BooleanSubalgebra.closure L₂.canonicalGeneralFrame.toIntuitionistic.Adm := hX
+  induction hX using BooleanSubalgebra.closure_bot_sup_induction with
   | mem Y hY =>
     obtain ⟨B, rfl⟩ := NormalLogic.canonicalGeneralFrame.mem_upAdm_iff.mp hY;
     exact ⟨#B, rfl, rfl⟩;

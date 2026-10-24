@@ -20,7 +20,7 @@ universe v
 
 namespace Propositional
 
-variable {α : Type v} {L L' : NormalLogic α} {A B : Formula α}
+variable {α : Type v} {L : NormalLogic α} {A B : Formula α}
 
 section
 
@@ -68,22 +68,22 @@ def _root_.NormalLogic.siFragment (L : NormalLogic α) [L.IsNExt 𝐒𝟒] : Log
 
 section
 
-variable [L'.IsNExt 𝐒𝟒]
+variable [L.IsNExt 𝐒𝟒]
 
-@[simp] lemma _root_.NormalLogic.mem_siFragment : A ∈ L'.siFragment ↔ Aᵍ ∈ L' := Iff.rfl
+@[simp] lemma _root_.NormalLogic.mem_siFragment : A ∈ L.siFragment ↔ Aᵍ ∈ L := Iff.rfl
 
-instance : L'.siFragment.IsExt 𝐈𝐧𝐭 :=
+instance : L.siFragment.IsExt 𝐈𝐧𝐭 :=
   ⟨fun _ hA => NormalLogic.IsNExt.logic_le <| gödelTranslate_mem_logicS4_iff.mp hA⟩
 
 end
 
-lemma _root_.NormalLogic.siFragment_mono [L.IsNExt 𝐒𝟒] [L'.IsNExt 𝐒𝟒] (h : L ≤ L') :
-    L.siFragment ≤ L'.siFragment :=
+lemma _root_.NormalLogic.siFragment_mono {L₁ L₂ : NormalLogic α} [L₁.IsNExt 𝐒𝟒] [L₂.IsNExt 𝐒𝟒]
+    (h : L₁ ≤ L₂) : L₁.siFragment ≤ L₂.siFragment :=
   fun _ hA => h hA
 
 namespace Logic
 
-variable {L L₁ L₂ : Logic α}
+variable {L L₁ L₂ : Logic α} {L' : NormalLogic α}
 
 /-- `𝐆𝐫𝐳 ⊕ Lᵍ`, the least normal extension of `𝐆𝐫𝐳` containing the Gödel translations of the
 formulas of `L`; it is written `σ L` in [CZ98, §9.6].

@@ -259,8 +259,8 @@ lemma depth_disj_eq_zero (h : ∀ A ∈ l, A.depth = 0) : (⋁l).depth = 0 := by
     simp only [disj_cons, depth_or, h A List.mem_cons_self, ih fun B hB => h B <| .tail _ hB];
     simp;
 
-lemma subst_congr_of_atoms [DecidableEq α] {s s' : Substitution α β}
-    (h : ∀ a ∈ A.atoms, s a = s' a) : A⟦s⟧ = A⟦s'⟧ := by
+lemma subst_congr_of_atoms [DecidableEq α] {s₁ s₂ : Substitution α β}
+    (h : ∀ a ∈ A.atoms, s₁ a = s₂ a) : A⟦s₁⟧ = A⟦s₂⟧ := by
   induction A with
   | atom a => exact h a <| by simp;
   | falsum => rfl;

@@ -128,7 +128,7 @@ lemma Frame.diaSet_mem_closure (hsub : IsSublattice 𝒜)
 /-- An upset in the Boolean closure of a family of upsets belongs to the family. -/
 lemma Frame.mem_of_isUpset_of_mem_closure [IsPreorder κ F.Rel] (hsub : IsSublattice 𝒜)
     (hhimp : ∀ {Y Z : Set F.World}, Y ∈ 𝒜 → Z ∈ 𝒜 → F.himpSet Y Z ∈ 𝒜) (hempty : ∅ ∈ 𝒜)
-    (hX : X ∈ closure 𝒜) (hX' : F.IsUpset X) : X ∈ 𝒜 := by
+    (hX : X ∈ closure 𝒜) (hup : F.IsUpset X) : X ∈ 𝒜 := by
   have h₁ : ∀ Y ∈ 𝒜, ∀ Z ∈ 𝒜, F.boxSet (Y \ Z)ᶜ ∈ 𝒜 := by
     intro Y hY Z hZ;
     have h : F.boxSet (Y \ Z)ᶜ = F.himpSet Y Z := by
@@ -143,7 +143,7 @@ lemma Frame.mem_of_isUpset_of_mem_closure [IsPreorder κ F.Rel] (hsub : IsSublat
   have h₃ : F.boxSet Xᶜᶜ ∈ 𝒜 :=
     closure_sdiff_sup_induction (p := fun Y _ => F.boxSet Yᶜ ∈ 𝒜) hsub hempty
       (Frame.univ_mem_of_himp hhimp hempty) h₁ (fun Y _ Z _ => h₂ Y Z) Xᶜ (compl_mem hX);
-  rw [compl_compl, hX'.boxSet_eq] at h₃;
+  rw [compl_compl, hup.boxSet_eq] at h₃;
   exact h₃
 
 end BoolClosure

@@ -39,7 +39,7 @@ noncomputable def beIsomorphism (α : Type v) [Infinite α] :
   map_rel_iff' {L₁ L₂} := by
     constructor;
     · intro h;
-      have h₁ := NormalLogic.siFragment_mono (L := L₁.1.greatestMC) (L' := L₂.1.greatestMC) h;
+      have h₁ := NormalLogic.siFragment_mono (L₁ := L₁.1.greatestMC) (L₂ := L₂.1.greatestMC) h;
       rwa [Logic.siFragment_greatestMC_eq, Logic.siFragment_greatestMC_eq] at h₁;
     · exact Logic.greatestMC_mono
 

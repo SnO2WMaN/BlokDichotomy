@@ -33,8 +33,8 @@ def evalAtoms (ε : ι → Prop) : Formula ι → Prop
 @[simp] lemma evalAtoms_imp {ε : ι → Prop} :
     evalAtoms ε (A 🡒 B) = (evalAtoms ε A → evalAtoms ε B) := rfl
 
-lemma evalAtoms_congr [DecidableEq ι] {ε ε' : ι → Prop} (h : ∀ a ∈ A.atoms, ε a ↔ ε' a) :
-    evalAtoms ε A ↔ evalAtoms ε' A := by
+lemma evalAtoms_congr [DecidableEq ι] {ε₁ ε₂ : ι → Prop} (h : ∀ a ∈ A.atoms, ε₁ a ↔ ε₂ a) :
+    evalAtoms ε₁ A ↔ evalAtoms ε₂ A := by
   induction A with
   | atom a => exact h a (by simp);
   | falsum => exact Iff.rfl;
@@ -83,7 +83,7 @@ lemma evalAtoms_iff_forall_clause (hA : A.atoms ⊆ s) (ε : ι → Prop) :
     push Not at hex;
     apply hnI;
     rw [Finset.mem_powerset] at hI;
-    rw [evalAtoms_congr (ε' := ε)];
+    rw [evalAtoms_congr (ε₂ := ε)];
     · exact h;
     · intro a ha;
       by_cases haI : a ∈ I;
@@ -93,15 +93,15 @@ lemma evalAtoms_iff_forall_clause (hA : A.atoms ⊆ s) (ε : ι → Prop) :
         · intro _;
           exact haI;
       · constructor;
-        · intro h';
-          exact absurd h' haI;
-        · intro h';
-          exact absurd h' (hex a (Finset.mem_sdiff.mpr ⟨hA ha, haI⟩));
+        · intro hI;
+          exact absurd hI haI;
+        · intro hεa;
+          exact absurd hεa (hex a (Finset.mem_sdiff.mpr ⟨hA ha, haI⟩));
   · intro h;
     by_contra hε;
     have h₁ := h (s.filter ε) (Finset.mem_powerset.mpr (Finset.filter_subset _ _));
     have h₂ : ¬ evalAtoms (· ∈ s.filter ε) A := by
-      rw [evalAtoms_congr (ε' := ε)];
+      rw [evalAtoms_congr (ε₂ := ε)];
       · exact hε;
       · intro a ha;
         simp [hA ha];
