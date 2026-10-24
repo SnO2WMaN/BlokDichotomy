@@ -87,76 +87,81 @@ instance : Dia L.LindenbaumAlgebra := ⟨Quotient.map (◇·) fun _ _ h => dia_c
 @[simp] lemma mk_dia : (mk (◇φ) : L.LindenbaumAlgebra) = ◇mk φ := rfl
 
 /-- The map sending the class of `φ` to its truth set in the canonical model. -/
-def toDual : L.LindenbaumAlgebra → L.canonicalModel.toFrame.DualAlgebra :=
+def toCanonical : L.LindenbaumAlgebra → L.canonicalModel.toFrame.DualAlgebra :=
   Quotient.lift (·.eval L.canonicalValuation) fun _ _ h => eval_canonicalValuation_eq_iff.mpr h
 
-@[simp] lemma toDual_mk : toDual (mk φ : L.LindenbaumAlgebra) = φ.eval L.canonicalValuation := rfl
+@[simp] lemma toCanonical_mk :
+    toCanonical (mk φ : L.LindenbaumAlgebra) = φ.eval L.canonicalValuation := rfl
 
-lemma toDual_injective : Function.Injective (toDual : L.LindenbaumAlgebra → _) := by
+lemma toCanonical_injective : Function.Injective (toCanonical : L.LindenbaumAlgebra → _) := by
   intro a b;
   induction a;
   induction b;
   simpa [mk_eq_mk] using eval_canonicalValuation_eq_iff.mp;
 
-instance : LE L.LindenbaumAlgebra := ⟨fun a b => toDual a ≤ toDual b⟩
-instance : LT L.LindenbaumAlgebra := ⟨fun a b => toDual a < toDual b⟩
+instance : LE L.LindenbaumAlgebra := ⟨fun a b => toCanonical a ≤ toCanonical b⟩
+instance : LT L.LindenbaumAlgebra := ⟨fun a b => toCanonical a < toCanonical b⟩
 
-lemma toDual_himp (a b : L.LindenbaumAlgebra) : toDual (a ⇨ b) = toDual a ⇨ toDual b := by
+lemma toCanonical_himp (a b : L.LindenbaumAlgebra) :
+    toCanonical (a ⇨ b) = toCanonical a ⇨ toCanonical b := by
   induction a;
   induction b;
   rfl;
 
-lemma toDual_bot : toDual (⊥ : L.LindenbaumAlgebra) = ⊥ := rfl
+lemma toCanonical_bot : toCanonical (⊥ : L.LindenbaumAlgebra) = ⊥ := rfl
 
-lemma toDual_top : toDual (⊤ : L.LindenbaumAlgebra) = ⊤ := eval_top
+lemma toCanonical_top : toCanonical (⊤ : L.LindenbaumAlgebra) = ⊤ := eval_top
 
-lemma toDual_compl (a : L.LindenbaumAlgebra) : toDual aᶜ = (toDual a)ᶜ :=
-  (toDual_himp a ⊥).trans (himp_bot _)
+lemma toCanonical_compl (a : L.LindenbaumAlgebra) : toCanonical aᶜ = (toCanonical a)ᶜ :=
+  (toCanonical_himp a ⊥).trans (himp_bot _)
 
-lemma toDual_sup (a b : L.LindenbaumAlgebra) : toDual (a ⊔ b) = toDual a ⊔ toDual b := by
-  change toDual (aᶜ ⇨ b) = _;
-  rw [toDual_himp, toDual_compl, himp_eq, compl_compl, sup_comm];
+lemma toCanonical_sup (a b : L.LindenbaumAlgebra) :
+    toCanonical (a ⊔ b) = toCanonical a ⊔ toCanonical b := by
+  change toCanonical (aᶜ ⇨ b) = _;
+  rw [toCanonical_himp, toCanonical_compl, himp_eq, compl_compl, sup_comm];
 
-lemma toDual_inf (a b : L.LindenbaumAlgebra) : toDual (a ⊓ b) = toDual a ⊓ toDual b := by
-  change toDual (a ⇨ bᶜ)ᶜ = _;
-  rw [toDual_compl, toDual_himp, toDual_compl, himp_eq, compl_sup, compl_compl, compl_compl,
-    inf_comm];
+lemma toCanonical_inf (a b : L.LindenbaumAlgebra) :
+    toCanonical (a ⊓ b) = toCanonical a ⊓ toCanonical b := by
+  change toCanonical (a ⇨ bᶜ)ᶜ = _;
+  rw [toCanonical_compl, toCanonical_himp, toCanonical_compl, himp_eq, compl_sup, compl_compl,
+    compl_compl, inf_comm];
 
-lemma toDual_sdiff (a b : L.LindenbaumAlgebra) : toDual (a \ b) = toDual a \ toDual b := by
-  change toDual (a ⊓ bᶜ) = _;
-  rw [toDual_inf, toDual_compl, sdiff_eq];
+lemma toCanonical_sdiff (a b : L.LindenbaumAlgebra) :
+    toCanonical (a \ b) = toCanonical a \ toCanonical b := by
+  change toCanonical (a ⊓ bᶜ) = _;
+  rw [toCanonical_inf, toCanonical_compl, sdiff_eq];
 
-lemma toDual_dia (a : L.LindenbaumAlgebra) : toDual (◇a) = ◇toDual a := by
+lemma toCanonical_dia (a : L.LindenbaumAlgebra) : toCanonical (◇a) = ◇toCanonical a := by
   induction a;
   rfl;
 
 instance : BooleanAlgebra L.LindenbaumAlgebra :=
-  toDual_injective.booleanAlgebra _ Iff.rfl Iff.rfl toDual_sup toDual_inf toDual_top toDual_bot
-    toDual_compl toDual_sdiff toDual_himp
+  toCanonical_injective.booleanAlgebra _ Iff.rfl Iff.rfl toCanonical_sup toCanonical_inf
+    toCanonical_top toCanonical_bot toCanonical_compl toCanonical_sdiff toCanonical_himp
 
 /--
 The Lindenbaum algebra is a modal algebra.
 - [CZ98, Theorem 7.2]
 -/
 instance : ModalAlgebra L.LindenbaumAlgebra where
-  dia_bot := toDual_injective <| by simp [toDual_dia, toDual_bot]
-  dia_sup a b := toDual_injective <| by simp [toDual_dia, toDual_sup]
+  dia_bot := toCanonical_injective <| by simp [toCanonical_dia, toCanonical_bot]
+  dia_sup a b := toCanonical_injective <| by simp [toCanonical_dia, toCanonical_sup]
 
 /--
 The embedding of the Lindenbaum algebra into the dual algebra of the canonical frame.
 - [CZ98, Theorem 8.3]
 -/
-def toDualHom : ModalAlgebraHom L.LindenbaumAlgebra L.canonicalModel.toFrame.DualAlgebra where
-  toFun := toDual
-  map_sup' := toDual_sup
-  map_inf' := toDual_inf
-  map_top' := toDual_top
-  map_bot' := toDual_bot
-  map_dia' := toDual_dia
+def toCanonicalHom : ModalAlgebraHom L.LindenbaumAlgebra L.canonicalModel.toFrame.DualAlgebra where
+  toFun := toCanonical
+  map_sup' := toCanonical_sup
+  map_inf' := toCanonical_inf
+  map_top' := toCanonical_top
+  map_bot' := toCanonical_bot
+  map_dia' := toCanonical_dia
 
-lemma toDualHom_injective :
-    Function.Injective (toDualHom : ModalAlgebraHom L.LindenbaumAlgebra _) :=
-  toDual_injective
+lemma toCanonicalHom_injective :
+    Function.Injective (toCanonicalHom : ModalAlgebraHom L.LindenbaumAlgebra _) :=
+  toCanonical_injective
 
 @[simp] lemma mk_neg : (mk (∼φ) : L.LindenbaumAlgebra) = (mk φ)ᶜ := rfl
 @[simp] lemma mk_or : (mk (φ ⋎ ψ) : L.LindenbaumAlgebra) = mk φ ⊔ mk ψ := rfl
@@ -214,7 +219,7 @@ end Lift
 
 end LindenbaumAlgebra
 
-lemma logic_lindenbaumAlgebra : (ModalAlgebra.logic L.LindenbaumAlgebra : NormalLogic α) = L :=
+lemma logic_lindenbaumAlgebra : ModalAlgebra.logic L.LindenbaumAlgebra = L :=
   SetLike.ext fun _ => LindenbaumAlgebra.validates_iff
 
 /--

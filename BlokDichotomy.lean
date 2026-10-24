@@ -3,7 +3,9 @@ module  -- shake: keep-all --deprecated_module: ignore
 public import BlokDichotomy.Algebraic.Basic
 public import BlokDichotomy.Algebraic.Frame
 public import BlokDichotomy.Algebraic.Lindenbaum
-public import BlokDichotomy.Algebraic.Operations
+public import BlokDichotomy.Algebraic.Operations.HomomorphicImage.Basic
+public import BlokDichotomy.Algebraic.Operations.Product.Basic
+public import BlokDichotomy.Algebraic.Operations.Subalgebra.Basic
 public import BlokDichotomy.Algebraic.Validity
 public import BlokDichotomy.Blok
 public import BlokDichotomy.Formula

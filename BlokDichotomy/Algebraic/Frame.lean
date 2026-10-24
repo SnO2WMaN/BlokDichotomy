@@ -1,6 +1,6 @@
 module
 
-public import BlokDichotomy.Algebraic.Operations
+public import BlokDichotomy.Algebraic.Operations.Subalgebra.Basic
 public import BlokDichotomy.GeneralFrame.Basic
 
 /-!
@@ -127,7 +127,7 @@ open Model.World
 
 lemma eval_eq_top_iff {v : α → G.DualAlgebra} {φ : Formula α} :
     φ.eval v = ⊤ ↔ G.model (fun w a => w ∈ toSet (v a).1) ⊧ φ := by
-  rw [← G.admSubalgebra.subtype_injective.eq_iff, Formula.eval_hom, map_top];
+  rw [← G.admSubalgebra.subtype_injective.eq_iff, Formula.hom_eval, map_top];
   exact Frame.eval_eq_top_iff;
 
 /--

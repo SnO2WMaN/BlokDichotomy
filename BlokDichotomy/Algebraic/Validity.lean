@@ -54,7 +54,7 @@ lemma eval_subst {s : Substitution α β} {v : β → A} :
 lemma eval_map {f : α → β} {v : β → A} : (φ.map f).eval v = φ.eval (v ∘ f) := eval_subst
 
 @[simp]
-lemma eval_hom {B : Type*} [ModalAlgebra B] (f : ModalAlgebraHom A B) :
+lemma hom_eval {B : Type*} [ModalAlgebra B] (f : ModalAlgebraHom A B) :
     f (φ.eval v) = φ.eval (f ∘ v) := by
   induction φ <;> simp_all;
 
