@@ -66,6 +66,8 @@ well-tested, and reusing it means one less thing to design from scratch.
   their surnames, followed by the rest of the name in camel case: the Blok–Esakia isomorphism is
   `beIsomorphism`, not `blokEsakia` or `blokEsakiaIsomorphism`. A name after a single person
   keeps the surname. Names that predate this rule (the Jankov–Fine ones) are left as they are.
+- **Upward closed, not upset.** Say "upward closed set" and "downward closed set", not "upset" and
+  "downset", in docstrings and in names: `Frame.IsUpwardClosed`, `isUpwardClosed_boxSet`.
 - **Avoid `?_`.** Prefer `apply f` to `refine f ?_`, and a direct term to a `refine` with holes;
   [`style.md`](style.md)'s preference for direct term construction is the same rule seen from the
   other side.

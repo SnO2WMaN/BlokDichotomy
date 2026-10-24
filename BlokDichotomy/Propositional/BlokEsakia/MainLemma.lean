@@ -8,7 +8,7 @@ public import BlokDichotomy.ToMathlib.Order.BooleanSubalgebra
 
 Let `G` be a general frame on a preorder validating `𝐆𝐫𝐳`. A formula refuted in `G` is refuted in
 `σ ρ G`, the general frame with the same points whose admissible sets are the Boolean combinations
-of the admissible upsets of `G`. Hence `σ ρ G` and `G` have the same logic.
+of the admissible upward closed sets of `G`. Hence `σ ρ G` and `G` have the same logic.
 
 The file defines the points of an admissible set `U` that are passive in `U` (one cannot leave `U`
 from them and come back), the type of a point under a valuation (the subformulas of a formula `A`
@@ -232,7 +232,7 @@ section
 variable [IsPreorder κ G.Rel]
 
 omit [DecidableEq α] in
-/-- The set of points not satisfying `◇B` is an admissible upset of `G`. -/
+/-- The set of points not satisfying `◇B` is an admissible upward closed set of `G`. -/
 private lemma notForces_dia_mem (hV : G.IsAdmissible V) (B : Formula α) :
     {x | x ⊮[G.model V] ◇B} ∈ G.toIntuitionistic.toModal.Adm := by
   have h₁ : {x | x ⊮[G.model V] ◇B} = G.toFrame.boxSet {x | x ⊩[G.model V] B}ᶜ := by
@@ -286,7 +286,7 @@ lemma typeLE_right_mem (hV : G.IsAdmissible V) (a : Finset (Formula α)) :
   rw [h₂];
   exact h₁
 
-/-- The preimage of a cluster of types is a Boolean combination of admissible upsets. -/
+/-- The preimage of a cluster of types is a Boolean combination of admissible upward closed sets. -/
 lemma typeEquiv_mem (hV : G.IsAdmissible V) (a : Finset (Formula α)) :
     {x | A.TypeEquiv (G.typeOf V A x) a} ∈ G.toIntuitionistic.toModal.Adm :=
   G.toIntuitionistic.toModal.inter_mem (typeLE_right_mem hV a) (typeLE_left_mem hV a)
@@ -390,7 +390,8 @@ private lemma definableType_eq_iff :
         h₃ _ (Finset.mem_powerset.mpr typeOf_subset);
       rw [definableType_eq_rep_of_not_passive h₄, rep_congr h₁, h₂]
 
-/-- The set of points sent to a given type is a Boolean combination of admissible upsets. -/
+/-- The set of points sent to a given type is a Boolean combination of admissible upward closed
+sets. -/
 lemma preimage_definableType_mem (hV : G.IsAdmissible V) (a : Finset (Formula α)) :
     {x | G.definableType V A x = a} ∈ G.toIntuitionistic.toModal.Adm := by
   have h₁ : ∀ b, G.toFrame.passive {y | G.typeOf V A y = b} ∈

@@ -7,10 +7,10 @@ public import BlokDichotomy.ToMathlib.Order.BooleanSubalgebra
 /-!
 # Modal and intuitionistic general frames
 
-The intuitionistic general frame `ρ G` of the admissible upsets of a modal general frame `G` on a
-preorder, the modal general frame `σ H` of the Boolean combinations of the admissible sets of an
-intuitionistic general frame `H`, the skeleton lemmas relating validity of `Aᵍ` and `A`, and the
-validity of `𝐆𝐫𝐳` in every `σ H`.
+The intuitionistic general frame `ρ G` of the admissible upward closed sets of a modal general frame
+`G` on a preorder, the modal general frame `σ H` of the Boolean combinations of the admissible sets
+of an intuitionistic general frame `H`, the skeleton lemmas relating validity of `Aᵍ` and `A`, and
+the validity of `𝐆𝐫𝐳` in every `σ H`.
 
 ## References
 
@@ -25,8 +25,8 @@ namespace Propositional
 
 variable {κ : Type u} {α : Type v}
 
-/-- `ρ G`: the intuitionistic general frame of the admissible upsets of a modal general frame on
-a preorder.
+/-- `ρ G`: the intuitionistic general frame of the admissible upward closed sets of a modal general
+frame on a preorder.
 - [CZ98, §8.3] -/
 def _root_.GeneralFrame.toIntuitionistic (G : _root_.GeneralFrame κ) [IsPreorder κ G.Rel] :
     Propositional.GeneralFrame κ where
@@ -34,8 +34,8 @@ def _root_.GeneralFrame.toIntuitionistic (G : _root_.GeneralFrame κ) [IsPreorde
   refl := Frame.rel_refl
   trans := Frame.rel_trans
   Adm := G.upAdm
-  isUpset_of_mem h := h.2
-  empty_mem := ⟨G.empty_mem, Frame.isUpset_empty⟩
+  isUpwardClosed_of_mem h := h.2
+  empty_mem := ⟨G.empty_mem, Frame.isUpwardClosed_empty⟩
   inter_mem hX hY := ⟨G.inter_mem hX.1 hY.1, hX.2.inter hY.2⟩
   union_mem hX hY := ⟨G.union_mem hX.1 hY.1, hX.2.union hY.2⟩
   himpSet_mem hX hY := _root_.GeneralFrame.himpSet_mem_upAdm hX.1 hY.1
@@ -62,10 +62,10 @@ instance : IsPreorder κ H.toModal.Rel :=
 
 lemma subset_toModal_adm : H.Adm ⊆ H.toModal.Adm := subset_closure
 
-/-- An admissible upset of `σ H` is admissible in `H`. -/
-lemma mem_adm_of_isUpset_of_mem_toModal {X : Set κ} (hX : X ∈ H.toModal.Adm)
-    (h : H.toFrame.IsUpset X) : X ∈ H.Adm :=
-  Frame.mem_of_isUpset_of_mem_closure H.isSublattice_adm H.himpSet_mem H.empty_mem hX h
+/-- An admissible upward closed set of `σ H` is admissible in `H`. -/
+lemma mem_adm_of_isUpwardClosed_of_mem_toModal {X : Set κ} (hX : X ∈ H.toModal.Adm)
+    (h : H.toFrame.IsUpwardClosed X) : X ∈ H.Adm :=
+  Frame.mem_of_isUpwardClosed_of_mem_closure H.isSublattice_adm H.himpSet_mem H.empty_mem hX h
 
 end GeneralFrame
 
@@ -113,8 +113,8 @@ theorem toModal_validates_gödelTranslate_iff : H.toModal ⊧ Aᵍ ↔ H ⊧ A :
     have hW : H.IsAdmissible fun w a => w ⊩[H.toModal.model V] □(#a) := by
       intro a;
       rw [_root_.GeneralFrame.truthSet_box];
-      exact mem_adm_of_isUpset_of_mem_toModal (_root_.GeneralFrame.boxSet_mem (hV a))
-        (Frame.isUpset_boxSet _);
+      exact mem_adm_of_isUpwardClosed_of_mem_toModal (_root_.GeneralFrame.boxSet_mem (hV a))
+        (Frame.isUpwardClosed_boxSet _);
     exact (Model.forces_gödelTranslate_iff_of_val (F := H.toFrame) (V := V)
       (hW := hW.hereditary) (fun _ _ => Iff.rfl)).mp (h _ hW x)
 
@@ -147,14 +147,14 @@ namespace GeneralFrame
 
 variable {H : Propositional.GeneralFrame κ}
 
-/-- Above a point outside a Boolean combination `X` of admissible upsets there is a point outside
-`X` from which one never re-enters `X`. -/
+/-- Above a point outside a Boolean combination `X` of admissible upward closed sets there is a
+point outside `X` from which one never re-enters `X`. -/
 lemma exists_rel_not_mem_of_mem_toModal_adm {X : Set H.World} (hX : X ∈ H.toModal.Adm)
     {x : H.World} (hx : x ∉ X) :
     ∃ z : H.World, x ≺ z ∧ z ∉ X ∧ ∀ u v : H.World, z ≺ u → u ≺ v → u ∈ X → v ∈ X := by
   obtain ⟨𝒵, h𝒵, hdet⟩ := BooleanSubalgebra.exists_finset_determines hX;
   exact Frame.exists_rel_not_mem_of_finset_determines
-    (fun Z hZ => H.isUpset_of_mem (h𝒵 hZ)) hdet hx
+    (fun Z hZ => H.isUpwardClosed_of_mem (h𝒵 hZ)) hdet hx
 
 /-- The Grzegorczyk axiom is valid in `σ H`. -/
 theorem toModal_validates_grz (A : _root_.Formula α) :

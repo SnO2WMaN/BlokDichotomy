@@ -5,9 +5,9 @@ public import BlokDichotomy.GeneralFrame.Preorder
 /-!
 # The canonical general frame
 
-The canonical frame of a normal logic equipped with the sets `{x | B ∈ x}` as admissible sets.
-It validates exactly the formulas of the logic, and for extensions of `𝐒𝟒` its admissible upsets
-are the sets `{x | □B ∈ x}`.
+The canonical frame of a normal logic equipped with the sets `{x | B ∈ x}` as admissible sets. It
+validates exactly the formulas of the logic, and for extensions of `𝐒𝟒` its admissible upward closed
+sets are the sets `{x | □B ∈ x}`.
 
 ## References
 
@@ -107,7 +107,7 @@ lemma boxSet_truthSet (B : Formula α) :
   simp only [canonicalModel.truthlemma];
   exact Iff.rfl
 
-/-- The admissible upsets of the canonical frame are the sets `{x | □B ∈ x}`. -/
+/-- The admissible upward closed sets of the canonical frame are the sets `{x | □B ∈ x}`. -/
 lemma mem_upAdm_iff [L.IsNExt 𝐒𝟒] {X : Set L.MaximalConsistentSet} :
     X ∈ L.canonicalGeneralFrame.upAdm ↔ ∃ B : Formula α, X = {x | □B ∈ x} := by
   constructor;

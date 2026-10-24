@@ -7,11 +7,11 @@ public import BlokDichotomy.Propositional.Kripke.Completeness
 /-!
 # Intuitionistic general frames
 
-General frames for intuitionistic logic: a preorder together with a family of admissible upsets
-closed under `∩`, `∪` and the Heyting implication, validity of formulas and logics in them, and
-the closure of validity under substitution. The canonical general frame of a superintuitionistic
-logic, whose admissible sets are the sets `{x | A ∈ x}`, validates exactly the formulas of the
-logic.
+General frames for intuitionistic logic: a preorder together with a family of admissible upward
+closed sets closed under `∩`, `∪` and the Heyting implication, validity of formulas and logics in
+them, and the closure of validity under substitution. The canonical general frame of a
+superintuitionistic logic, whose admissible sets are the sets `{x | A ∈ x}`, validates exactly the
+formulas of the logic.
 
 ## References
 
@@ -27,14 +27,14 @@ namespace Propositional
 
 variable {κ : Type u} {α : Type v}
 
-/-- An intuitionistic general frame: a preorder together with a family `Adm` of admissible upsets
-that contains `∅` and is closed under `∩`, `∪` and `Frame.himpSet`.
+/-- An intuitionistic general frame: a preorder together with a family `Adm` of admissible upward
+closed sets that contains `∅` and is closed under `∩`, `∪` and `Frame.himpSet`.
 - [CZ98, §8.1] -/
 structure GeneralFrame (κ : Type u) extends Frame κ where
   refl (x : toFrame.World) : x ≺ x
   trans {x y z : toFrame.World} : x ≺ y → y ≺ z → x ≺ z
   Adm : Set (Set κ)
-  isUpset_of_mem {X : Set κ} : X ∈ Adm → toFrame.IsUpset X
+  isUpwardClosed_of_mem {X : Set κ} : X ∈ Adm → toFrame.IsUpwardClosed X
   empty_mem : ∅ ∈ Adm
   inter_mem {X Y : Set κ} : X ∈ Adm → Y ∈ Adm → X ∩ Y ∈ Adm
   union_mem {X Y : Set κ} : X ∈ Adm → Y ∈ Adm → X ∪ Y ∈ Adm
@@ -66,7 +66,7 @@ variable {V : H.World → α → Prop}
 
 lemma IsAdmissible.hereditary (hV : H.IsAdmissible V) {x y : H.World} (Rxy : x ≺ y) {a : α}
     (h : V x a) : V y a :=
-  H.isUpset_of_mem (hV a) Rxy h
+  H.isUpwardClosed_of_mem (hV a) Rxy h
 
 /-- The intuitionistic model on `H` with an admissible valuation. -/
 def model (H : GeneralFrame κ) (V : H.World → α → Prop) (hV : H.IsAdmissible V) :
@@ -139,7 +139,7 @@ def canonicalGeneralFrame : GeneralFrame L.PrimeTheory where
   refl _ := subset_rfl
   trans := subset_trans
   Adm := Set.range fun A : Formula α => {x : L.PrimeTheory | A ∈ x}
-  isUpset_of_mem := by
+  isUpwardClosed_of_mem := by
     rintro _ ⟨A, rfl⟩ x y Rxy hx;
     exact Rxy hx;
   empty_mem := by
