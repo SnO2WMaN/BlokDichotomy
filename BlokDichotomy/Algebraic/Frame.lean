@@ -82,23 +82,20 @@ theorem eval_dualAlgebra (V : F.World → α → Prop) (φ : Formula α) :
     ext w;
     simp [ih, diaSet, forces_dia];
 
+lemma eval_eq_top_iff {v : α → F.DualAlgebra} {φ : Formula α} :
+    φ.eval v = ⊤ ↔ (⟨F, fun w a => w ∈ toSet (v a)⟩ : Model κ α) ⊧ φ := by
+  change toSet (φ.eval v) = Set.univ ↔ _;
+  rw [show toSet (φ.eval v) = _ from eval_dualAlgebra (fun w a => w ∈ toSet (v a)) φ,
+    Set.eq_univ_iff_forall];
+  rfl;
+
 /--
 A frame and its dual algebra validate the same formulas.
 - [CZ98, Theorem 7.46]
 -/
-theorem dualAlgebra_validates_iff {φ : Formula α} : F.DualAlgebra ⊧ φ ↔ F ⊧ φ := by
-  constructor;
-  · intro h V x;
-    have h₁ := congrArg toSet <| h fun a => ofSet {w | V w a};
-    rw [eval_dualAlgebra, toSet_top] at h₁;
-    exact Set.eq_univ_iff_forall.mp h₁ x;
-  · intro h v;
-    apply DualAlgebra.ext;
-    have := eval_dualAlgebra (fun w a => w ∈ toSet (v a)) φ;
-    simp only [Set.ofPred_mem_eq] at this;
-    rw [show (fun a => ofSet (toSet (v a))) = v from rfl] at this;
-    rw [this, toSet_top, Set.eq_univ_iff_forall];
-    exact h _;
+theorem dualAlgebra_validates_iff {φ : Formula α} : F.DualAlgebra ⊧ φ ↔ F ⊧ φ :=
+  ⟨fun h V => eval_eq_top_iff.mp <| h fun a => ofSet {w | V w a},
+    fun h _ => eval_eq_top_iff.mpr <| h _⟩
 
 lemma logic_dualAlgebra : (ModalAlgebra.logic F.DualAlgebra : NormalLogic α) = F.logic :=
   SetLike.ext fun _ => dualAlgebra_validates_iff
@@ -128,28 +125,18 @@ abbrev DualAlgebra (G : GeneralFrame κ) : Type u := G.admSubalgebra
 
 open Model.World
 
+lemma eval_eq_top_iff {v : α → G.DualAlgebra} {φ : Formula α} :
+    φ.eval v = ⊤ ↔ G.model (fun w a => w ∈ toSet (v a).1) ⊧ φ := by
+  rw [← G.admSubalgebra.subtype_injective.eq_iff, Formula.eval_hom, map_top];
+  exact Frame.eval_eq_top_iff;
+
 /--
 A general frame and its dual algebra validate the same formulas.
 - [CZ98, §8.1]
 -/
-theorem dualAlgebra_validates_iff {φ : Formula α} : G.DualAlgebra ⊧ φ ↔ G ⊧ φ := by
-  constructor;
-  · intro h V hV x;
-    have h₁ := congrArg (fun a => toSet (G.admSubalgebra.subtype a)) <|
-      h fun a => ⟨ofSet {w | V w a}, hV a⟩;
-    simp only [Formula.eval_hom, map_top] at h₁;
-    rw [show (G.admSubalgebra.subtype ∘ fun a => (⟨ofSet {w | V w a}, hV a⟩ : G.DualAlgebra)) =
-      fun a => ofSet {w | V w a} from rfl, Frame.eval_dualAlgebra, toSet_top] at h₁;
-    exact Set.eq_univ_iff_forall.mp h₁ x;
-  · intro h v;
-    apply G.admSubalgebra.subtype_injective;
-    rw [Formula.eval_hom, map_top];
-    apply Frame.DualAlgebra.ext;
-    have := Frame.eval_dualAlgebra (F := G.toFrame) (fun w a => w ∈ toSet (v a).1) φ;
-    simp only [Set.ofPred_mem_eq] at this;
-    rw [show (G.admSubalgebra.subtype ∘ v) = fun a => ofSet (toSet (v a).1) from rfl, this,
-      toSet_top, Set.eq_univ_iff_forall];
-    exact h _ (fun a => (v a).2);
+theorem dualAlgebra_validates_iff {φ : Formula α} : G.DualAlgebra ⊧ φ ↔ G ⊧ φ :=
+  ⟨fun h V hV => eval_eq_top_iff.mp <| h fun a => ⟨ofSet {w | V w a}, hV a⟩,
+    fun h v => eval_eq_top_iff.mpr <| h _ fun a => (v a).2⟩
 
 lemma logic_dualAlgebra : (ModalAlgebra.logic G.DualAlgebra : NormalLogic α) = G.logic :=
   SetLike.ext fun _ => dualAlgebra_validates_iff

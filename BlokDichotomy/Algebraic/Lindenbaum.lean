@@ -4,21 +4,21 @@ public import BlokDichotomy.Algebraic.Frame
 public import BlokDichotomy.Kripke.Completeness
 
 /-!
-# The Tarski–Lindenbaum algebra
+# The Lindenbaum algebra
 
-The Tarski–Lindenbaum algebra of a normal extension `L` of `𝐊`: formulas modulo `L`-provable
-equivalence. It embeds into the dual algebra of the canonical frame of `L`, it validates exactly
-the formulas of `L`, and so every normal extension of `𝐊` is complete with respect to modal
-algebras.
+The Lindenbaum algebra of a normal extension `L` of `𝐊`: formulas modulo `L`-provable equivalence.
+It embeds into the dual algebra of the canonical frame of `L`, it validates exactly the formulas
+of `L`, every valuation in an `L`-algebra lifts to a homomorphism from it, and so every normal
+extension of `𝐊` is complete with respect to modal algebras.
 
 ## References
 
-- [CZ98, Theorem 7.1, Theorem 7.2, Theorem 7.43, Theorem 8.3]
+- [CZ98, Theorem 7.1, Theorem 7.2, Theorem 7.43, §7.7, Theorem 8.3]
 -/
 
 @[expose] public section
 
-universe v
+universe u v
 
 namespace NormalLogic
 
@@ -32,7 +32,7 @@ def equivSetoid (L : NormalLogic α) [L.IsNExt 𝐊] : Setoid (Formula α) where
   iseqv := ⟨fun _ => iff_refl, iff_symm, iff_trans⟩
 
 /--
-The Tarski–Lindenbaum algebra of `L`: formulas modulo `L`-provable equivalence.
+The Lindenbaum algebra of `L`: formulas modulo `L`-provable equivalence.
 - [CZ98, §7.2, Theorem 7.2]
 -/
 def LindenbaumAlgebra (L : NormalLogic α) [L.IsNExt 𝐊] : Type v := Quotient (equivSetoid L)
@@ -51,22 +51,23 @@ lemma eval_canonicalValuation_eq_iff :
   rw [mem_iff_canonicalModel_validates];
   constructor;
   · intro h x;
-    have h₁ := congrArg (x ∈ toSet ·) h;
-    simp only [toSet_eval_canonicalValuation, Set.mem_ofPred_eq, eq_iff_iff] at h₁;
-    exact forces_iff.mpr h₁;
+    have := congrArg toSet h;
+    rw [toSet_eval_canonicalValuation, toSet_eval_canonicalValuation, Set.ext_iff] at this;
+    simpa [forces_iff] using this x;
   · intro h;
     apply Frame.DualAlgebra.ext;
+    rw [toSet_eval_canonicalValuation, toSet_eval_canonicalValuation];
     ext x;
-    simpa only [toSet_eval_canonicalValuation, Set.mem_ofPred_eq] using forces_iff.mp (h x);
+    simpa [forces_iff] using h x;
 
 namespace LindenbaumAlgebra
 
-/-- The class of `φ` in the Tarski–Lindenbaum algebra. -/
+/-- The class of `φ` in the Lindenbaum algebra. -/
 def mk (φ : Formula α) : L.LindenbaumAlgebra := Quotient.mk (equivSetoid L) φ
 
 lemma mk_eq_mk : (mk φ : L.LindenbaumAlgebra) = mk ψ ↔ φ 🡘 ψ ∈ L := Quotient.eq
 
-@[elab_as_elim]
+@[elab_as_elim, induction_eliminator]
 lemma ind {motive : L.LindenbaumAlgebra → Prop} (h : ∀ φ, motive (mk φ)) (a) : motive a :=
   Quotient.ind h a
 
@@ -78,17 +79,12 @@ instance : Compl L.LindenbaumAlgebra := ⟨fun a => a ⇨ ⊥⟩
 instance : Max L.LindenbaumAlgebra := ⟨fun a b => aᶜ ⇨ b⟩
 instance : Min L.LindenbaumAlgebra := ⟨fun a b => (a ⇨ bᶜ)ᶜ⟩
 instance : SDiff L.LindenbaumAlgebra := ⟨fun a b => a ⊓ bᶜ⟩
-
-/-- The `◇` of the Tarski–Lindenbaum algebra. -/
-protected def dia : L.LindenbaumAlgebra → L.LindenbaumAlgebra :=
-  Quotient.map (◇·) fun _ _ h => dia_congr h
+instance : Dia L.LindenbaumAlgebra := ⟨Quotient.map (◇·) fun _ _ h => dia_congr h⟩
 
 @[simp] lemma mk_imp : (mk (φ 🡒 ψ) : L.LindenbaumAlgebra) = mk φ ⇨ mk ψ := rfl
 @[simp] lemma mk_bot : (mk ⊥ : L.LindenbaumAlgebra) = ⊥ := rfl
 @[simp] lemma mk_top : (mk ⊤ : L.LindenbaumAlgebra) = ⊤ := rfl
-@[simp] lemma mk_neg : (mk (∼φ) : L.LindenbaumAlgebra) = (mk φ)ᶜ := rfl
-@[simp] lemma mk_or : (mk (φ ⋎ ψ) : L.LindenbaumAlgebra) = mk φ ⊔ mk ψ := rfl
-@[simp] lemma mk_and : (mk (φ ⋏ ψ) : L.LindenbaumAlgebra) = mk φ ⊓ mk ψ := rfl
+@[simp] lemma mk_dia : (mk (◇φ) : L.LindenbaumAlgebra) = ◇mk φ := rfl
 
 /-- The map sending the class of `φ` to its truth set in the canonical model. -/
 def toDual : L.LindenbaumAlgebra → L.canonicalModel.toFrame.DualAlgebra :=
@@ -98,25 +94,24 @@ def toDual : L.LindenbaumAlgebra → L.canonicalModel.toFrame.DualAlgebra :=
 
 lemma toDual_injective : Function.Injective (toDual : L.LindenbaumAlgebra → _) := by
   intro a b;
-  induction a using ind;
-  induction b using ind;
-  simpa only [toDual_mk, mk_eq_mk] using eval_canonicalValuation_eq_iff.mp;
+  induction a;
+  induction b;
+  simpa [mk_eq_mk] using eval_canonicalValuation_eq_iff.mp;
 
 instance : LE L.LindenbaumAlgebra := ⟨fun a b => toDual a ≤ toDual b⟩
 instance : LT L.LindenbaumAlgebra := ⟨fun a b => toDual a < toDual b⟩
 
 lemma toDual_himp (a b : L.LindenbaumAlgebra) : toDual (a ⇨ b) = toDual a ⇨ toDual b := by
-  induction a using ind;
-  induction b using ind;
-  rw [← mk_imp, toDual_mk, toDual_mk, toDual_mk, eval_imp];
+  induction a;
+  induction b;
+  rfl;
 
 lemma toDual_bot : toDual (⊥ : L.LindenbaumAlgebra) = ⊥ := rfl
 
 lemma toDual_top : toDual (⊤ : L.LindenbaumAlgebra) = ⊤ := eval_top
 
-lemma toDual_compl (a : L.LindenbaumAlgebra) : toDual aᶜ = (toDual a)ᶜ := by
-  change toDual (a ⇨ ⊥) = _;
-  rw [toDual_himp, toDual_bot, himp_bot];
+lemma toDual_compl (a : L.LindenbaumAlgebra) : toDual aᶜ = (toDual a)ᶜ :=
+  (toDual_himp a ⊥).trans (himp_bot _)
 
 lemma toDual_sup (a b : L.LindenbaumAlgebra) : toDual (a ⊔ b) = toDual a ⊔ toDual b := by
   change toDual (aᶜ ⇨ b) = _;
@@ -131,28 +126,24 @@ lemma toDual_sdiff (a b : L.LindenbaumAlgebra) : toDual (a \ b) = toDual a \ toD
   change toDual (a ⊓ bᶜ) = _;
   rw [toDual_inf, toDual_compl, sdiff_eq];
 
-lemma toDual_dia (a : L.LindenbaumAlgebra) :
-    toDual (LindenbaumAlgebra.dia a) = ◇toDual a := by
-  induction a using ind;
-  exact eval_dia;
+lemma toDual_dia (a : L.LindenbaumAlgebra) : toDual (◇a) = ◇toDual a := by
+  induction a;
+  rfl;
 
 instance : BooleanAlgebra L.LindenbaumAlgebra :=
   toDual_injective.booleanAlgebra _ Iff.rfl Iff.rfl toDual_sup toDual_inf toDual_top toDual_bot
     toDual_compl toDual_sdiff toDual_himp
 
 /--
-The Tarski–Lindenbaum algebra is a modal algebra.
+The Lindenbaum algebra is a modal algebra.
 - [CZ98, Theorem 7.2]
 -/
 instance : ModalAlgebra L.LindenbaumAlgebra where
-  dia := LindenbaumAlgebra.dia
-  dia_bot := toDual_injective <| by
-    rw [toDual_dia, toDual_bot, ModalAlgebra.dia_bot];
-  dia_sup a b := toDual_injective <| by
-    rw [toDual_dia, toDual_sup, toDual_sup, toDual_dia, toDual_dia, ModalAlgebra.dia_sup];
+  dia_bot := toDual_injective <| by simp [toDual_dia, toDual_bot]
+  dia_sup a b := toDual_injective <| by simp [toDual_dia, toDual_sup]
 
 /--
-The embedding of the Tarski–Lindenbaum algebra into the dual algebra of the canonical frame.
+The embedding of the Lindenbaum algebra into the dual algebra of the canonical frame.
 - [CZ98, Theorem 8.3]
 -/
 def toDualHom : ModalAlgebraHom L.LindenbaumAlgebra L.canonicalModel.toFrame.DualAlgebra where
@@ -167,46 +158,59 @@ lemma toDualHom_injective :
     Function.Injective (toDualHom : ModalAlgebraHom L.LindenbaumAlgebra _) :=
   toDual_injective
 
-@[simp] lemma mk_dia : (mk (◇φ) : L.LindenbaumAlgebra) = ◇mk φ := rfl
+@[simp] lemma mk_neg : (mk (∼φ) : L.LindenbaumAlgebra) = (mk φ)ᶜ := rfl
+@[simp] lemma mk_or : (mk (φ ⋎ ψ) : L.LindenbaumAlgebra) = mk φ ⊔ mk ψ := rfl
+@[simp] lemma mk_and : (mk (φ ⋏ ψ) : L.LindenbaumAlgebra) = mk φ ⊓ mk ψ := rfl
+@[simp] lemma mk_box : (mk (□φ) : L.LindenbaumAlgebra) = □mk φ := rfl
 
+@[simp]
 lemma mk_eq_top_iff : (mk φ : L.LindenbaumAlgebra) = ⊤ ↔ φ ∈ L := by
   rw [← mk_top, mk_eq_mk];
-  constructor;
-  · intro h;
-    exact mem_mdp verum_mem <| iff_mpr h;
-  · intro h;
-    exact iff_of_imp (imp_of_mem verum_mem) (imp_of_mem h);
+  exact ⟨fun h => mem_mdp verum_mem <| iff_mpr h,
+    fun h => iff_of_imp (imp_of_mem verum_mem) (imp_of_mem h)⟩;
 
-/-- The value of `φ` under the canonical valuation `a ↦ [#a]` is the class of `φ`. -/
+/-- The value of `φ` under the valuation `a ↦ [#a]` is the class of `φ`. -/
+@[simp]
 lemma eval_mk : φ.eval (fun a => (mk (#a) : L.LindenbaumAlgebra)) = mk φ := by
-  induction φ with
-  | atom => rfl;
-  | falsum => rfl;
-  | imp φ ψ ihφ ihψ => rw [eval_imp, ihφ, ihψ, mk_imp];
-  | dia φ ih => rw [eval_dia, ih, mk_dia];
+  induction φ <;> simp_all;
 
 lemma eval_eq_mk_subst (v : α → L.LindenbaumAlgebra) :
     φ.eval v = mk (φ⟦fun a => (v a).out⟧) := by
   rw [← eval_mk, eval_subst];
-  congr;
-  funext a;
-  rw [eval_mk];
-  exact (Quotient.out_eq (v a)).symm;
+  simp only [eval_mk];
+  exact congrArg (φ.eval ·) <| funext fun a => (Quotient.out_eq (v a)).symm;
 
 /--
-The Tarski–Lindenbaum algebra of `L` validates exactly the formulas of `L`.
+The Lindenbaum algebra of `L` validates exactly the formulas of `L`.
 - [CZ98, Theorem 7.1, Theorem 7.2]
 -/
-theorem validates_iff : L.LindenbaumAlgebra ⊧ φ ↔ φ ∈ L := by
-  constructor;
-  · intro h;
-    rw [← mk_eq_top_iff, ← eval_mk];
-    exact h _;
-  · intro h v;
-    rw [eval_eq_mk_subst, mk_eq_top_iff];
-    exact mem_subst h;
+theorem validates_iff : L.LindenbaumAlgebra ⊧ φ ↔ φ ∈ L :=
+  ⟨fun h => by simpa using h fun a => mk (#a),
+    fun h v => by simpa [eval_eq_mk_subst] using mem_subst h⟩
 
 lemma validatesLogic : L.LindenbaumAlgebra ⊧ L := fun _ => validates_iff.mpr
+
+section Lift
+
+variable {A : Type u} [ModalAlgebra A] (hA : A ⊧ L) (v : α → A)
+
+/--
+A valuation `v` in an `L`-algebra `A` lifts to the homomorphism `[φ] ↦ φ.eval v`.
+- [CZ98, §7.7]
+-/
+def lift : ModalAlgebraHom L.LindenbaumAlgebra A where
+  toFun := Quotient.lift (·.eval v) fun _ _ h => ModalAlgebra.validates_iff_iff.mp (hA _ h) v
+  map_sup' a b := by induction a; induction b; exact eval_or
+  map_inf' a b := by induction a; induction b; exact eval_and
+  map_top' := eval_top
+  map_bot' := rfl
+  map_dia' a := by induction a; rfl
+
+@[simp] lemma lift_mk : lift hA v (mk φ) = φ.eval v := rfl
+
+lemma lift_mk_atom (a : α) : lift hA v (mk (#a)) = v a := rfl
+
+end Lift
 
 end LindenbaumAlgebra
 
@@ -218,12 +222,9 @@ A formula belongs to `L` iff it is valid in every modal algebra for `L`.
 - [CZ98, Theorem 7.43]
 -/
 theorem mem_iff_forall_modalAlgebra :
-    φ ∈ L ↔ ∀ (A : Type v) [ModalAlgebra A], A ⊧ L → A ⊧ φ := by
-  constructor;
-  · intro h A _ hA;
-    exact hA φ h;
-  · intro h;
-    exact LindenbaumAlgebra.validates_iff.mp <| h _ LindenbaumAlgebra.validatesLogic;
+    φ ∈ L ↔ ∀ (A : Type v) [ModalAlgebra A], A ⊧ L → A ⊧ φ :=
+  ⟨fun h _ _ hA => hA φ h,
+    fun h => LindenbaumAlgebra.validates_iff.mp <| h _ LindenbaumAlgebra.validatesLogic⟩
 
 end NormalLogic
 

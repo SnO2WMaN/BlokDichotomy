@@ -3,6 +3,7 @@ module
 public import Mathlib.Data.Finset.Basic
 public import Mathlib.Data.List.Basic
 public import Mathlib.Tactic.DeriveCountable
+public import BlokDichotomy.ToMathlib.Order.Notation
 
 /-!
 # Formulas of propositional modal logic
@@ -38,7 +39,10 @@ instance : Bot (Formula α) := ⟨falsum⟩
 
 prefix:max "#" => Formula.atom
 infixr:60 " 🡒 " => Formula.imp
-prefix:95 "◇" => dia
+
+instance : Dia (Formula α) := ⟨dia⟩
+
+@[simp, grind _=_] lemma dia_eq : dia φ = ◇φ := rfl
 
 @[match_pattern] abbrev neg (φ : Formula α) : Formula α := imp φ ⊥
 prefix:75 "∼" => Formula.neg
@@ -55,7 +59,10 @@ infixr:69 " ⋏ " => Formula.and
 
 @[match_pattern]
 abbrev box (φ : Formula α) : Formula α := ∼◇(∼φ)
-prefix:95 "□" => box
+
+instance : Box (Formula α) := ⟨box⟩
+
+@[grind =] lemma box_eq : □φ = ∼◇(∼φ) := rfl
 
 @[match_pattern] abbrev iff (φ ψ : Formula α) : Formula α := (φ 🡒 ψ) ⋏ (ψ 🡒 φ)
 infix:61 " 🡘 " => Formula.iff
@@ -71,8 +78,8 @@ attribute [grind =_] falsum_eq verum_eq iff_eq
 @[grind =] lemma inj_or : φ₁ ⋎ φ₂ = ψ₁ ⋎ ψ₂ ↔ φ₁ = ψ₁ ∧ φ₂ = ψ₂ := by simp [or]
 @[grind =] lemma inj_imp : φ₁ 🡒 φ₂ = ψ₁ 🡒 ψ₂ ↔ φ₁ = ψ₁ ∧ φ₂ = ψ₂ := by simp
 @[grind =] lemma inj_neg : ∼φ = ∼ψ ↔ φ = ψ := by simp [neg]
-@[grind =] lemma inj_box : □φ = □ψ ↔ φ = ψ := by simp
-@[grind =] lemma inj_dia : ◇φ = ◇ψ ↔ φ = ψ := by simp
+@[simp, grind =] lemma inj_dia : ◇φ = ◇ψ ↔ φ = ψ := ⟨fun h => dia.inj h, congrArg _⟩
+@[simp, grind =] lemma inj_box : □φ = □ψ ↔ φ = ψ := by simp [box_eq]
 
 @[grind =]
 def complexity : Formula α → ℕ
@@ -193,6 +200,7 @@ def atoms : Formula α → Finset α
 @[simp] lemma atoms_bot : (⊥ : Formula α).atoms = ∅ := rfl
 @[simp] lemma atoms_imp : (φ 🡒 ψ).atoms = φ.atoms ∪ ψ.atoms := rfl
 @[simp] lemma atoms_dia : (◇φ).atoms = φ.atoms := rfl
+@[simp] lemma atoms_box : (□φ).atoms = φ.atoms := by simp [box_eq]
 
 end
 

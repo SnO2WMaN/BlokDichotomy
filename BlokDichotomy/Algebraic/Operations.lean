@@ -4,20 +4,22 @@ public import BlokDichotomy.Algebraic.Validity
 public import Mathlib.Order.BooleanSubalgebra
 
 /-!
-# Validity under operations on modal algebras
+# Operations on modal algebras
 
-Modal subalgebras. Validity is reflected along injective homomorphisms (subalgebras),
-preserved along surjective homomorphisms (homomorphic images), and a direct product validates
+Subalgebras, direct products and homomorphic images of modal algebras. Validity is reflected along
+injective homomorphisms, preserved along surjective homomorphisms, and a direct product validates
 exactly the formulas valid in every factor.
 
 ## References
 
-- [CZ98, §7.7, Proposition 7.59]
+- [CZ98, §7.7, Proposition 7.59, Proposition 7.61, Proposition 7.62]
 -/
 
 @[expose] public section
 
 universe u v w
+
+/-! ### Subalgebras -/
 
 /--
 A Boolean subalgebra closed under `◇`.
@@ -59,6 +61,122 @@ lemma subtype_injective : Function.Injective S.subtype := Subtype.coe_injective
 
 end ModalSubalgebra
 
+/-! ### Direct products -/
+
+namespace ModalAlgebra
+
+section Pi
+
+variable {ι : Type u} {A : ι → Type v} [∀ i, ModalAlgebra (A i)]
+
+/--
+The direct product of a family of modal algebras, with operations defined componentwise.
+- [CZ98, §7.7]
+-/
+instance instPi : ModalAlgebra (∀ i, A i) where
+  dia f i := ◇f i
+  dia_bot := funext fun _ => dia_bot
+  dia_sup _ _ := funext fun _ => dia_sup _ _
+
+@[simp] lemma pi_dia_apply (f : ∀ i, A i) (i : ι) : (◇f) i = ◇f i := rfl
+
+@[simp] lemma pi_box_apply (f : ∀ i, A i) (i : ι) : (□f) i = □f i := rfl
+
+/-- The projection of a direct product onto a factor. -/
+def proj (i : ι) : ModalAlgebraHom (∀ i, A i) (A i) where
+  toFun f := f i
+  map_sup' _ _ := rfl
+  map_inf' _ _ := rfl
+  map_top' := rfl
+  map_bot' := rfl
+  map_dia' _ := rfl
+
+@[simp] lemma proj_apply (i : ι) (f : ∀ i, A i) : proj i f = f i := rfl
+
+end Pi
+
+section Prod
+
+variable {A : Type u} {B : Type v} [ModalAlgebra A] [ModalAlgebra B]
+
+/--
+The direct product of two modal algebras, with operations defined componentwise.
+- [CZ98, §7.7]
+-/
+instance instProd : ModalAlgebra (A × B) where
+  dia p := (◇p.1, ◇p.2)
+  dia_bot := Prod.ext dia_bot dia_bot
+  dia_sup _ _ := Prod.ext (dia_sup _ _) (dia_sup _ _)
+
+@[simp] lemma fst_dia (p : A × B) : (◇p).1 = ◇p.1 := rfl
+@[simp] lemma snd_dia (p : A × B) : (◇p).2 = ◇p.2 := rfl
+@[simp] lemma fst_box (p : A × B) : (□p).1 = □p.1 := rfl
+@[simp] lemma snd_box (p : A × B) : (□p).2 = □p.2 := rfl
+
+/-- The first projection of a direct product. -/
+def fst : ModalAlgebraHom (A × B) A where
+  toFun := Prod.fst
+  map_sup' _ _ := rfl
+  map_inf' _ _ := rfl
+  map_top' := rfl
+  map_bot' := rfl
+  map_dia' _ := rfl
+
+/-- The second projection of a direct product. -/
+def snd : ModalAlgebraHom (A × B) B where
+  toFun := Prod.snd
+  map_sup' _ _ := rfl
+  map_inf' _ _ := rfl
+  map_top' := rfl
+  map_bot' := rfl
+  map_dia' _ := rfl
+
+@[simp] lemma fst_apply (p : A × B) : fst p = p.1 := rfl
+@[simp] lemma snd_apply (p : A × B) : snd p = p.2 := rfl
+
+end Prod
+
+end ModalAlgebra
+
+/-! ### Homomorphic images -/
+
+namespace ModalAlgebraHom
+
+variable {A : Type u} {B : Type v} [ModalAlgebra A] [ModalAlgebra B] (f : ModalAlgebraHom A B)
+
+/--
+The homomorphic image `f(A)`, as a subalgebra of `B`.
+- [CZ98, §7.7]
+-/
+def range : ModalSubalgebra B where
+  carrier := Set.range f
+  supClosed' := by rintro _ ⟨a, rfl⟩ _ ⟨b, rfl⟩; exact ⟨a ⊔ b, map_sup f a b⟩
+  infClosed' := by rintro _ ⟨a, rfl⟩ _ ⟨b, rfl⟩; exact ⟨a ⊓ b, map_inf f a b⟩
+  compl_mem' := by rintro _ ⟨a, rfl⟩; exact ⟨aᶜ, f.map_compl a⟩
+  bot_mem' := ⟨⊥, map_bot f⟩
+  dia_mem' := by rintro _ ⟨a, rfl⟩; exact ⟨◇a, f.map_dia a⟩
+
+@[simp] lemma mem_range {b : B} : b ∈ f.range ↔ ∃ a, f a = b := Iff.rfl
+
+/-- `f`, regarded as a homomorphism onto its image. -/
+def rangeRestrict : ModalAlgebraHom A f.range where
+  toFun a := ⟨f a, a, rfl⟩
+  map_sup' a b := Subtype.ext <| map_sup f a b
+  map_inf' a b := Subtype.ext <| map_inf f a b
+  map_top' := Subtype.ext <| map_top f
+  map_bot' := Subtype.ext <| map_bot f
+  map_dia' a := Subtype.ext <| f.map_dia a
+
+@[simp] lemma coe_rangeRestrict (a : A) : (f.rangeRestrict a : B) = f a := rfl
+
+lemma rangeRestrict_surjective : Function.Surjective f.rangeRestrict := by
+  rintro ⟨_, a, rfl⟩;
+  exact ⟨a, rfl⟩;
+
+end ModalAlgebraHom
+
+/-! ### Validity -/
+
 namespace ModalAlgebra
 
 variable {α : Type w} {A : Type u} {B : Type v} [ModalAlgebra A] [ModalAlgebra B]
@@ -69,27 +187,7 @@ A formula valid in `B` is valid in every algebra embedded in `B`.
 - [CZ98, Proposition 7.59]
 -/
 theorem Validates.of_injective {f : ModalAlgebraHom A B} (hf : Function.Injective f)
-    (h : B ⊧ φ) : A ⊧ φ := by
-  intro v;
-  apply hf;
-  rw [Formula.eval_hom, h, map_top];
-
-/--
-A formula valid in `A` is valid in every homomorphic image of `A`.
-- [CZ98, §7.7]
--/
-theorem Validates.of_surjective {f : ModalAlgebraHom A B} (hf : Function.Surjective f)
-    (h : A ⊧ φ) : B ⊧ φ := by
-  intro v;
-  choose w hw using fun a => hf (v a);
-  have : f ∘ w = v := funext hw;
-  rw [← this, ← Formula.eval_hom, h, map_top];
-
-lemma logic_le_of_injective {f : ModalAlgebraHom A B} (hf : Function.Injective f) :
-    (logic B : NormalLogic α) ≤ logic A := fun _ => Validates.of_injective hf
-
-lemma logic_le_of_surjective {f : ModalAlgebraHom A B} (hf : Function.Surjective f) :
-    (logic A : NormalLogic α) ≤ logic B := fun _ => Validates.of_surjective hf
+    (h : B ⊧ φ) : A ⊧ φ := fun v => hf <| by simp [h _]
 
 /--
 A formula valid in `A` is valid in every subalgebra of `A`.
@@ -98,27 +196,72 @@ A formula valid in `A` is valid in every subalgebra of `A`.
 lemma Validates.subalgebra (S : ModalSubalgebra A) (h : A ⊧ φ) : S ⊧ φ :=
   h.of_injective S.subtype_injective
 
+/--
+A formula valid in `A` is valid in every surjective homomorphic image of `A`.
+- [CZ98, Proposition 7.62]
+-/
+theorem Validates.of_surjective {f : ModalAlgebraHom A B} (hf : Function.Surjective f)
+    (h : A ⊧ φ) : B ⊧ φ := by
+  intro v;
+  choose w hw using fun a => hf (v a);
+  simpa [show f ∘ w = v from funext hw, h _] using (Formula.eval_hom f (v := w) (φ := φ)).symm;
+
+/--
+A formula valid in `A` is valid in every homomorphic image of `A`.
+- [CZ98, Proposition 7.62]
+-/
+lemma Validates.range (f : ModalAlgebraHom A B) (h : A ⊧ φ) : f.range ⊧ φ :=
+  h.of_surjective f.rangeRestrict_surjective
+
+lemma logic_le_of_injective {f : ModalAlgebraHom A B} (hf : Function.Injective f) :
+    (logic B : NormalLogic α) ≤ logic A := fun _ => Validates.of_injective hf
+
+lemma logic_le_of_surjective {f : ModalAlgebraHom A B} (hf : Function.Surjective f) :
+    (logic A : NormalLogic α) ≤ logic B := fun _ => Validates.of_surjective hf
+
 section Pi
 
 variable {ι : Type u} {A : ι → Type v} [∀ i, ModalAlgebra (A i)]
 
-lemma eval_pi_apply (v : α → ∀ i, A i) (i : ι) : φ.eval v i = φ.eval (fun a => v a i) :=
+@[simp] lemma eval_pi_apply (v : α → ∀ i, A i) (i : ι) :
+    φ.eval v i = φ.eval (fun a => v a i) :=
   Formula.eval_hom (proj i)
 
 /--
 A direct product validates exactly the formulas valid in every factor.
-- [CZ98, §7.7]
+- [CZ98, Proposition 7.61]
 -/
 theorem pi_validates_iff : (∀ i, A i) ⊧ φ ↔ ∀ i, A i ⊧ φ := by
   classical
   constructor;
   · intro h i v;
-    simpa [eval_pi_apply] using congrFun (h fun a => Function.update (fun _ => ⊤) i (v a)) i;
+    simpa using congrFun (h fun a => Function.update (fun _ => ⊤) i (v a)) i;
   · intro h v;
     funext i;
-    simpa [eval_pi_apply] using h i (fun a => v a i);
+    simpa using h i _;
 
 end Pi
+
+@[simp] lemma eval_fst (v : α → A × B) : (φ.eval v).1 = φ.eval (Prod.fst ∘ v) :=
+  Formula.eval_hom fst
+
+@[simp] lemma eval_snd (v : α → A × B) : (φ.eval v).2 = φ.eval (Prod.snd ∘ v) :=
+  Formula.eval_hom snd
+
+/--
+`A × B` validates exactly the formulas valid in both `A` and `B`.
+- [CZ98, §7.7]
+-/
+theorem prod_validates_iff : (A × B) ⊧ φ ↔ A ⊧ φ ∧ B ⊧ φ := by
+  constructor;
+  · intro h;
+    constructor;
+    · intro v;
+      simpa [Function.comp_def] using congrArg Prod.fst (h fun a => (v a, ⊤));
+    · intro v;
+      simpa [Function.comp_def] using congrArg Prod.snd (h fun a => (⊤, v a));
+  · rintro ⟨hA, hB⟩ v;
+    exact Prod.ext (by simpa using hA _) (by simpa using hB _);
 
 end ModalAlgebra
 
