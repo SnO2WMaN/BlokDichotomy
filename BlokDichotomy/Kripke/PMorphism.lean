@@ -72,7 +72,7 @@ lemma back_relItr (Rxz : f x ≺^[n] z) : ∃ y, (x ≺^[n] y) ∧ f y = z := by
     obtain ⟨y', Ryy', rfl⟩ := ih Rwz;
     exact ⟨y', ⟨y, Rxy, Ryy'⟩, rfl⟩;
 
-lemma mem_reach (h : y ∈ F.Reach x) : f y ∈ G.Reach (f x) := by
+lemma forth_reflTransRel (h : x ≺^* y) : f x ≺^* f y := by
   obtain ⟨n, Rxy⟩ := h;
   exact ⟨n, f.forth_relItr Rxy⟩;
 
@@ -81,14 +81,14 @@ lemma mem_reach (h : y ∈ F.Reach x) : f y ∈ G.Reach (f x) := by
 def ofPointGenerate (F : Frame κ₁) (x : F.World) : F⥜x →ₚ F where
   toFun := Subtype.val
   forth Rxy := Rxy
-  back {y z} Ryz := ⟨⟨z, reach_of_rel y.2 Ryz⟩, Ryz, rfl⟩
+  back {y z} Ryz := ⟨⟨z, ReflTransRel.tail y.2 Ryz⟩, Ryz, rfl⟩
 
 def pointGenerate (x : F.World) : F⥜x →ₚ G⥜(f x) where
-  toFun y := ⟨f y.1, f.mem_reach y.2⟩
+  toFun y := ⟨f y.1, f.forth_reflTransRel y.2⟩
   forth Rxy := f.forth Rxy
   back {y z} Ryz := by
     obtain ⟨w, Ryw, hwz⟩ := f.back Ryz;
-    exact ⟨⟨w, reach_of_rel y.2 Ryw⟩, Ryw, Subtype.ext hwz⟩;
+    exact ⟨⟨w, ReflTransRel.tail y.2 Ryw⟩, Ryw, Subtype.ext hwz⟩;
 
 lemma pointGenerate_surjective (x : F.World) : Function.Surjective (f.pointGenerate x) := by
   rintro ⟨z, n, Rxz⟩;
@@ -188,7 +188,7 @@ variable {u : F.World} {r : Prop}
 
 private lemma pointGenerate_validateLogic_iff_onePoint (hsucc : ∀ v, u ≺ v → v = u)
     (hr : u ≺ u ↔ r) : F⥜u ⊧ L ↔ (⟨fun _ _ => r⟩ : Frame (Fin 1)) ⊧ L := by
-  have hu : ∀ y : (F⥜u).World, y.1 = u := fun y => eq_of_mem_reach_of_forall_rel_eq hsucc y.2;
+  have hu : ∀ y : (F⥜u).World, y.1 = u := fun y => eq_of_reflTransRel_of_forall_rel_eq hsucc y.2;
   constructor;
   · let f : F⥜u →ₚ (⟨fun _ _ => r⟩ : Frame (Fin 1)) := {
       toFun _ := 0

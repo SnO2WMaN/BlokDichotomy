@@ -23,9 +23,9 @@ namespace Frame
 
 variable {F : Frame κ} {G : Frame ι} {x y z : F.World} {n m k : ℕ}
 
-/-- `F` has a point `x` with `x ≺^[n] x` for some `n > 0`.
+/-- `F` has a point `x` with `x ≺^+ x`.
 - [CZ98, p. 362] -/
-def HasCycle (F : Frame κ) : Prop := ∃ x : F.World, ∃ n, 0 < n ∧ x ≺^[n] x
+def HasCycle (F : Frame κ) : Prop := ∃ x : F.World, x ≺^+ x
 
 /-- `F` has no cycle.
 - [CZ98, p. 362] -/
@@ -102,15 +102,14 @@ private lemma exists_relItr_self_of_card_le [Finite F.World] (Rxy : x ≺^[n] y)
   rw [hpn] at h₃;
   exact ⟨p i, i, j, hlt, by omega, h₁, h₂, h₃⟩;
 
-/-- If `x ≺^[Nat.card F.World] y`, then some `z` reachable from `x` has `z ≺^[k] z` for some
-`k > 0`. -/
+/-- If `x ≺^[Nat.card F.World] y`, then some `z` reachable from `x` has `z ≺^+ z`. -/
 lemma exists_cycle_of_relItr_card [Finite F.World] (Rxy : x ≺^[Nat.card F.World] y) :
-    ∃ z ∈ F.Reach x, ∃ k > 0, z ≺^[k] z := by
+    ∃ z, (x ≺^* z) ∧ z ≺^+ z := by
   obtain ⟨z, i, j, hij, -, Rxz, Rzz, -⟩ := exists_relItr_self_of_card_le Rxy le_rfl;
-  exact ⟨z, mem_reach_of_relItr Rxz, j - i, by omega, Rzz⟩;
+  exact ⟨z, reflTransRel_of_relItr Rxz, j - i, by omega, Rzz⟩;
 
 /-- On a finite frame, a reachable point is reachable in fewer than `Nat.card F.World` steps. -/
-lemma exists_relItr_lt_card_of_mem_reach [Finite F.World] (h : y ∈ F.Reach x) :
+lemma exists_relItr_lt_card_of_reflTransRel [Finite F.World] (h : x ≺^* y) :
     ∃ n < Nat.card F.World, x ≺^[n] y := by
   obtain ⟨n, Rxy⟩ := h;
   induction n using Nat.strong_induction_on with
@@ -147,8 +146,8 @@ lemma cycleFree_iff_exists_not_relItr [Finite F.World] :
   · intro h;
     use Nat.card F.World;
     intro x y Rxy;
-    obtain ⟨z, -, k, hk, Rzz⟩ := exists_cycle_of_relItr_card Rxy;
-    exact h ⟨z, k, hk, Rzz⟩;
+    obtain ⟨z, -, Rzz⟩ := exists_cycle_of_relItr_card Rxy;
+    exact h ⟨z, Rzz⟩;
   · rintro ⟨n, hn⟩ ⟨x, k, hk, Rxx⟩;
     obtain ⟨z, Rxz⟩ := exists_relItr_of_le (relItr_mul (m := n) Rxx) (Nat.le_mul_of_pos_left n hk);
     exact hn x z Rxz;
@@ -189,7 +188,7 @@ variable {M : Model κ α} {x : M.World}
 /-- On a finite frame, `x ⊩ farthest n` for some `n`, or a cycle is reachable from `x`.
 - [CZ98, p. 362] -/
 lemma exists_forces_farthest_or_reach_cycle [Finite M.World] :
-    (∃ n, x ⊩[M] farthest n) ∨ ∃ y ∈ M.Reach x, ∃ k, 0 < k ∧ y ≺^[k] y := by
+    (∃ n, x ⊩[M] farthest n) ∨ ∃ y, (x ≺^* y) ∧ y ≺^+ y := by
   by_cases hex : ∃ n, ∀ y : M.World, x ⊀^[n] y;
   · obtain ⟨n, hn, hn'⟩ := Nat.exists_not_and_succ_of_not_zero_of_exists
       (fun h₀ => h₀ x Frame.relItr_zero_self) hex;

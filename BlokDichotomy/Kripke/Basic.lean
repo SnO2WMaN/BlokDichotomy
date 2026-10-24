@@ -74,6 +74,36 @@ lemma exists_relItr_of_le (Rxy : x ≺^[n] y) (hmn : m ≤ n) : ∃ z, x ≺^[m]
 lemma exists_relItr_of_lt (Rxy : x ≺^[n] y) (hmn : m < n) : ∃ z, x ≺^[m] z :=
   exists_relItr_of_le Rxy hmn.le
 
+/-- `x ≺^+ y`: `y` is reachable from `x` in a positive number of steps. -/
+def TransRel (x y : F.World) : Prop := ∃ n, 0 < n ∧ x ≺^[n] y
+notation x " ≺^+ " y => TransRel x y
+
+/-- `x ≺^* y`: `y` is reachable from `x` in some number of steps. -/
+def ReflTransRel (x y : F.World) : Prop := ∃ n, x ≺^[n] y
+notation x " ≺^* " y => ReflTransRel x y
+
+lemma TransRel.reflTransRel (h : x ≺^+ y) : x ≺^* y := by
+  obtain ⟨n, -, h⟩ := h;
+  exact ⟨n, h⟩
+
+lemma reflTransRel_of_relItr (Rxy : x ≺^[n] y) : x ≺^* y := ⟨n, Rxy⟩
+
+lemma transRel_of_relItr (hn : 0 < n) (Rxy : x ≺^[n] y) : x ≺^+ y := ⟨n, hn, Rxy⟩
+
+@[simp, grind .] lemma reflTransRel_refl (x : F.World) : x ≺^* x := ⟨0, relItr_zero_self⟩
+
+lemma reflTransRel_of_rel (Rxy : x ≺ y) : x ≺^* y := ⟨1, iff_relItr_one.mpr Rxy⟩
+
+lemma transRel_of_rel (Rxy : x ≺ y) : x ≺^+ y := ⟨1, Nat.one_pos, iff_relItr_one.mpr Rxy⟩
+
+lemma reflTransRel_trans (Rxy : x ≺^* y) (Ryz : y ≺^* z) : x ≺^* z := by
+  obtain ⟨n, hn⟩ := Rxy;
+  obtain ⟨m, hm⟩ := Ryz;
+  exact ⟨n + m, relItr_trans hn hm⟩
+
+lemma ReflTransRel.tail (Rxy : x ≺^* y) (Ryz : y ≺ z) : x ≺^* z :=
+  reflTransRel_trans Rxy (reflTransRel_of_rel Ryz)
+
 @[simp, grind .] lemma rel_refl [Std.Refl F.Rel'] (x : F.World) : x ≺ x := refl x
 
 @[grind →]
