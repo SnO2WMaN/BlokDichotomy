@@ -22,6 +22,8 @@ true at it) with its preorder, and the definable type of a point.
 
 @[expose] public section
 
+namespace Modal
+
 universe u v
 
 variable {κ : Type u} {α : Type v}
@@ -574,5 +576,7 @@ theorem logic_toIntuitionistic_toModal_eq [Nonempty α] (hGrz : G ⊧ logicGrz (
 end
 
 end GeneralFrame
+
+end Modal
 
 end

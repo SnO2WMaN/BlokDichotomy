@@ -1,6 +1,6 @@
 module
 
-public import BlokDichotomy.Kripke.Correspondence
+public import BlokDichotomy.Modal.Kripke.Correspondence
 public import BlokDichotomy.Propositional.Kripke.Completeness
 
 /-!
@@ -20,6 +20,8 @@ universe u v
 
 namespace Propositional
 
+open Modal
+
 variable {κ : Type u} {α : Type v} {F : Frame κ} {A B : Formula α}
 
 namespace Formula
@@ -27,7 +29,7 @@ namespace Formula
 /-- The Gödel translation.
 - [CZ98, §3.9] -/
 @[grind]
-def gödelTranslate : Formula α → _root_.Formula α
+def gödelTranslate : Formula α → Modal.Formula α
   | #a    => □(#a)
   | ⊥     => ⊥
   | A ⋏ B => A.gödelTranslate ⋏ B.gödelTranslate
@@ -35,7 +37,7 @@ def gödelTranslate : Formula α → _root_.Formula α
   | A 🡒 B => □(A.gödelTranslate 🡒 B.gödelTranslate)
 scoped[Propositional] postfix:max "ᵍ" => Formula.gödelTranslate
 
-@[simp, grind =] lemma gödelTranslate_atom {a : α} : (#a)ᵍ = □(#a : _root_.Formula α) := rfl
+@[simp, grind =] lemma gödelTranslate_atom {a : α} : (#a)ᵍ = □(#a : Modal.Formula α) := rfl
 @[simp, grind =] lemma gödelTranslate_bot : (⊥ : Formula α)ᵍ = ⊥ := rfl
 @[simp, grind =] lemma gödelTranslate_and : (A ⋏ B)ᵍ = Aᵍ ⋏ Bᵍ := rfl
 @[simp, grind =] lemma gödelTranslate_or : (A ⋎ B)ᵍ = Aᵍ ⋎ Bᵍ := rfl
@@ -45,28 +47,28 @@ end Formula
 
 /-- `M` is a modal companion of `L` if the Gödel translation embeds `L` into `M`.
 - [CZ98, §9.6] -/
-def _root_.NormalLogic.IsModalCompanionOf (M : NormalLogic α) (L : Logic α) : Prop :=
+def _root_.Modal.NormalLogic.IsModalCompanionOf (M : NormalLogic α) (L : Logic α) : Prop :=
   ∀ A : Formula α, A ∈ L ↔ Aᵍ ∈ M
 
 namespace Model
 
-variable {M : _root_.Model κ α} {x : M.World}
+variable {M : Modal.Model κ α} {x : M.World}
 
 /-- The intuitionistic model on the frame of a transitive modal model `M`, where `#a` is true at
 `x` iff `□#a` is true at `x` in `M`. -/
-def ofModal (M : _root_.Model κ α) [IsTrans _ M.Rel] : Propositional.Model κ α where
+def ofModal (M : Modal.Model κ α) [IsTrans _ M.Rel] : Propositional.Model κ α where
   toFrame := M.toFrame
   Val x a := x ⊩[M] □(#a)
   hereditary := by
-    grind [_root_.Model.World.forces_box_of_rel];
+    grind [Modal.Model.World.forces_box_of_rel];
 
 /-- If the truth sets of `W` are those of `□#a` in `⟨F, V⟩`, then a formula is forced in the
 intuitionistic model `⟨F, W⟩` iff its Gödel translation is forced in `⟨F, V⟩`. -/
 lemma forces_gödelTranslate_iff_of_val [Std.Refl F.Rel] {V W : κ → α → Prop}
     {hW : ∀ {x y : κ}, F.Rel x y → ∀ {a}, W x a → W y a}
-    (h : ∀ (x : κ) (a : α), W x a ↔ x ⊩[(⟨F, V⟩ : _root_.Model κ α)] □(#a))
+    (h : ∀ (x : κ) (a : α), W x a ↔ x ⊩[(⟨F, V⟩ : Modal.Model κ α)] □(#a))
     {x : κ} :
-    x ⊩[(⟨F, W, hW⟩ : Propositional.Model κ α)] A ↔ x ⊩[(⟨F, V⟩ : _root_.Model κ α)] Aᵍ := by
+    x ⊩[(⟨F, W, hW⟩ : Propositional.Model κ α)] A ↔ x ⊩[(⟨F, V⟩ : Modal.Model κ α)] Aᵍ := by
   induction A generalizing x <;> grind;
 
 /-- - [CZ98, Lemma 3.81] -/
@@ -81,15 +83,15 @@ end Model
 theorem Frame.validates_gödelTranslate_iff [IsPreorder _ F.Rel] : F ⊧ Aᵍ ↔ F ⊧ A := by
   constructor;
   · intro h V hV x;
-    have hV' : ∀ (x : κ) (a : α), V x a ↔ x ⊩[(⟨F, V⟩ : _root_.Model κ α)] □(#a) := by
+    have hV' : ∀ (x : κ) (a : α), V x a ↔ x ⊩[(⟨F, V⟩ : Modal.Model κ α)] □(#a) := by
       intro x a;
-      rw [_root_.Model.World.forces_box];
+      rw [Modal.Model.World.forces_box];
       constructor;
       · exact fun hx y Rxy => hV Rxy hx;
       · exact fun hx => hx x (Std.Refl.refl x);
     exact (Propositional.Model.forces_gödelTranslate_iff_of_val (hW := hV) hV').mpr (h V x);
   · intro h V x;
-    let M : _root_.Model κ α := ⟨F, V⟩;
+    let M : Modal.Model κ α := ⟨F, V⟩;
     exact Propositional.Model.forces_ofModal_iff.mp
       (h _ (Propositional.Model.ofModal M).hereditary x);
 

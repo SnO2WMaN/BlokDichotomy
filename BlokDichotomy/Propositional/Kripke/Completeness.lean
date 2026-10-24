@@ -20,6 +20,8 @@ universe v
 
 namespace Propositional
 
+open Modal
+
 namespace Logic
 
 variable {α : Type v} {L : Logic α} {Γ : FormulaSet α} {A B : Formula α}

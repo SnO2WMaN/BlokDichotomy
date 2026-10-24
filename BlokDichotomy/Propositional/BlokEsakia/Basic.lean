@@ -23,6 +23,8 @@ universe v
 
 namespace Propositional
 
+open Modal
+
 variable {α : Type v} {L : NormalLogic α} {A B : Formula α}
 
 section
@@ -63,7 +65,7 @@ end
 /-- The superintuitionistic fragment of a normal extension `L` of `𝐒𝟒`: the formulas whose Gödel
 translation lies in `L`. It is written `ρ L` in [CZ98, §9.6].
 - [CZ98, §9.6] -/
-def _root_.NormalLogic.siFragment (L : NormalLogic α) [L.IsNExt 𝐒𝟒] : Logic α where
+def _root_.Modal.NormalLogic.siFragment (L : NormalLogic α) [L.IsNExt 𝐒𝟒] : Logic α where
   carrier := {A | Aᵍ ∈ L}
   mdp hA hAB := NormalLogic.mem_mdp hA <| NormalLogic.mem_mdp hAB NormalLogic.axiomT
   subst {A s} hA :=
@@ -73,14 +75,14 @@ section
 
 variable [L.IsNExt 𝐒𝟒]
 
-@[simp] lemma _root_.NormalLogic.mem_siFragment : A ∈ L.siFragment ↔ Aᵍ ∈ L := Iff.rfl
+@[simp] lemma _root_.Modal.NormalLogic.mem_siFragment : A ∈ L.siFragment ↔ Aᵍ ∈ L := Iff.rfl
 
 instance : L.siFragment.IsExt 𝐈𝐧𝐭 :=
   ⟨fun _ hA => NormalLogic.IsNExt.logic_le <| gödelTranslate_mem_logicS4_iff.mp hA⟩
 
 end
 
-lemma _root_.NormalLogic.siFragment_mono {L₁ L₂ : NormalLogic α} [L₁.IsNExt 𝐒𝟒] [L₂.IsNExt 𝐒𝟒]
+lemma _root_.Modal.NormalLogic.siFragment_mono {L₁ L₂ : NormalLogic α} [L₁.IsNExt 𝐒𝟒] [L₂.IsNExt 𝐒𝟒]
     (h : L₁ ≤ L₂) : L₁.siFragment ≤ L₂.siFragment :=
   fun _ hA => h hA
 
@@ -150,7 +152,7 @@ theorem siFragment_greatestMC_eq : L.greatestMC.siFragment = L := by
   intro A hA;
   by_contra hAL;
   have h₁ : L.canonicalGeneralFrame.toModal ⊧ L.greatestMC := by
-    apply _root_.GeneralFrame.validatesLogic_add GeneralFrame.toModal_validates_logicGrz;
+    apply Modal.GeneralFrame.validatesLogic_add GeneralFrame.toModal_validates_logicGrz;
     rintro _ ⟨B, hB, rfl⟩;
     exact GeneralFrame.toModal_validates_gödelTranslate_iff.mpr
       (canonicalGeneralFrame.validatesLogic_self B hB);
