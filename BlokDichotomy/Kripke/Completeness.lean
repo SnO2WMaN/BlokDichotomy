@@ -249,23 +249,19 @@ lemma consistent_iff_nonempty_maximalConsistentSet :
   · rintro ⟨x⟩;
     exact consistent_iff.mpr ⟨⊥, fun h => x.bot_not_mem <| x.mem_of_mem_logic h⟩;
 
-/-- The canonical model of `L`: the worlds are the maximal `L`-consistent sets, `x ≺ y` iff
-`◇φ ∈ x` for every `φ ∈ y`, and `#a` is true at `x` iff `#a ∈ x`.
+/-- The canonical frame of `L`: the worlds are the maximal `L`-consistent sets and `x ≺ y` iff
+`◇φ ∈ x` for every `φ ∈ y`.
 - [CZ98, §5.1]
 -/
-def canonicalModel (L : NormalLogic α) : Model L.MaximalConsistentSet α where
+def canonicalFrame (L : NormalLogic α) : Frame L.MaximalConsistentSet where
   Rel' x y := ∀ φ ∈ y, ◇φ ∈ x
-  Val' x a := #a ∈ x
 
-namespace canonicalModel
+namespace canonicalFrame
 
-variable {x y : L.canonicalModel.World}
+variable {x y : L.canonicalFrame.World}
 
 omit [L.IsNExt 𝐊] in
 lemma rel_def : x ≺ y ↔ ∀ φ ∈ y, ◇φ ∈ x := Iff.rfl
-
-omit [L.IsNExt 𝐊] in
-lemma val_def {a : α} : L.canonicalModel.Val x a ↔ #a ∈ x := Iff.rfl
 
 lemma rel_iff_box : x ≺ y ↔ ∀ φ, □φ ∈ x → φ ∈ y := by
   constructor;
@@ -296,6 +292,26 @@ lemma exists_rel_of_dia_mem (h : ◇φ ∈ x) : ∃ y, x ≺ y ∧ φ ∈ y := b
   exact ⟨y, rel_iff_box.mpr fun ψ hB => hsub <| Set.mem_insert_of_mem _ hB,
     hsub <| Set.mem_insert φ _⟩;
 
+end canonicalFrame
+
+/-- The canonical model of `L`: its frame is the canonical frame and `#a` is true at `x` iff
+`#a ∈ x`.
+- [CZ98, §5.1]
+-/
+def canonicalModel (L : NormalLogic α) : Model L.MaximalConsistentSet α where
+  toFrame := L.canonicalFrame
+  Val' x a := #a ∈ x
+
+namespace canonicalModel
+
+variable {x y : L.canonicalModel.World}
+
+omit [L.IsNExt 𝐊] in
+lemma toFrame_eq : L.canonicalModel.toFrame = L.canonicalFrame := rfl
+
+omit [L.IsNExt 𝐊] in
+lemma val_def {a : α} : L.canonicalModel.Val x a ↔ #a ∈ x := Iff.rfl
+
 /-- `x ⊩ φ` iff `φ ∈ x`.
 - [CZ98, Theorem 5.4]
 -/
@@ -311,7 +327,7 @@ theorem truthlemma : x ⊩ φ ↔ φ ∈ x := by
     · rintro ⟨y, Rxy, hy⟩;
       exact Rxy _ <| ih.mp hy;
     · intro h;
-      obtain ⟨y, Rxy, hy⟩ := exists_rel_of_dia_mem h;
+      obtain ⟨y, Rxy, hy⟩ := canonicalFrame.exists_rel_of_dia_mem h;
       use y;
       constructor;
       · assumption;
