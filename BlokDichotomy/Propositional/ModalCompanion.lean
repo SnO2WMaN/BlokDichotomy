@@ -35,7 +35,7 @@ def gödelTranslate : Formula α → _root_.Formula α
   | A 🡒 B => □(A.gödelTranslate 🡒 B.gödelTranslate)
 scoped[Propositional] postfix:max "ᵍ" => Formula.gödelTranslate
 
-@[simp, grind =] lemma gödelTranslate_atom {a : α} : (#a)ᵍ = □(#a) := rfl
+@[simp, grind =] lemma gödelTranslate_atom {a : α} : (#a)ᵍ = □(#a : _root_.Formula α) := rfl
 @[simp, grind =] lemma gödelTranslate_bot : (⊥ : Formula α)ᵍ = ⊥ := rfl
 @[simp, grind =] lemma gödelTranslate_and : (A ⋏ B)ᵍ = Aᵍ ⋏ Bᵍ := rfl
 @[simp, grind =] lemma gödelTranslate_or : (A ⋎ B)ᵍ = Aᵍ ⋎ Bᵍ := rfl

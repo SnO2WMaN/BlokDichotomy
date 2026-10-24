@@ -1,5 +1,12 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+public import BlokDichotomy.Algebraic.Basic
+public import BlokDichotomy.Algebraic.Frame
+public import BlokDichotomy.Algebraic.Lindenbaum
+public import BlokDichotomy.Algebraic.Operations.HomomorphicImage.Basic
+public import BlokDichotomy.Algebraic.Operations.Product.Basic
+public import BlokDichotomy.Algebraic.Operations.Subalgebra.Basic
+public import BlokDichotomy.Algebraic.Validity
 public import BlokDichotomy.Blok
 public import BlokDichotomy.Formula
 public import BlokDichotomy.GeneralFrame.Basic
@@ -27,3 +34,4 @@ public import BlokDichotomy.Propositional.Kripke.Completeness
 public import BlokDichotomy.Propositional.Logic.Basic
 public import BlokDichotomy.Propositional.ModalCompanion
 public import BlokDichotomy.ToMathlib.Order.Monotone.Basic
+public import BlokDichotomy.ToMathlib.Order.Notation
