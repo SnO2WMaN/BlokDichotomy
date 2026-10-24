@@ -166,7 +166,7 @@ theorem siFragment_leastMC_eq : L.leastMC.siFragment = L :=
 
 /-- `L.leastMC` is a modal companion of `L`.
 - [CZ98, Theorem 9.57] -/
-theorem isModalCompanion_leastMC : L.IsModalCompanion L.leastMC := by
+theorem leastMC_isModalCompanionOf : L.leastMC.IsModalCompanionOf L := by
   intro A;
   constructor;
   · exact gödelTranslate_mem_leastMC;
@@ -176,7 +176,7 @@ theorem isModalCompanion_leastMC : L.IsModalCompanion L.leastMC := by
 
 /-- `L.greatestMC` is a modal companion of `L`.
 - [CZ98, Theorem 9.57] -/
-theorem isModalCompanion_greatestMC : L.IsModalCompanion L.greatestMC := by
+theorem greatestMC_isModalCompanionOf : L.greatestMC.IsModalCompanionOf L := by
   intro A;
   constructor;
   · exact gödelTranslate_mem_greatestMC;

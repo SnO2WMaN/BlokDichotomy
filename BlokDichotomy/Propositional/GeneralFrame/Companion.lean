@@ -77,7 +77,7 @@ variable {G : _root_.GeneralFrame κ} [IsPreorder κ G.Rel]
 lemma _root_.GeneralFrame.toIntuitionistic_toModal_adm_subset :
     G.toIntuitionistic.toModal.Adm ⊆ G.Adm := by
   intro X hX;
-  have h : BooleanSubalgebra.closure G.toIntuitionistic.Adm ≤ G.admSubalgebra :=
+  have h : BooleanSubalgebra.closure G.toIntuitionistic.Adm ≤ G.admBooleanSubalgebra :=
     BooleanSubalgebra.closure_le.mpr _root_.GeneralFrame.upAdm_subset_adm;
   exact h hX
 

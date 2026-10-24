@@ -319,7 +319,7 @@ theorem _root_.NormalLogic.siFragment_logicGrz : (𝐆𝐫𝐳 : NormalLogic α)
 
 /-- `𝐆𝐫𝐳` is a modal companion of `𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem logicInt_isModalCompanion_logicGrz : 𝐈𝐧𝐭.IsModalCompanion (α := α) 𝐆𝐫𝐳 :=
+theorem logicGrz_isModalCompanionOf_logicInt : (𝐆𝐫𝐳 : NormalLogic α).IsModalCompanionOf 𝐈𝐧𝐭 :=
   fun A => (Iff.of_eq (congrArg (A ∈ ·) NormalLogic.siFragment_logicGrz.symm)).trans
     NormalLogic.mem_siFragment
 

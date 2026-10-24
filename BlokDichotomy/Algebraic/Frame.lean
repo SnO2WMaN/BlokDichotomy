@@ -27,11 +27,6 @@ variable {F : Frame κ} {X Y : Set F.World}
 
 @[simp] lemma diaSet_empty : F.diaSet ∅ = ∅ := by simp [diaSet]
 
-lemma diaSet_union : F.diaSet (X ∪ Y) = F.diaSet X ∪ F.diaSet Y := by
-  ext w;
-  simp only [diaSet, Set.mem_union, Set.mem_ofPred_eq];
-  grind;
-
 /--
 The dual algebra `F⁺` of a Kripke frame: the subsets of its worlds, with `◇X` the set of worlds
 seeing a point of `X`.

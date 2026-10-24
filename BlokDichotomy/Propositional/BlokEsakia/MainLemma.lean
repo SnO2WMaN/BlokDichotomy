@@ -201,12 +201,13 @@ lemma preimage_typeOf_mem_adm (hV : G.IsAdmissible V) (a : Finset (Formula α)) 
     {x | G.typeOf V A x = a} ∈ G.Adm := by
   by_cases ha : a ⊆ A.subformulas;
   · have h₁ : ∀ B ∈ A.subformulas,
-        (if B ∈ a then {x | x ⊩[G.model V] B} else {x | x ⊩[G.model V] B}ᶜ) ∈ G.admSubalgebra := by
+        (if B ∈ a then {x | x ⊩[G.model V] B} else {x | x ⊩[G.model V] B}ᶜ) ∈
+          G.admBooleanSubalgebra := by
       intro B _;
       split_ifs;
       · exact truthSet_mem hV B;
       · exact G.compl_mem <| truthSet_mem hV B;
-    have h₂ := BooleanSubalgebra.setOf_forall_mem G.admSubalgebra A.subformulas h₁;
+    have h₂ := BooleanSubalgebra.setOf_forall_mem G.admBooleanSubalgebra A.subformulas h₁;
     have h₃ : {x | G.typeOf V A x = a} =
         {x | ∀ B ∈ A.subformulas,
           x ∈ if B ∈ a then {x | x ⊩[G.model V] B} else {x | x ⊩[G.model V] B}ᶜ} := by

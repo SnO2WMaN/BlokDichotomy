@@ -89,7 +89,7 @@ lemma boxSet_mem (hX : X ∈ G.Adm) : G.toFrame.boxSet X ∈ G.Adm := by
   exact G.compl_mem <| G.diaSet_mem <| G.compl_mem hX;
 
 /-- `G.Adm` as a Boolean subalgebra of `Set G.World`. -/
-def admSubalgebra (G : GeneralFrame κ) : BooleanSubalgebra (Set G.World) where
+def admBooleanSubalgebra (G : GeneralFrame κ) : BooleanSubalgebra (Set G.World) where
   carrier := G.Adm
   supClosed' _ hX _ hY := union_mem hX hY
   infClosed' _ hX _ hY := G.inter_mem hX hY
