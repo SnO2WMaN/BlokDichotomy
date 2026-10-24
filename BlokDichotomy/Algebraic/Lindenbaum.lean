@@ -38,7 +38,7 @@ The Lindenbaum algebra of `L`: formulas modulo `L`-provable equivalence.
 def LindenbaumAlgebra (L : NormalLogic α) [L.IsNExt 𝐊] : Type v := Quotient (equivSetoid L)
 
 /-- The valuation in the dual algebra of the canonical frame given by the canonical model. -/
-def canonicalValuation (L : NormalLogic α) : α → L.canonicalModel.toFrame.DualAlgebra :=
+def canonicalValuation (L : NormalLogic α) : α → L.canonicalFrame.DualAlgebra :=
   fun a => Frame.DualAlgebra.ofSet {x | L.canonicalModel.Val' x a}
 
 omit [L.IsNExt 𝐊] in
@@ -87,7 +87,7 @@ instance : Dia L.LindenbaumAlgebra := ⟨Quotient.map (◇·) fun _ _ h => dia_c
 @[simp] lemma mk_dia : (mk (◇φ) : L.LindenbaumAlgebra) = ◇mk φ := rfl
 
 /-- The map sending the class of `φ` to its truth set in the canonical model. -/
-def toCanonical : L.LindenbaumAlgebra → L.canonicalModel.toFrame.DualAlgebra :=
+def toCanonical : L.LindenbaumAlgebra → L.canonicalFrame.DualAlgebra :=
   Quotient.lift (·.eval L.canonicalValuation) fun _ _ h => eval_canonicalValuation_eq_iff.mpr h
 
 @[simp] lemma toCanonical_mk :
@@ -151,7 +151,7 @@ instance : ModalAlgebra L.LindenbaumAlgebra where
 The embedding of the Lindenbaum algebra into the dual algebra of the canonical frame.
 - [CZ98, Theorem 8.3]
 -/
-def toCanonicalHom : ModalAlgebraHom L.LindenbaumAlgebra L.canonicalModel.toFrame.DualAlgebra where
+def toCanonicalHom : ModalAlgebraHom L.LindenbaumAlgebra L.canonicalFrame.DualAlgebra where
   toFun := toCanonical
   map_sup' := toCanonical_sup
   map_inf' := toCanonical_inf
