@@ -61,6 +61,11 @@ well-tested, and reusing it means one less thing to design from scratch.
   parentheses whenever the argument runs to the end of the term: `exact Or.inr <| Or.inl h`, not
   `exact Or.inr (Or.inl h)`. Foundation's guidelines do not choose between the two spellings;
   Mathlib's `style.dollarSyntax` linter does, and this repository follows it.
+- **Names after two or more people use their lowercase initials.** A declaration named after a
+  result or construction credited to two or more people starts with the lowercase initials of
+  their surnames, followed by the rest of the name in camel case: the Blok–Esakia isomorphism is
+  `beIsomorphism`, not `blokEsakia` or `blokEsakiaIsomorphism`. A name after a single person
+  keeps the surname. Names that predate this rule (the Jankov–Fine ones) are left as they are.
 - **Avoid `?_`.** Prefer `apply f` to `refine f ?_`, and a direct term to a `refine` with holes;
   [`style.md`](style.md)'s preference for direct term construction is the same rule seen from the
   other side.

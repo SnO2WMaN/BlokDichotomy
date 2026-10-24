@@ -30,7 +30,7 @@ of `𝐆𝐫𝐳`, `L ↦ 𝐆𝐫𝐳 ⊕ Lᵍ`, with inverse `L ↦ {A | Aᵍ 
 - [Blo76]
 - [Esa76]
 - [CZ98, Theorem 9.66] -/
-noncomputable def blokEsakia (α : Type v) [Infinite α] :
+noncomputable def beIsomorphism (α : Type v) [Infinite α] :
     Ext (𝐈𝐧𝐭 : Logic α) ≃o NExt (𝐆𝐫𝐳 : NormalLogic α) where
   toFun L := ⟨L.1.greatestMC, inferInstance⟩
   invFun L := ⟨L.1.siFragment, inferInstance⟩
@@ -43,11 +43,11 @@ noncomputable def blokEsakia (α : Type v) [Infinite α] :
       rwa [Logic.siFragment_greatestMC_eq, Logic.siFragment_greatestMC_eq] at h₁;
     · exact Logic.greatestMC_mono
 
-@[simp] lemma blokEsakia_apply [Infinite α] (L : Ext (𝐈𝐧𝐭 : Logic α)) :
-    (blokEsakia α L).1 = L.1.greatestMC := rfl
+@[simp] lemma beIsomorphism_apply [Infinite α] (L : Ext (𝐈𝐧𝐭 : Logic α)) :
+    (beIsomorphism α L).1 = L.1.greatestMC := rfl
 
-@[simp] lemma blokEsakia_symm_apply [Infinite α] (L : NExt (𝐆𝐫𝐳 : NormalLogic α)) :
-    ((blokEsakia α).symm L).1 = L.1.siFragment := rfl
+@[simp] lemma beIsomorphism_symm_apply [Infinite α] (L : NExt (𝐆𝐫𝐳 : NormalLogic α)) :
+    ((beIsomorphism α).symm L).1 = L.1.siFragment := rfl
 
 namespace Logic
 
