@@ -10,6 +10,7 @@ public import BlokDichotomy.Algebraic.Validity
 public import BlokDichotomy.Blok
 public import BlokDichotomy.Formula
 public import BlokDichotomy.GeneralFrame.Basic
+public import BlokDichotomy.GeneralFrame.Canonical
 public import BlokDichotomy.GeneralFrame.Preorder
 public import BlokDichotomy.Kripke.Basic
 public import BlokDichotomy.Kripke.Completeness
