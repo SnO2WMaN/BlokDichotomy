@@ -22,7 +22,7 @@ namespace Frame
 
 variable {F : Frame κ} {x y z : F.World} {n : ℕ}
 
-def Reach (F : Frame κ) (x : F.World) : Set F.World := {y | ∃ n, x ≺^[n] y}
+def Reach (F : Frame κ) (x : F.World) : Set F.World := {y | x ≺^* y}
 
 /-- `r` is a root of `F`: every point is reachable from `r`.
 - [CZ98, §3.3] -/
@@ -30,18 +30,16 @@ def IsRootedBy (F : Frame κ) (r : F.World) : Prop := ∀ y : F.World, y ∈ F.R
 
 abbrev Root (F : Frame κ) := { r // F.IsRootedBy r }
 
-@[simp, grind =] lemma mem_reach : y ∈ F.Reach x ↔ ∃ n, x ≺^[n] y := Iff.rfl
+@[simp, grind =] lemma mem_reach : y ∈ F.Reach x ↔ x ≺^* y := Iff.rfl
 
-@[simp, grind .] lemma self_mem_reach : x ∈ F.Reach x := ⟨0, rfl⟩
+@[simp, grind .] lemma self_mem_reach : x ∈ F.Reach x := reflTransRel_refl x
 
-lemma mem_reach_of_relItr (Rxy : x ≺^[n] y) : y ∈ F.Reach x := ⟨n, Rxy⟩
+lemma mem_reach_of_relItr (Rxy : x ≺^[n] y) : y ∈ F.Reach x := reflTransRel_of_relItr Rxy
 
-lemma mem_reach_of_rel (Rxy : x ≺ y) : y ∈ F.Reach x := ⟨1, iff_relItr_one.mpr Rxy⟩
+lemma mem_reach_of_rel (Rxy : x ≺ y) : y ∈ F.Reach x := reflTransRel_of_rel Rxy
 
-lemma reach_trans (hy : y ∈ F.Reach x) (hz : z ∈ F.Reach y) : z ∈ F.Reach x := by
-  obtain ⟨n, hn⟩ := hy;
-  obtain ⟨m, hm⟩ := hz;
-  exact ⟨n + m, relItr_trans hn hm⟩;
+lemma reach_trans (hy : y ∈ F.Reach x) (hz : z ∈ F.Reach y) : z ∈ F.Reach x :=
+  reflTransRel_trans hy hz
 
 lemma reach_of_rel (hy : y ∈ F.Reach x) (Ryz : y ≺ z) : z ∈ F.Reach x :=
   reach_trans hy <| mem_reach_of_rel Ryz

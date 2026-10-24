@@ -115,9 +115,9 @@ theorem not_validates_jfFormula : F.frame ⊭ F.jfFormula := by
   apply not_forces_jfFormula_iff (M := ⟨F.frame, fun w a => w = a⟩) |>.mpr _ (h _ r);
   and_intros;
   · intro y Rry;
-    obtain ⟨z, -, k, hk, Rzz⟩ :=
+    obtain ⟨z, -, Rzz⟩ :=
       Frame.exists_cycle_of_relItr_card (F := F.frame) (by simpa using Rry);
-    exact F.cycleFree ⟨z, k, hk, Rzz⟩;
+    exact F.cycleFree ⟨z, Rzz⟩;
   · intro k _ y _;
     apply (forces_jfDiagram F).mpr;
     and_intros;
