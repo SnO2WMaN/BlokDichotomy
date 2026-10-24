@@ -95,47 +95,6 @@ def proj (i : ι) : ModalAlgebraHom (∀ i, A i) (A i) where
 
 end Pi
 
-section Prod
-
-variable {A : Type u} {B : Type v} [ModalAlgebra A] [ModalAlgebra B]
-
-/--
-The direct product of two modal algebras, with operations defined componentwise.
-- [CZ98, §7.7]
--/
-instance instProd : ModalAlgebra (A × B) where
-  dia p := (◇p.1, ◇p.2)
-  dia_bot := Prod.ext dia_bot dia_bot
-  dia_sup _ _ := Prod.ext (dia_sup _ _) (dia_sup _ _)
-
-@[simp] lemma fst_dia (p : A × B) : (◇p).1 = ◇p.1 := rfl
-@[simp] lemma snd_dia (p : A × B) : (◇p).2 = ◇p.2 := rfl
-@[simp] lemma fst_box (p : A × B) : (□p).1 = □p.1 := rfl
-@[simp] lemma snd_box (p : A × B) : (□p).2 = □p.2 := rfl
-
-/-- The first projection of a direct product. -/
-def fst : ModalAlgebraHom (A × B) A where
-  toFun := Prod.fst
-  map_sup' _ _ := rfl
-  map_inf' _ _ := rfl
-  map_top' := rfl
-  map_bot' := rfl
-  map_dia' _ := rfl
-
-/-- The second projection of a direct product. -/
-def snd : ModalAlgebraHom (A × B) B where
-  toFun := Prod.snd
-  map_sup' _ _ := rfl
-  map_inf' _ _ := rfl
-  map_top' := rfl
-  map_bot' := rfl
-  map_dia' _ := rfl
-
-@[simp] lemma fst_apply (p : A × B) : fst p = p.1 := rfl
-@[simp] lemma snd_apply (p : A × B) : snd p = p.2 := rfl
-
-end Prod
-
 end ModalAlgebra
 
 /-! ### Homomorphic images -/
@@ -241,27 +200,6 @@ theorem pi_validates_iff : (∀ i, A i) ⊧ φ ↔ ∀ i, A i ⊧ φ := by
     simpa using h i _;
 
 end Pi
-
-@[simp] lemma eval_fst (v : α → A × B) : (φ.eval v).1 = φ.eval (Prod.fst ∘ v) :=
-  Formula.eval_hom fst
-
-@[simp] lemma eval_snd (v : α → A × B) : (φ.eval v).2 = φ.eval (Prod.snd ∘ v) :=
-  Formula.eval_hom snd
-
-/--
-`A × B` validates exactly the formulas valid in both `A` and `B`.
-- [CZ98, §7.7]
--/
-theorem prod_validates_iff : (A × B) ⊧ φ ↔ A ⊧ φ ∧ B ⊧ φ := by
-  constructor;
-  · intro h;
-    constructor;
-    · intro v;
-      simpa [Function.comp_def] using congrArg Prod.fst (h fun a => (v a, ⊤));
-    · intro v;
-      simpa [Function.comp_def] using congrArg Prod.snd (h fun a => (⊤, v a));
-  · rintro ⟨hA, hB⟩ v;
-    exact Prod.ext (by simpa using hA _) (by simpa using hB _);
 
 end ModalAlgebra
 
