@@ -32,13 +32,8 @@ public import BlokDichotomy.Logic.Restrict
 public import BlokDichotomy.Logic.Splitting
 public import BlokDichotomy.Logic.Uncountable
 public import BlokDichotomy.Propositional.BlokEsakia
-public import BlokDichotomy.Propositional.BlokEsakia.Injective
+public import BlokDichotomy.Propositional.BlokEsakia.Basic
 public import BlokDichotomy.Propositional.BlokEsakia.MainLemma
-public import BlokDichotomy.Propositional.BlokEsakia.Maps
-public import BlokDichotomy.Propositional.BlokEsakia.NormalForm
-public import BlokDichotomy.Propositional.BlokEsakia.Passive
-public import BlokDichotomy.Propositional.BlokEsakia.Quotient
-public import BlokDichotomy.Propositional.BlokEsakia.Surjective
 public import BlokDichotomy.Propositional.Formula
 public import BlokDichotomy.Propositional.GeneralFrame.Basic
 public import BlokDichotomy.Propositional.GeneralFrame.Canonical
