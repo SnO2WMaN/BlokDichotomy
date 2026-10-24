@@ -31,6 +31,7 @@ public import BlokDichotomy.Logic.Fine
 public import BlokDichotomy.Logic.Restrict
 public import BlokDichotomy.Logic.Splitting
 public import BlokDichotomy.Logic.Uncountable
+public import BlokDichotomy.Propositional.BlokEsakia.Maps
 public import BlokDichotomy.Propositional.Formula
 public import BlokDichotomy.Propositional.GeneralFrame.Basic
 public import BlokDichotomy.Propositional.GeneralFrame.Canonical
