@@ -33,6 +33,7 @@ public import BlokDichotomy.Logic.Uncountable
 public import BlokDichotomy.Propositional.Formula
 public import BlokDichotomy.Propositional.GeneralFrame.Basic
 public import BlokDichotomy.Propositional.GeneralFrame.Canonical
+public import BlokDichotomy.Propositional.GeneralFrame.Companion
 public import BlokDichotomy.Propositional.Kripke.Basic
 public import BlokDichotomy.Propositional.Kripke.Completeness
 public import BlokDichotomy.Propositional.Logic.Basic
