@@ -72,6 +72,11 @@ class IsExt (L L₀ : Logic α) : Prop where
 
 instance : L.IsExt L := ⟨le_rfl⟩
 
+/-- The extensions of `L₀`, ordered by inclusion. The superintuitionistic logics are `Ext 𝐈𝐧𝐭`. -/
+abbrev _root_.Propositional.Ext (L₀ : Logic α) : Type v := {L : Logic α // L.IsExt L₀}
+
+instance (L₀ : Logic α) (L : Ext L₀) : L.1.IsExt L₀ := L.2
+
 end Logic
 
 inductive axiomsInt : FormulaSet α

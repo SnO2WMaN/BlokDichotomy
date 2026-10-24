@@ -155,6 +155,11 @@ namespace NormalLogic
 class IsNExt (L L₀ : NormalLogic α) : Prop where
   logic_le : L₀ ≤ L
 
+/-- The normal extensions of `L₀`, ordered by inclusion. -/
+abbrev _root_.NExt (L₀ : NormalLogic α) : Type v := {L : NormalLogic α // L.IsNExt L₀}
+
+instance (L₀ : NormalLogic α) (L : NExt L₀) : L.1.IsNExt L₀ := L.2
+
 /-- `Γ ⊢[L] φ`: `φ` is derivable from `Γ` using the theorems of `L` and modus ponens, without
 necessitation on hypotheses. -/
 inductive Derives (L : NormalLogic α) (Γ : FormulaSet α) : Formula α → Prop

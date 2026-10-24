@@ -5,11 +5,11 @@ public import BlokDichotomy.Propositional.GeneralFrame.Canonical
 public import BlokDichotomy.Propositional.GeneralFrame.Companion
 
 /-!
-# Injectivity of `σ` and `τ`
+# Injectivity of `greatestMC` and `leastMC`
 
-For a superintuitionistic logic `L`, the superintuitionistic fragments of `σ L = 𝐆𝐫𝐳 ⊕ Lᵍ` and
-`τ L = 𝐒𝟒 ⊕ Lᵍ` are both `L`. Hence `σ` and `τ` are injective, and `σ L` and `τ L` are modal
-companions of `L`.
+For a superintuitionistic logic `L`, the superintuitionistic fragments of `L.greatestMC = 𝐆𝐫𝐳 ⊕ Lᵍ`
+and `L.leastMC = 𝐒𝟒 ⊕ Lᵍ` are both `L`. Hence `greatestMC` and `leastMC` are injective, and
+`L.greatestMC` and `L.leastMC` are modal companions of `L`.
 
 ## References
 
@@ -24,13 +24,13 @@ namespace Propositional.Logic
 
 variable {α : Type v} (L : Logic α) [L.IsExt 𝐈𝐧𝐭]
 
-/-- The superintuitionistic fragment of `σ L` is `L`.
+/-- The superintuitionistic fragment of `L.greatestMC` is `L`.
 - [CZ98, Theorem 9.57] -/
-theorem rho_sigma_eq : L.sigma.rho = L := by
-  apply le_antisymm _ le_rho_sigma;
+theorem siFragment_greatestMC_eq : L.greatestMC.siFragment = L := by
+  apply le_antisymm _ le_siFragment_greatestMC;
   intro A hA;
   by_contra hAL;
-  have h₁ : L.canonicalGeneralFrame.toModal ⊧ L.sigma := by
+  have h₁ : L.canonicalGeneralFrame.toModal ⊧ L.greatestMC := by
     apply _root_.GeneralFrame.validatesLogic_add GeneralFrame.toModal_validates_logicGrz;
     rintro _ ⟨B, hB, rfl⟩;
     exact GeneralFrame.toModal_validates_gödelTranslate_iff.mpr
@@ -38,30 +38,32 @@ theorem rho_sigma_eq : L.sigma.rho = L := by
   exact hAL <| canonicalGeneralFrame.validates_iff.mp
     (GeneralFrame.toModal_validates_gödelTranslate_iff.mp (h₁ _ hA))
 
-/-- The superintuitionistic fragment of `τ L` is `L`.
+/-- The superintuitionistic fragment of `L.leastMC` is `L`.
 - [CZ98, Theorem 9.57] -/
-theorem rho_tau_eq : L.tau.rho = L :=
-  le_antisymm ((NormalLogic.rho_mono tau_le_sigma).trans (rho_sigma_eq L).le) le_rho_tau
+theorem siFragment_leastMC_eq : L.leastMC.siFragment = L :=
+  le_antisymm
+    ((NormalLogic.siFragment_mono leastMC_le_greatestMC).trans (siFragment_greatestMC_eq L).le)
+    le_siFragment_leastMC
 
-/-- `τ L` is a modal companion of `L`.
+/-- `L.leastMC` is a modal companion of `L`.
 - [CZ98, Theorem 9.57] -/
-theorem isModalCompanion_tau : L.IsModalCompanion L.tau := by
+theorem isModalCompanion_leastMC : L.IsModalCompanion L.leastMC := by
   intro A;
   constructor;
-  · exact gödelTranslate_mem_tau;
+  · exact gödelTranslate_mem_leastMC;
   · intro h;
-    have h₁ : A ∈ L.tau.rho := h;
-    rwa [rho_tau_eq] at h₁;
+    have h₁ : A ∈ L.leastMC.siFragment := h;
+    rwa [siFragment_leastMC_eq] at h₁;
 
-/-- `σ L` is a modal companion of `L`.
+/-- `L.greatestMC` is a modal companion of `L`.
 - [CZ98, Theorem 9.57] -/
-theorem isModalCompanion_sigma : L.IsModalCompanion L.sigma := by
+theorem isModalCompanion_greatestMC : L.IsModalCompanion L.greatestMC := by
   intro A;
   constructor;
-  · exact gödelTranslate_mem_sigma;
+  · exact gödelTranslate_mem_greatestMC;
   · intro h;
-    have h₁ : A ∈ L.sigma.rho := h;
-    rwa [rho_sigma_eq] at h₁;
+    have h₁ : A ∈ L.greatestMC.siFragment := h;
+    rwa [siFragment_greatestMC_eq] at h₁;
 
 end Propositional.Logic
 

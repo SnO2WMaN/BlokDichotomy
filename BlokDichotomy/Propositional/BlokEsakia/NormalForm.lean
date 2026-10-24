@@ -8,7 +8,7 @@ public import BlokDichotomy.Propositional.BlokEsakia.Maps
 
 Every formula with each variable replaced by a boxed variable is equivalent in `𝐊` to a
 `◇`-free combination of Gödel translations of intuitionistic formulas. A `◇`-free combination of
-translations that belongs to a normal extension `L₁` of `𝐒𝟒` belongs to `τ ρ L₁`.
+translations that belongs to a normal extension `L₁` of `𝐒𝟒` belongs to `L₁.siFragment.leastMC`.
 
 ## References
 
@@ -114,16 +114,16 @@ theorem exists_subst_box_iff_gödelTranslate (E : _root_.Formula α) :
         NormalLogic.neg_iff_congr i₂;
       exact NormalLogic.iff_trans h₃ h₄;
 
-/-- A `◇`-free combination of translations in `L₁` is in `τ ρ L₁`. -/
-theorem subst_gödelTranslate_mem_tau_rho {L₁ : NormalLogic α} [L₁.IsNExt 𝐒𝟒]
+/-- A `◇`-free combination of translations in `L₁` is in `L₁.siFragment.leastMC`. -/
+theorem subst_gödelTranslate_mem_leastMC_siFragment {L₁ : NormalLogic α} [L₁.IsNExt 𝐒𝟒]
     (γ : _root_.Formula (Formula α)) (hγ : γ.depth = 0) (h : γ⟦(·ᵍ)⟧ ∈ L₁) :
-    γ⟦(·ᵍ)⟧ ∈ L₁.rho.tau := by
+    γ⟦(·ᵍ)⟧ ∈ L₁.siFragment.leastMC := by
   classical
   let s := γ.atoms;
   have h₁ := Formula.cnf_iff_mem (L := L₁) hγ (subset_refl s) (·ᵍ);
   have h₂ := (NormalLogic.mem_iff_of_iff h₁).mp h;
   rw [Formula.subst_cnf, NormalLogic.conj_mem_iff] at h₂;
-  have h₃ : (γ.cnf s)⟦(·ᵍ)⟧ ∈ L₁.rho.tau := by
+  have h₃ : (γ.cnf s)⟦(·ᵍ)⟧ ∈ L₁.siFragment.leastMC := by
     rw [Formula.subst_cnf, NormalLogic.conj_mem_iff];
     intro C hC;
     obtain ⟨I, hI, rfl⟩ := List.mem_map.mp hC;
@@ -131,22 +131,24 @@ theorem subst_gödelTranslate_mem_tau_rho {L₁ : NormalLogic α} [L₁.IsNExt �
     have h₅ : (Formula.conj I.toList 🡒 Formula.disj (s \ I).toList)ᵍ ∈ L₁ :=
       (NormalLogic.mem_iff_of_iff (box_clause_iff I.toList (s \ I).toList)).mp
         (NormalLogic.mem_nec h₄);
-    have h₆ := Logic.gödelTranslate_mem_tau (L := L₁.rho) (A := Formula.conj I.toList 🡒
+    have h₆ := Logic.gödelTranslate_mem_leastMC (L := L₁.siFragment) (A := Formula.conj I.toList 🡒
       Formula.disj (s \ I).toList) h₅;
     exact NormalLogic.mem_mdp
       ((NormalLogic.mem_iff_of_iff (box_clause_iff I.toList (s \ I).toList)).mpr h₆)
       NormalLogic.axiomT;
   exact (NormalLogic.mem_iff_of_iff
-    (Formula.cnf_iff_mem (L := L₁.rho.tau) hγ (subset_refl s) (·ᵍ))).mpr h₃
+    (Formula.cnf_iff_mem (L := L₁.siFragment.leastMC) hγ (subset_refl s) (·ᵍ))).mpr h₃
 
 /-- A substitution instance by boxed variables that lies in an extension `L₁` of `𝐒𝟒` lies in
-`σ ρ L₁`. -/
-theorem subst_box_mem_sigma_rho {L₁ : NormalLogic α} [L₁.IsNExt 𝐒𝟒] (E : _root_.Formula α)
-    (h : E⟦fun q => □(#q)⟧ ∈ L₁) : E⟦fun q => □(#q)⟧ ∈ L₁.rho.sigma := by
+`L₁.siFragment.greatestMC`. -/
+theorem subst_box_mem_greatestMC_siFragment {L₁ : NormalLogic α} [L₁.IsNExt 𝐒𝟒]
+    (E : _root_.Formula α) (h : E⟦fun q => □(#q)⟧ ∈ L₁) :
+    E⟦fun q => □(#q)⟧ ∈ L₁.siFragment.greatestMC := by
   obtain ⟨γ, hγ, hiff⟩ := exists_subst_box_iff_gödelTranslate E;
-  have h₁ : γ⟦(·ᵍ)⟧ ∈ L₁ := (NormalLogic.mem_iff_of_iff (NormalLogic.mem_of_mem_logicK hiff)).mp h;
-  have h₂ : γ⟦(·ᵍ)⟧ ∈ L₁.rho.sigma :=
-    Logic.tau_le_sigma <| subst_gödelTranslate_mem_tau_rho γ hγ h₁;
+  have h₁ : γ⟦(·ᵍ)⟧ ∈ L₁ :=
+    (NormalLogic.mem_iff_of_iff (NormalLogic.mem_of_mem_logicK hiff)).mp h;
+  have h₂ : γ⟦(·ᵍ)⟧ ∈ L₁.siFragment.greatestMC :=
+    Logic.leastMC_le_greatestMC <| subst_gödelTranslate_mem_leastMC_siFragment γ hγ h₁;
   exact (NormalLogic.mem_iff_of_iff (NormalLogic.mem_of_mem_logicK hiff)).mpr h₂
 
 end Propositional

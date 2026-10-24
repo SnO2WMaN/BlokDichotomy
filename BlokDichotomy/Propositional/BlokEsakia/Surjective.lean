@@ -6,12 +6,13 @@ public import BlokDichotomy.Propositional.BlokEsakia.NormalForm
 public import BlokDichotomy.ToMathlib.Data.Fintype.EquivFin
 
 /-!
-# Surjectivity of `σ`
+# Surjectivity of `greatestMC`
 
-Every normal extension `L₁` of `𝐆𝐫𝐳` over an infinite set of variables is `σ ρ L₁`. The proof
-refutes a formula `A ∉ L₁` by a substitution instance of `A` whose variables are replaced by
-`◇`-free combinations of boxed formulas, using the main lemma on the canonical general frame, and
-then transports this instance back to a formula over variables standing for the boxed formulas.
+Every normal extension `L₁` of `𝐆𝐫𝐳` over an infinite set of variables is
+`L₁.siFragment.greatestMC`. The proof refutes a formula `A ∉ L₁` by a substitution instance of `A`
+whose variables are replaced by `◇`-free combinations of boxed formulas, using the main lemma on
+the canonical general frame, and then transports this instance back to a formula over variables
+standing for the boxed formulas.
 
 ## References
 
@@ -101,23 +102,25 @@ private lemma subst_box_map_subst_eq [DecidableEq α] {A : _root_.Formula α}
   intro B hB;
   simp [hg p hp B hB]
 
-/-- Every normal extension `L₁` of `𝐆𝐫𝐳` over infinitely many variables is `σ ρ L₁`.
+/-- Every normal extension `L₁` of `𝐆𝐫𝐳` over infinitely many variables is
+`L₁.siFragment.greatestMC`.
 - [CZ98, Theorem 9.66]
 - [BC22, Theorem 4.2] -/
-theorem sigma_rho_eq [Infinite α] (L₁ : NormalLogic α) [L₁.IsNExt 𝐆𝐫𝐳] : L₁.rho.sigma = L₁ := by
+theorem greatestMC_siFragment_eq [Infinite α] (L : NormalLogic α) [L.IsNExt 𝐆𝐫𝐳] :
+    L.siFragment.greatestMC = L := by
   classical
-  apply le_antisymm (Logic.sigma_le le_rfl);
+  apply le_antisymm (Logic.greatestMC_le le_rfl);
   intro A hA;
   by_contra hA₂;
-  obtain ⟨s, β, hβ, hs⟩ := exists_subst_not_mem L₁.rho.sigma hA₂;
+  obtain ⟨s, β, hβ, hs⟩ := exists_subst_not_mem L.siFragment.greatestMC hA₂;
   obtain ⟨f, hf⟩ := Infinite.exists_injOn (α := α) (A.atoms.biUnion fun p => (β p).atoms);
   obtain ⟨g, hg⟩ : ∃ g : α → _root_.Formula α, ∀ p ∈ A.atoms, ∀ B ∈ (β p).atoms, g (f B) = B := by
     use Function.invFunOn f (A.atoms.biUnion fun p => (β p).atoms);
     intro p hp B hB;
     exact hf.leftInvOn_invFunOn <| Finset.mem_coe.mpr <| Finset.mem_biUnion.mpr ⟨p, hp, hB⟩;
-  have h₁ : (A⟦fun p => (β p).map f⟧)⟦fun q => □(#q)⟧ ∈ L₁ :=
+  have h₁ : (A⟦fun p => (β p).map f⟧)⟦fun q => □(#q)⟧ ∈ L :=
     NormalLogic.mem_subst <| NormalLogic.mem_subst hA;
-  have h₂ := NormalLogic.mem_subst (s := g) <| subst_box_mem_sigma_rho _ h₁;
+  have h₂ := NormalLogic.mem_subst (s := g) <| subst_box_mem_greatestMC_siFragment _ h₁;
   rw [subst_box_map_subst_eq (fun p => (hβ p).2) hg] at h₂;
   exact hs h₂
 
