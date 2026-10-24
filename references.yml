@@ -52,6 +52,14 @@ BC24:
   note: "arXiv:2405.09401"
   url: "https://arxiv.org/abs/2405.09401"
 
+Blo76:
+  type: Thesis
+  title: Varieties of interior algebras
+  author: "Blok, Willem J."
+  date: 1976
+  organization: University of Amsterdam
+  genre: PhD thesis
+
 Blo78:
   type: Misc
   title: "On the degree of incompleteness of modal logics and the covering relation in the lattice of modal logics"
@@ -147,6 +155,18 @@ Che25b:
   date: 2025
   note: "Extended abstract, TbiLLC 2025"
   url: "https://events.illc.uva.nl/Tbilisi/Tbilisi2025/uploaded_files/uploadlibraryitem/abstracts/35.pdf"
+
+Esa76:
+  type: Chapter
+  title: On modal companions of superintuitionistic logics
+  author: "Esakia, Leo"
+  date: 1976
+  page-range: 135-136
+  parent:
+    type: Proceedings
+    title: VII Soviet Symposium on Logic
+    location: Kiev
+  note: In Russian
 
 FM25:
   type: Misc

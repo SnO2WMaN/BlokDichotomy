@@ -31,6 +31,7 @@ public import BlokDichotomy.Logic.Fine
 public import BlokDichotomy.Logic.Restrict
 public import BlokDichotomy.Logic.Splitting
 public import BlokDichotomy.Logic.Uncountable
+public import BlokDichotomy.Propositional.BlokEsakia
 public import BlokDichotomy.Propositional.BlokEsakia.Injective
 public import BlokDichotomy.Propositional.BlokEsakia.MainLemma
 public import BlokDichotomy.Propositional.BlokEsakia.Maps
