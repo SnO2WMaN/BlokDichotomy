@@ -45,7 +45,7 @@ end Formula
 
 /-- `M` is a modal companion of `L` if the Gödel translation embeds `L` into `M`.
 - [CZ98, §9.6] -/
-def _root_.NormalLogic.IsModalCompanion (M : NormalLogic α) (L : Logic α) : Prop :=
+def _root_.NormalLogic.IsModalCompanionOf (M : NormalLogic α) (L : Logic α) : Prop :=
   ∀ A : Formula α, A ∈ L ↔ Aᵍ ∈ M
 
 namespace Model
@@ -105,7 +105,7 @@ theorem gödelTranslate_mem_logicS4_iff : A ∈ 𝐈𝐧𝐭 ↔ Aᵍ ∈ 𝐒�
 
 /-- `𝐒𝟒` is a modal companion of `𝐈𝐧𝐭`.
 - [CZ98, Theorem 3.83, §9.6] -/
-theorem logicS4_isModalCompanion_logicInt : (𝐒𝟒 : NormalLogic α).IsModalCompanion 𝐈𝐧𝐭 :=
+theorem logicS4_isModalCompanionOf_logicInt : (𝐒𝟒 : NormalLogic α).IsModalCompanionOf 𝐈𝐧𝐭 :=
   fun _ => gödelTranslate_mem_logicS4_iff
 
 end Propositional
