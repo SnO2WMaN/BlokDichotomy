@@ -118,6 +118,22 @@ lemma subst_id : A⟦(#·)⟧ = A := by induction A <;> grind
 
 end
 
+section
+
+variable {α : Type u}
+
+/-- The conjunction of a list of formulas. -/
+def conj : List (Formula α) → Formula α
+  | [] => ⊤
+  | A :: l => A ⋏ conj l
+
+/-- The disjunction of a list of formulas. -/
+def disj : List (Formula α) → Formula α
+  | [] => ⊥
+  | A :: l => A ⋎ disj l
+
+end
+
 end Formula
 
 end Propositional

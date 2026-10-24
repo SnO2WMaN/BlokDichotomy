@@ -74,17 +74,16 @@ variable {α : Type v} {A : Formula α}
 
 namespace canonicalFrame
 
-instance : IsPreorder (𝐒𝟒.canonicalFrame (α := α) |>.World) (· ≺ ·) where
+instance {L : NormalLogic α} [L.IsNExt 𝐒𝟒] :
+    IsPreorder (L.canonicalFrame |>.World) (· ≺ ·) where
   refl x := by
     rw [rel_iff_box];
     intro A hA;
-    exact x.mem_of_imp_mem (NormalLogic.mem_add ⟨A, rfl⟩) hA;
+    exact x.mem_of_imp_mem axiomT hA;
   trans x y z Rxy Ryz := by
     rw [rel_iff_box] at Rxy Ryz ⊢;
     intro A hA;
-    have h₁ : □□A ∈ x :=
-      x.mem_of_imp_mem (NormalLogic.mem_add_of_mem <| NormalLogic.mem_add ⟨A, rfl⟩) hA;
-    exact Ryz A <| Rxy _ h₁;
+    exact Ryz A <| Rxy _ <| x.mem_of_imp_mem axiomFour hA;
 
 end canonicalFrame
 

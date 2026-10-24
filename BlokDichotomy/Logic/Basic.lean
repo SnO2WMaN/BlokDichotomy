@@ -143,6 +143,12 @@ abbrev logicS4 : NormalLogic α :=
   (𝐊𝟒 : NormalLogic α) + {□A 🡒 A | (A : Formula α)}
 notation "𝐒𝟒" => logicS4
 
+/-- The normal logic `𝐆𝐫𝐳 = 𝐒𝟒 ⊕ □(□(A 🡒 □A) 🡒 A) 🡒 A`.
+- [CZ98, §3.8] -/
+abbrev logicGrz : NormalLogic α :=
+  (𝐒𝟒 : NormalLogic α) + {□(□(A 🡒 □A) 🡒 A) 🡒 A | (A : Formula α)}
+notation "𝐆𝐫𝐳" => logicGrz
+
 namespace NormalLogic
 
 /-- `L` is a normal extension of `L₀`. -/
@@ -175,6 +181,28 @@ instance [L.IsNExt L₀] : (L + X).IsNExt L₀ :=
 
 lemma IsNExt.trans (L₁ : NormalLogic α) [L.IsNExt L₁] [L₁.IsNExt L₀] : L.IsNExt L₀ :=
   ⟨le_trans (IsNExt.logic_le (L := L₁)) IsNExt.logic_le⟩
+
+lemma logicK_le_logicS4 : (𝐊 : NormalLogic α) ≤ 𝐒𝟒 := le_add.trans le_add
+
+lemma logicS4_le_logicGrz : (𝐒𝟒 : NormalLogic α) ≤ 𝐆𝐫𝐳 := le_add
+
+instance [L.IsNExt 𝐒𝟒] : L.IsNExt 𝐊 := ⟨logicK_le_logicS4.trans IsNExt.logic_le⟩
+
+instance [L.IsNExt 𝐆𝐫𝐳] : L.IsNExt 𝐒𝟒 := ⟨logicS4_le_logicGrz.trans IsNExt.logic_le⟩
+
+section
+
+variable [L.IsNExt 𝐒𝟒] {A : Formula α}
+
+lemma axiomT : □A 🡒 A ∈ L := IsNExt.logic_le (L₀ := 𝐒𝟒) <| mem_add ⟨A, rfl⟩
+
+lemma axiomFour : □A 🡒 □□A ∈ L :=
+  IsNExt.logic_le (L₀ := 𝐒𝟒) <| mem_add_of_mem <| mem_add ⟨A, rfl⟩
+
+end
+
+lemma axiomGrz [L.IsNExt 𝐆𝐫𝐳] {A : Formula α} : □(□(A 🡒 □A) 🡒 A) 🡒 A ∈ L :=
+  IsNExt.logic_le (L₀ := 𝐆𝐫𝐳) <| mem_add ⟨A, rfl⟩
 
 /-- `L` contains every formula. -/
 def Inconsistent (L : NormalLogic α) : Prop := ¬L.Consistent
