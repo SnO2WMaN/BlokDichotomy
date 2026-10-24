@@ -34,6 +34,7 @@ public import BlokDichotomy.Logic.Uncountable
 public import BlokDichotomy.Propositional.BlokEsakia.Injective
 public import BlokDichotomy.Propositional.BlokEsakia.MainLemma
 public import BlokDichotomy.Propositional.BlokEsakia.Maps
+public import BlokDichotomy.Propositional.BlokEsakia.NormalForm
 public import BlokDichotomy.Propositional.BlokEsakia.Passive
 public import BlokDichotomy.Propositional.BlokEsakia.Quotient
 public import BlokDichotomy.Propositional.Formula
