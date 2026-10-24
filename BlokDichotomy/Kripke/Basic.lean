@@ -101,6 +101,9 @@ lemma reflTransRel_trans (Rxy : x ≺^* y) (Ryz : y ≺^* z) : x ≺^* z := by
   obtain ⟨m, hm⟩ := Ryz;
   exact ⟨n + m, relItr_trans hn hm⟩
 
+lemma ReflTransRel.tail (Rxy : x ≺^* y) (Ryz : y ≺ z) : x ≺^* z :=
+  reflTransRel_trans Rxy (reflTransRel_of_rel Ryz)
+
 @[simp, grind .] lemma rel_refl [Std.Refl F.Rel'] (x : F.World) : x ≺ x := refl x
 
 @[grind →]

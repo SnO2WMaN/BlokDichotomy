@@ -160,9 +160,9 @@ noncomputable def jfPMorphism (hδ : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.
     intro u j Ruj;
     have hu := (exists_forces_of_forces_jfDiagram F (hδ u)).choose_spec;
     obtain ⟨v, Ruv, hv⟩ := forces_dia.mp <| (((forces_jfDiagram F).mp <| hδ u).1 _ _ hu).mpr Ruj;
-    refine ⟨⟨v, reach_of_rel u.2 Ruv⟩, Ruv, ?_⟩;
+    refine ⟨⟨v, ReflTransRel.tail u.2 Ruv⟩, Ruv, ?_⟩;
     exact eq_of_forces_of_forces_jfDiagram F (hδ _)
-      (exists_forces_of_forces_jfDiagram F (hδ ⟨v, reach_of_rel u.2 Ruv⟩)).choose_spec hv;
+      (exists_forces_of_forces_jfDiagram F (hδ ⟨v, ReflTransRel.tail u.2 Ruv⟩)).choose_spec hv;
 
 lemma jfPMorphism_eq_iff (hδ : ∀ u : M.toFrame.Reach u₀, u.1 ⊩[M] F.jfDiagram)
     (u : (M.toFrame⥜u₀).World) (i : Fin F.n) :

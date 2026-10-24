@@ -177,12 +177,12 @@ lemma forces_iff_pointGenerate :
   forces_pointGenerate_root.symm
 
 lemma forces_of_pointGenerate_validates (h : G.toFrame⥜u ⊧ φ) (V : G.World → α → Prop)
-    {y : G.World} (hy : y ∈ G.toFrame.Reach u) : y ⊩[G.model V] φ :=
+    {y : G.World} (hy : u ≺^* y) : y ⊩[G.model V] φ :=
   forces_pointGenerate (M := G.model V) (y := ⟨y, hy⟩) |>.mp <| h _ _
 
 lemma forces_of_pointGenerate_validatesLogic (h : G.toFrame⥜u ⊧ L) {φ : Formula α}
     (hA : φ ∈ L) (V : G.World → α → Prop) : u ⊩[G.model V] φ :=
-  forces_of_pointGenerate_validates (h φ hA) V Frame.self_mem_reach
+  forces_of_pointGenerate_validates (h φ hA) V (Frame.reflTransRel_refl u)
 
 /-- Every `X ⊆ G.toFrame.Reach u` is `Y ∩ G.toFrame.Reach u` for some `Y ∈ G.Adm`. -/
 def AdmissibleOnReach (G : GeneralFrame κ) (u : G.World) : Prop :=
@@ -192,7 +192,7 @@ def AdmissibleOnReach (G : GeneralFrame κ) (u : G.World) : Prop :=
 `G.toFrame.Reach u` under every admissible valuation. -/
 lemma pointGenerate_validates_iff (hG : G.AdmissibleOnReach u) :
     G.toFrame⥜u ⊧ φ ↔
-      ∀ V, G.IsAdmissible V → ∀ y ∈ G.toFrame.Reach u, y ⊩[G.model V] φ := by
+      ∀ V, G.IsAdmissible V → ∀ y, (u ≺^* y) → y ⊩[G.model V] φ := by
   constructor;
   · intro h V _ y hy;
     exact forces_of_pointGenerate_validates h V hy;
@@ -219,7 +219,7 @@ lemma pointGenerate_validates_iff (hG : G.AdmissibleOnReach u) :
 
 lemma pointGenerate_validatesLogic_iff (hG : G.AdmissibleOnReach u) :
     G.toFrame⥜u ⊧ L ↔
-      ∀ φ ∈ L, ∀ V, G.IsAdmissible V → ∀ y ∈ G.toFrame.Reach u, y ⊩[G.model V] φ :=
+      ∀ φ ∈ L, ∀ V, G.IsAdmissible V → ∀ y, (u ≺^* y) → y ⊩[G.model V] φ :=
   forall₂_congr fun _ _ => pointGenerate_validates_iff hG
 
 end GeneralFrame

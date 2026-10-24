@@ -26,26 +26,14 @@ def Reach (F : Frame κ) (x : F.World) : Set F.World := {y | x ≺^* y}
 
 /-- `r` is a root of `F`: every point is reachable from `r`.
 - [CZ98, §3.3] -/
-def IsRootedBy (F : Frame κ) (r : F.World) : Prop := ∀ y : F.World, y ∈ F.Reach r
+def IsRootedBy (F : Frame κ) (r : F.World) : Prop := ∀ y : F.World, r ≺^* y
 
 abbrev Root (F : Frame κ) := { r // F.IsRootedBy r }
 
 @[simp, grind =] lemma mem_reach : y ∈ F.Reach x ↔ x ≺^* y := Iff.rfl
 
-@[simp, grind .] lemma self_mem_reach : x ∈ F.Reach x := reflTransRel_refl x
-
-lemma mem_reach_of_relItr (Rxy : x ≺^[n] y) : y ∈ F.Reach x := reflTransRel_of_relItr Rxy
-
-lemma mem_reach_of_rel (Rxy : x ≺ y) : y ∈ F.Reach x := reflTransRel_of_rel Rxy
-
-lemma reach_trans (hy : y ∈ F.Reach x) (hz : z ∈ F.Reach y) : z ∈ F.Reach x :=
-  reflTransRel_trans hy hz
-
-lemma reach_of_rel (hy : y ∈ F.Reach x) (Ryz : y ≺ z) : z ∈ F.Reach x :=
-  reach_trans hy <| mem_reach_of_rel Ryz
-
 /-- If `x ≺ v` only for `v = x`, then `x` reaches only itself. -/
-lemma eq_of_mem_reach_of_forall_rel_eq (hsucc : ∀ v, x ≺ v → v = x) (h : y ∈ F.Reach x) :
+lemma eq_of_reflTransRel_of_forall_rel_eq (hsucc : ∀ v, x ≺ v → v = x) (h : x ≺^* y) :
     y = x := by
   obtain ⟨n, Rxy⟩ := h;
   induction n generalizing y with
@@ -73,9 +61,9 @@ lemma pointGenerate_relItr {y z : (F⥜x).World} : (y ≺^[n] z) ↔ (y.1 ≺^[n
     · rintro ⟨w, Ryw, Rwz⟩;
       exact ⟨w.1, Ryw, ih.mp Rwz⟩;
     · rintro ⟨w, Ryw, Rwz⟩;
-      exact ⟨⟨w, reach_of_rel y.2 Ryw⟩, Ryw, ih.mpr Rwz⟩;
+      exact ⟨⟨w, ReflTransRel.tail y.2 Ryw⟩, Ryw, ih.mpr Rwz⟩;
 
-def pointGenerate.root (F : Frame κ) (x : F.World) : (F⥜x).Root := ⟨⟨x, self_mem_reach⟩, by
+def pointGenerate.root (F : Frame κ) (x : F.World) : (F⥜x).Root := ⟨⟨x, reflTransRel_refl x⟩, by
   rintro ⟨y, n, hn⟩;
   exact ⟨n, pointGenerate_relItr.mpr hn⟩
 ⟩
@@ -123,13 +111,13 @@ lemma forces_pointGenerate {y : (M⥜x).World} : y ⊩ φ ↔ y.1 ⊩[M] φ := b
     · rintro ⟨z, Ryz, hz⟩;
       exact ⟨z.1, Ryz, ih.mp hz⟩;
     · rintro ⟨z, Ryz, hz⟩;
-      exact ⟨⟨z, Frame.reach_of_rel y.2 Ryz⟩, Ryz, ih.mpr hz⟩;
+      exact ⟨⟨z, Frame.ReflTransRel.tail y.2 Ryz⟩, Ryz, ih.mpr hz⟩;
 
 lemma forces_pointGenerate_root : Frame.pointGenerate.root M.toFrame x ⊩[M⥜x] φ ↔ x ⊩[M] φ :=
   forces_pointGenerate
 
 lemma forces_congr_of_reach {V V' : κ → α → Prop}
-    (hV : ∀ y ∈ Frame.Reach (F := M.toFrame) x, ∀ a, V y a ↔ V' y a) :
+    (hV : ∀ y : M.World, (x ≺^* y) → ∀ a, V y a ↔ V' y a) :
     x ⊩[⟨M.toFrame, V⟩] φ ↔ x ⊩[⟨M.toFrame, V'⟩] φ := by
   have h : Model.pointGenerate ⟨M.toFrame, V⟩ x = Model.pointGenerate ⟨M.toFrame, V'⟩ x := by
     simp only [Model.pointGenerate, Model.mk.injEq, true_and];

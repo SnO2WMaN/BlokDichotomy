@@ -486,7 +486,7 @@ theorem frameEquiv (hN : 1 ≤ N) : L ≊[P] L ∩ H.logic := by
         rcases forces_or.mp <| hF _ (hH.deadEnd_mem hr hA) V u with h | h;
         · exact hu h;
         · obtain ⟨n, -, y, huy, hy⟩ := forces_diaLe.mp h;
-          rw [Frame.eq_of_mem_reach_of_forall_rel_eq hv ⟨n, huy⟩] at hy;
+          rw [Frame.eq_of_reflTransRel_of_forall_rel_eq hv ⟨n, huy⟩] at hy;
           exact forces_box.mp hy u Ruu;
       · have hx : ∀ v, u ⊀ v := fun v Ruv => Ruu <| hv v Ruv ▸ Ruv;
         have hd : deadEnd ⊭ L := fun h => hu <| Frame.forces_of_pointGenerate_validateLogic
@@ -881,16 +881,16 @@ private lemma eq_dBot_of_dBot_relItr (RdBoty : (.dBot : (D.hookFrame I).World) �
     exact (rel_dBot_iff.mp h₂).1;
 
 variable (D I) in
-/-- The points `.dBot` and `.base u` with `D.path 0 ∉ D.F.Reach u`.
+/-- The points `.dBot` and `.base u` with `¬u ≺^* D.path 0`.
 - [CZ98, p. 367]
 -/
 def detached : Set (D.hookFrame I).World :=
-  {x | x = .dBot ∨ ∃ u, x = .base u ∧ D.path 0 ∉ D.F.Reach u}
+  {x | x = .dBot ∨ ∃ u, x = .base u ∧ ¬u ≺^* D.path 0}
 
 @[simp] lemma dBot_mem_detached : (.dBot : (D.hookFrame I).World) ∈ D.detached I := Or.inl rfl
 
 @[simp] lemma base_mem_detached_iff {u : D.F.World} :
-    (.base u : (D.hookFrame I).World) ∈ D.detached I ↔ D.path 0 ∉ D.F.Reach u := by
+    (.base u : (D.hookFrame I).World) ∈ D.detached I ↔ ¬u ≺^* D.path 0 := by
   simp [detached];
 
 private lemma eq_dBot_or_isUnwound_of_mem_detached (hx : x ∈ D.detached I) :
@@ -899,7 +899,7 @@ private lemma eq_dBot_or_isUnwound_of_mem_detached (hx : x ∈ D.detached I) :
   · exact Or.inl rfl;
   · exact Or.inr trivial;
 
-private lemma relItr_base_iff_of_not_mem_reach {u : D.F.World} (hu : D.path 0 ∉ D.F.Reach u) :
+private lemma relItr_base_iff_of_not_reflTransRel {u : D.F.World} (hu : ¬u ≺^* D.path 0) :
     ((.base u : (D.hookFrame I).World) ≺^[n] y) ↔
       ∃ v : D.F.World, (u ≺^[n] v) ∧ y = .base v := by
   induction n generalizing y with
@@ -911,27 +911,27 @@ private lemma relItr_base_iff_of_not_mem_reach {u : D.F.World} (hu : D.path 0 �
       obtain ⟨w, hw, rfl⟩ := ih.mp h₁;
       rcases rel_base_iff.mp h₂ with ⟨v, rfl, hwv⟩ | ⟨rfl, -⟩;
       · exact ⟨v, relItr_tail hw hwv, rfl⟩;
-      · exact absurd (mem_reach_of_relItr hw) hu;
+      · exact absurd (reflTransRel_of_relItr hw) hu;
     · rintro ⟨v, h, rfl⟩;
       exact relItr_base h;
 
-def pointGenerateBase {u : D.F.World} (hu : D.path 0 ∉ D.F.Reach u) :
+def pointGenerateBase {u : D.F.World} (hu : ¬u ≺^* D.path 0) :
     D.F⥜u →ₚ (D.hookFrame I)⥜(.base u) where
-  toFun v := ⟨.base v.1, v.2.elim fun _ h => mem_reach_of_relItr <| relItr_base h⟩
+  toFun v := ⟨.base v.1, v.2.elim fun _ h => reflTransRel_of_relItr <| relItr_base h⟩
   forth h := h
   back {v z} h := by
     obtain ⟨z, n, hn⟩ := z;
-    obtain ⟨w, -, rfl⟩ := (relItr_base_iff_of_not_mem_reach hu).mp hn;
-    exact ⟨⟨w, reach_of_rel v.2 h⟩, h, rfl⟩;
+    obtain ⟨w, -, rfl⟩ := (relItr_base_iff_of_not_reflTransRel hu).mp hn;
+    exact ⟨⟨w, ReflTransRel.tail v.2 h⟩, h, rfl⟩;
 
-private lemma pointGenerateBase_surjective {u : D.F.World} (hu : D.path 0 ∉ D.F.Reach u) :
+private lemma pointGenerateBase_surjective {u : D.F.World} (hu : ¬u ≺^* D.path 0) :
     Function.Surjective (pointGenerateBase (I := I) hu) := by
   rintro ⟨z, n, hn⟩;
-  obtain ⟨w, hw, rfl⟩ := (relItr_base_iff_of_not_mem_reach hu).mp hn;
+  obtain ⟨w, hw, rfl⟩ := (relItr_base_iff_of_not_reflTransRel hu).mp hn;
   exact ⟨⟨w, n, hw⟩, rfl⟩;
 
 private lemma pointGenerate_base_validates {α : Type*} {L : NormalLogic α} {u : D.F.World}
-    (hu : D.path 0 ∉ D.F.Reach u) (h : D.F⥜u ⊧ L) :
+    (hu : ¬u ≺^* D.path 0) (h : D.F⥜u ⊧ L) :
     (D.hookFrame I)⥜(.base u) ⊧ L :=
   ValidateLogic.of_surjective_pMorphism (pointGenerateBase hu) (pointGenerateBase_surjective hu) h
 
@@ -1003,8 +1003,8 @@ private lemma exists_relItr_d_zero (hx : x ∉ D.detached I) :
     relItr_head (by simp [Rel]) hdm;
   cases x with
   | base u =>
-    have hu : D.path 0 ∈ D.F.Reach u := by simpa using hx;
-    obtain ⟨k, hk, hku⟩ := exists_relItr_lt_card_of_mem_reach hu;
+    have hu : u ≺^* D.path 0 := by simpa using hx;
+    obtain ⟨k, hk, hku⟩ := exists_relItr_lt_card_of_reflTransRel hu;
     exact ⟨_, by omega, relItr_trans (relItr_base hku) <|
       relItr_head (y := .copy 0 (Nat.zero_le _)) (by simp [Rel]) (hcopy 0 _)⟩;
   | copy t ht => exact ⟨_, by omega, hcopy t ht⟩;
@@ -1028,7 +1028,7 @@ private lemma d_zero_exists_relItr (y : (D.hookFrame I).World) :
     relItr_head (y := .c) (by simp [Rel]) <| relItr_head (by simp [Rel]) relItr_zero_self;
   have hroot (v : D.F.World) : ∃ k < Nat.card D.F.World,
       RelItr (F := D.hookFrame I) (1 + k) (.d 0 (Nat.zero_le _)) (.base v) := by
-    obtain ⟨k, hk, hkv⟩ := exists_relItr_lt_card_of_mem_reach (D.root.2 v);
+    obtain ⟨k, hk, hkv⟩ := exists_relItr_lt_card_of_reflTransRel (D.root.2 v);
     exact ⟨k, hk, relItr_trans (n := 1) (by simp [Rel]) (relItr_base hkv)⟩;
   cases y with
   | base v =>
@@ -1590,7 +1590,8 @@ lemma exists_rel_of_not_deadEnd (hF : ∀ u : D.F.World, ¬D.F.IsRootedBy u → 
     (h : deadEnd ⊭ L) (u : D.F.World) : ∃ v, u ≺ v := by
   by_contra! hu;
   by_cases hr : D.F.IsRootedBy u;
-  · have := Frame.eq_of_mem_reach_of_forall_rel_eq (fun v Ruv => (hu v Ruv).elim) (hr (D.path 0));
+  · have := Frame.eq_of_reflTransRel_of_forall_rel_eq
+      (fun v Ruv => (hu v Ruv).elim) (hr (D.path 0));
     exact hu _ <| this ▸ D.path_rel 0;
   · exact h <| (Frame.pointGenerate_validateLogic_iff_deadEnd hu).mp (hF u hr);
 
