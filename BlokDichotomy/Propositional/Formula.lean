@@ -8,8 +8,8 @@ public import BlokDichotomy.ToMathlib.Data.List.Induction
 # Formulas of intuitionistic propositional logic
 
 Formulas built from variables, `⊥`, `⋏`, `⋎` and `🡒`, and their substitutions. The connectives
-share their notation with modal formulas (`BlokDichotomy.Formula`); the notation is scoped to the
-namespace `Propositional`, and the expected type tells the two apart.
+share their notation with modal formulas (`Modal.Formula`); the notation is scoped to the namespace
+`Propositional`, and the expected type tells the two apart.
 
 ## References
 

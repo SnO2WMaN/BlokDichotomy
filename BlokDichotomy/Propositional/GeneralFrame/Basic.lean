@@ -1,6 +1,6 @@
 module
 
-public import BlokDichotomy.GeneralFrame.Preorder
+public import BlokDichotomy.Modal.GeneralFrame.Preorder
 public import BlokDichotomy.Propositional.Kripke.Basic
 public import BlokDichotomy.Propositional.Kripke.Completeness
 
@@ -24,6 +24,8 @@ formulas of the logic.
 universe u v
 
 namespace Propositional
+
+open Modal
 
 variable {κ : Type u} {α : Type v}
 
@@ -126,6 +128,8 @@ end GeneralFrame
 end Propositional
 
 namespace Propositional.Logic
+
+open Modal
 
 variable {α : Type v} (L : Logic α) [L.IsExt 𝐈𝐧𝐭]
 

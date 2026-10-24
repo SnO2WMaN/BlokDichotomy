@@ -1,6 +1,6 @@
 module
 
-public import BlokDichotomy.Kripke.Basic
+public import BlokDichotomy.Modal.Kripke.Basic
 public import BlokDichotomy.Propositional.Logic.Basic
 
 /-!
@@ -24,6 +24,8 @@ canonical frame is a partial order.
 universe u v
 
 namespace Propositional
+
+open Modal
 
 variable {κ : Type u} {α : Type v}
 

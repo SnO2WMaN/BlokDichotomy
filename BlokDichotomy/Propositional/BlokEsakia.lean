@@ -1,7 +1,7 @@
 module
 
-public import BlokDichotomy.GeneralFrame.Canonical
-public import BlokDichotomy.Logic.CNF
+public import BlokDichotomy.Modal.GeneralFrame.Canonical
+public import BlokDichotomy.Modal.Logic.CNF
 public import BlokDichotomy.Propositional.BlokEsakia.Basic
 public import BlokDichotomy.Propositional.BlokEsakia.MainLemma
 public import BlokDichotomy.ToMathlib.Data.Fintype.EquivFin
@@ -34,6 +34,8 @@ universe v
 
 namespace Propositional
 
+open Modal
+
 variable {α : Type v}
 
 section
@@ -48,7 +50,7 @@ lemma gödelTranslate_conj (l : List (Formula α)) :
       (NormalLogic.imp_of_mem NormalLogic.box_top);
   | singleton => exact NormalLogic.iff_refl;
   | cons A l hl ih =>
-    rw [Formula.conj_cons_of_ne_nil hl, List.map_cons, _root_.Formula.conj_cons_of_ne_nil
+    rw [Formula.conj_cons_of_ne_nil hl, List.map_cons, Modal.Formula.conj_cons_of_ne_nil
       (by simpa using hl), Formula.gödelTranslate_and];
     exact NormalLogic.and_iff_congr NormalLogic.iff_refl ih;
 
@@ -58,7 +60,7 @@ lemma gödelTranslate_disj (l : List (Formula α)) :
   | nil => exact NormalLogic.iff_refl;
   | singleton => exact NormalLogic.iff_refl;
   | cons A l hl ih =>
-    rw [Formula.disj_cons_of_ne_nil hl, List.map_cons, _root_.Formula.disj_cons_of_ne_nil
+    rw [Formula.disj_cons_of_ne_nil hl, List.map_cons, Modal.Formula.disj_cons_of_ne_nil
       (by simpa using hl), Formula.gödelTranslate_or];
     exact NormalLogic.or_iff_congr NormalLogic.iff_refl ih;
 
@@ -75,7 +77,7 @@ end
 /-- The box of a `◇`-free combination of translations is the conjunction of the translations of
 the clauses of its conjunctive normal form. -/
 private lemma box_subst_gödelTranslate_iff_conj [DecidableEq (Formula α)]
-    {γ : _root_.Formula (Formula α)} (hγ : γ.depth = 0) {s : Finset (Formula α)}
+    {γ : Modal.Formula (Formula α)} (hγ : γ.depth = 0) {s : Finset (Formula α)}
     (hs : γ.atoms ⊆ s) :
     □(γ⟦(·ᵍ)⟧) 🡘 ⋀ ((Formula.refutingSets s γ).toList.map fun I =>
       (Formula.conj I.toList 🡒 Formula.disj (s \ I).toList)ᵍ) ∈ 𝐊 := by
@@ -93,8 +95,8 @@ private lemma box_subst_gödelTranslate_iff_conj [DecidableEq (Formula α)]
   exact NormalLogic.iff_trans h₁ <| NormalLogic.iff_trans h₂ h₃
 
 /-- Boxing a `◇`-free combination of translations gives again such a combination. -/
-theorem exists_box_subst_gödelTranslate_iff (γ : _root_.Formula (Formula α)) (hγ : γ.depth = 0) :
-    ∃ δ : _root_.Formula (Formula α), δ.depth = 0 ∧
+theorem exists_box_subst_gödelTranslate_iff (γ : Modal.Formula (Formula α)) (hγ : γ.depth = 0) :
+    ∃ δ : Modal.Formula (Formula α), δ.depth = 0 ∧
       □(γ⟦(·ᵍ)⟧) 🡘 δ⟦(·ᵍ)⟧ ∈ 𝐊 := by
   classical
   use ⋀ ((Formula.refutingSets γ.atoms γ).toList.map fun I =>
@@ -109,8 +111,8 @@ theorem exists_box_subst_gödelTranslate_iff (γ : _root_.Formula (Formula α)) 
 
 /-- Every formula whose variables are replaced by boxed variables is equivalent in `𝐊` to a
 `◇`-free combination of translations. -/
-theorem exists_subst_box_iff_gödelTranslate (E : _root_.Formula α) :
-    ∃ γ : _root_.Formula (Formula α), γ.depth = 0 ∧
+theorem exists_subst_box_iff_gödelTranslate (E : Modal.Formula α) :
+    ∃ γ : Modal.Formula (Formula α), γ.depth = 0 ∧
       E⟦fun q => □(#q)⟧ 🡘 γ⟦(·ᵍ)⟧ ∈ 𝐊 := by
   induction E with
   | atom q => exact ⟨#(#q), rfl, NormalLogic.iff_refl⟩;
@@ -135,7 +137,7 @@ theorem exists_subst_box_iff_gödelTranslate (E : _root_.Formula α) :
 
 /-- A `◇`-free combination of translations in `L₁` is in `L₁.siFragment.leastMC`. -/
 theorem subst_gödelTranslate_mem_leastMC_siFragment {L₁ : NormalLogic α} [L₁.IsNExt 𝐒𝟒]
-    (γ : _root_.Formula (Formula α)) (hγ : γ.depth = 0) (h : γ⟦(·ᵍ)⟧ ∈ L₁) :
+    (γ : Modal.Formula (Formula α)) (hγ : γ.depth = 0) (h : γ⟦(·ᵍ)⟧ ∈ L₁) :
     γ⟦(·ᵍ)⟧ ∈ L₁.siFragment.leastMC := by
   classical
   let s := γ.atoms;
@@ -161,7 +163,7 @@ theorem subst_gödelTranslate_mem_leastMC_siFragment {L₁ : NormalLogic α} [L�
 /-- A substitution instance by boxed variables that lies in an extension `L₁` of `𝐒𝟒` lies in
 `L₁.siFragment.greatestMC`. -/
 theorem subst_box_mem_greatestMC_siFragment {L₁ : NormalLogic α} [L₁.IsNExt 𝐒𝟒]
-    (E : _root_.Formula α) (h : E⟦fun q => □(#q)⟧ ∈ L₁) :
+    (E : Modal.Formula α) (h : E⟦fun q => □(#q)⟧ ∈ L₁) :
     E⟦fun q => □(#q)⟧ ∈ L₁.siFragment.greatestMC := by
   obtain ⟨γ, hγ, hiff⟩ := exists_subst_box_iff_gödelTranslate E;
   have h₁ : γ⟦(·ᵍ)⟧ ∈ L₁ :=
@@ -176,7 +178,7 @@ truth sets of the `◇`-free combinations of boxed formulas. -/
 lemma exists_of_mem_toIntuitionistic_toModal_adm {L₂ : NormalLogic α} [L₂.IsNExt 𝐒𝟒]
     {X : Set L₂.MaximalConsistentSet}
     (hX : X ∈ L₂.canonicalGeneralFrame.toIntuitionistic.toModal.Adm) :
-    ∃ β : _root_.Formula (_root_.Formula α), β.depth = 0 ∧ X = {x | β⟦(□·)⟧ ∈ x} := by
+    ∃ β : Modal.Formula (Modal.Formula α), β.depth = 0 ∧ X = {x | β⟦(□·)⟧ ∈ x} := by
   replace hX : X ∈ BooleanSubalgebra.closure L₂.canonicalGeneralFrame.toIntuitionistic.Adm := hX
   induction hX using BooleanSubalgebra.closure_bot_sup_induction with
   | mem Y hY =>
@@ -207,16 +209,16 @@ lemma exists_of_mem_toIntuitionistic_toModal_adm {L₂ : NormalLogic α} [L₂.I
 /-- A formula outside an extension of `𝐆𝐫𝐳` has a substitution instance outside it, obtained by
 substituting `◇`-free combinations of boxed formulas. -/
 theorem exists_subst_not_mem [Nonempty α] (L₂ : NormalLogic α) [L₂.IsNExt 𝐆𝐫𝐳]
-    {A : _root_.Formula α} (h : A ∉ L₂) :
-    ∃ (s : _root_.Formula.Substitution α α) (β : α → _root_.Formula (_root_.Formula α)),
+    {A : Modal.Formula α} (h : A ∉ L₂) :
+    ∃ (s : Modal.Formula.Substitution α α) (β : α → Modal.Formula (Modal.Formula α)),
       (∀ p, (β p).depth = 0 ∧ s p = (β p)⟦(□·)⟧) ∧ A⟦s⟧ ∉ L₂ := by
   have hGrz : L₂.canonicalGeneralFrame ⊧ logicGrz (α := α) := fun B hB =>
     NormalLogic.canonicalGeneralFrame.validates_iff.mpr (NormalLogic.IsNExt.logic_le hB);
   have hA : L₂.canonicalGeneralFrame ⊭ A := by
     by_contra h₀;
     exact h (NormalLogic.canonicalGeneralFrame.validates_iff.mp h₀);
-  obtain ⟨V, hV, x, hx⟩ := _root_.GeneralFrame.not_validates_iff.mp
-    (_root_.GeneralFrame.not_validates_toIntuitionistic_toModal_of_not_validates hGrz hA);
+  obtain ⟨V, hV, x, hx⟩ := Modal.GeneralFrame.not_validates_iff.mp
+    (Modal.GeneralFrame.not_validates_toIntuitionistic_toModal_of_not_validates hGrz hA);
   choose β hβ using fun p => exists_of_mem_toIntuitionistic_toModal_adm (hV p);
   use fun p => (β p)⟦(□·)⟧, β;
   and_intros;
@@ -225,21 +227,21 @@ theorem exists_subst_not_mem [Nonempty α] (L₂ : NormalLogic α) [L₂.IsNExt 
   · by_contra hmem;
     have h₂ := NormalLogic.canonicalGeneralFrame.eq_forces_of_forall_setOf_eq fun p => (hβ p).2;
     have h₃ := NormalLogic.canonicalModel_validates_of_mem hmem x;
-    have h₄ := (_root_.Model.World.forces_subst (fun p => (β p)⟦(□·)⟧)).mp h₃;
+    have h₄ := (Modal.Model.World.forces_subst (fun p => (β p)⟦(□·)⟧)).mp h₃;
     subst h₂;
     exact hx h₄
 
 /-- Substituting boxed formulas for the variables of `A`, and then the original formulas back
 along a left inverse of the renaming, gives the original substitution instance. -/
-private lemma subst_box_map_subst_eq [DecidableEq α] {A : _root_.Formula α}
-    {β : α → _root_.Formula (_root_.Formula α)} {s : _root_.Formula.Substitution α α}
-    (hs : ∀ p, s p = (β p)⟦(□·)⟧) {f : _root_.Formula α → α} {g : α → _root_.Formula α}
+private lemma subst_box_map_subst_eq [DecidableEq α] {A : Modal.Formula α}
+    {β : α → Modal.Formula (Modal.Formula α)} {s : Modal.Formula.Substitution α α}
+    (hs : ∀ p, s p = (β p)⟦(□·)⟧) {f : Modal.Formula α → α} {g : α → Modal.Formula α}
     (hg : ∀ p ∈ A.atoms, ∀ B ∈ (β p).atoms, g (f B) = B) :
     (A⟦fun p => (β p).map f⟧⟦fun q => □(#q)⟧)⟦g⟧ = A⟦s⟧ := by
-  simp only [_root_.Formula.subst_subst];
+  simp only [Modal.Formula.subst_subst];
   apply Formula.subst_congr_of_atoms;
   intro p hp;
-  rw [hs p, _root_.Formula.subst_map];
+  rw [hs p, Modal.Formula.subst_map];
   apply Formula.subst_congr_of_atoms;
   intro B hB;
   simp [hg p hp B hB]
@@ -256,7 +258,7 @@ theorem greatestMC_siFragment_eq [Infinite α] (L : NormalLogic α) [L.IsNExt �
   by_contra hA₂;
   obtain ⟨s, β, hβ, hs⟩ := exists_subst_not_mem L.siFragment.greatestMC hA₂;
   obtain ⟨f, hf⟩ := Infinite.exists_injOn (α := α) (A.atoms.biUnion fun p => (β p).atoms);
-  obtain ⟨g, hg⟩ : ∃ g : α → _root_.Formula α, ∀ p ∈ A.atoms, ∀ B ∈ (β p).atoms, g (f B) = B := by
+  obtain ⟨g, hg⟩ : ∃ g : α → Modal.Formula α, ∀ p ∈ A.atoms, ∀ B ∈ (β p).atoms, g (f B) = B := by
     use Function.invFunOn f (A.atoms.biUnion fun p => (β p).atoms);
     intro p hp B hB;
     exact hf.leftInvOn_invFunOn <| Finset.mem_coe.mpr <| Finset.mem_biUnion.mpr ⟨p, hp, hB⟩;
@@ -310,12 +312,12 @@ end Logic
 
 /-- `𝐒𝟒.siFragment = 𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem _root_.NormalLogic.siFragment_logicS4 : 𝐒𝟒.siFragment (α := α) = 𝐈𝐧𝐭 :=
+theorem _root_.Modal.NormalLogic.siFragment_logicS4 : 𝐒𝟒.siFragment (α := α) = 𝐈𝐧𝐭 :=
   SetLike.ext fun _ => gödelTranslate_mem_logicS4_iff.symm
 
 /-- `𝐆𝐫𝐳.siFragment = 𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem _root_.NormalLogic.siFragment_logicGrz : 𝐆𝐫𝐳.siFragment (α := α) = 𝐈𝐧𝐭 := by
+theorem _root_.Modal.NormalLogic.siFragment_logicGrz : 𝐆𝐫𝐳.siFragment (α := α) = 𝐈𝐧𝐭 := by
   apply SetLike.ext;
   intro A;
   have h : Aᵍ ∈ 𝐈𝐧𝐭.greatestMC (α := α) ↔ A ∈ 𝐈𝐧𝐭 := by
