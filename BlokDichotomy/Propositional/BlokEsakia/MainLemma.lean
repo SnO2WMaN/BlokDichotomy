@@ -37,7 +37,7 @@ variable {F : Frame κ} {U : Set F.World} {y : F.World}
 
 section
 
-variable [IsPreorder κ F.Rel]
+variable [IsPreorder _ F.Rel]
 
 lemma mem_passive_iff :
     y ∈ F.passive U ↔ y ∈ U ∧ ∀ u v : F.World, y ≺ u → u ≺ v → u ∉ U → v ∉ U := by
@@ -69,7 +69,7 @@ end Frame
 
 namespace GeneralFrame
 
-variable {G : GeneralFrame κ} [IsPreorder κ G.Rel] {U : Set G.World}
+variable {G : GeneralFrame κ} [IsPreorder _ G.Rel] {U : Set G.World}
 
 /-- The passive points of an admissible set are admissible in `σ ρ G`. -/
 lemma passive_mem_toIntuitionistic_toModal (hU : U ∈ G.Adm) :
@@ -160,7 +160,7 @@ lemma typeOf_subset : G.typeOf V A x ⊆ A.subformulas := fun _ h => (mem_typeOf
 
 section
 
-variable [IsPreorder κ G.Rel]
+variable [IsPreorder _ G.Rel]
 
 /-- If `x ≺ y` then `t(x) ⊑ t(y)`. -/
 lemma typeLE_typeOf_of_rel (Rxy : x ≺ y) : A.TypeLE (G.typeOf V A x) (G.typeOf V A y) := by
@@ -229,7 +229,7 @@ lemma preimage_typeOf_mem_adm (hV : G.IsAdmissible V) (a : Finset (Formula α)) 
 
 section
 
-variable [IsPreorder κ G.Rel]
+variable [IsPreorder _ G.Rel]
 
 omit [DecidableEq α] in
 /-- The set of points not satisfying `◇B` is an admissible upward closed set of `G`. -/
@@ -354,7 +354,7 @@ lemma definableType_subset : G.definableType V A x ⊆ A.subformulas := by
 
 section
 
-variable [IsPreorder κ G.Rel]
+variable [IsPreorder _ G.Rel]
 
 private lemma definableType_eq_iff :
     G.definableType V A x = a ↔
@@ -453,7 +453,7 @@ private lemma imp_mem_definableType_iff (h : (B 🡒 C) ∈ A.subformulas) :
   have hC := mem_subformulas_of_imp_right h;
   grind
 
-variable [IsPreorder κ G.Rel]
+variable [IsPreorder _ G.Rel]
 
 /-- The valuation `definableValuation` is admissible in `σ ρ G`. -/
 lemma isAdmissible_definableValuation (hV : G.IsAdmissible V) :

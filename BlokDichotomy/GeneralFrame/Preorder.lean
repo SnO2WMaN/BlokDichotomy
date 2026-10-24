@@ -47,7 +47,7 @@ lemma diaSet_diff_eq : F.diaSet (X \ Y) = (F.himpSet X Y)ᶜ := by
 
 section
 
-variable [IsPreorder κ F.Rel]
+variable [IsPreorder _ F.Rel]
 
 lemma boxSet_subset (X : Set F.World) : F.boxSet X ⊆ X :=
   fun w hw => hw w <| rel_refl w
@@ -83,13 +83,13 @@ def upAdm (G : GeneralFrame κ) : Set (Set G.World) := {X ∈ G.Adm | G.toFrame.
 
 lemma upAdm_subset_adm : G.upAdm ⊆ G.Adm := fun _ hX => hX.1
 
-lemma validates_logicS4 [IsPreorder κ G.Rel] : G ⊧ (𝐒𝟒 : NormalLogic α) := by
+lemma validates_logicS4 [IsPreorder _ G.Rel] : G ⊧ (𝐒𝟒 : NormalLogic α) := by
   intro A hA;
   exact validates_of_toFrame <| Frame.validates_logicS4 A hA;
 
 section
 
-variable [IsPreorder κ G.Rel]
+variable [IsPreorder _ G.Rel]
 
 lemma boxSet_mem_upAdm (hX : X ∈ G.Adm) : G.toFrame.boxSet X ∈ G.upAdm :=
   ⟨boxSet_mem hX, Frame.isUpwardClosed_boxSet X⟩
@@ -130,7 +130,7 @@ lemma Frame.diaSet_mem_closure (hsub : IsSublattice 𝒜)
 
 /-- An upward closed set in the Boolean closure of a family of upward closed sets belongs to the
 family. -/
-lemma Frame.mem_of_isUpwardClosed_of_mem_closure [IsPreorder κ F.Rel] (hsub : IsSublattice 𝒜)
+lemma Frame.mem_of_isUpwardClosed_of_mem_closure [IsPreorder _ F.Rel] (hsub : IsSublattice 𝒜)
     (hhimp : ∀ {Y Z : Set F.World}, Y ∈ 𝒜 → Z ∈ 𝒜 → F.himpSet Y Z ∈ 𝒜) (hempty : ∅ ∈ 𝒜)
     (hX : X ∈ closure 𝒜) (hup : F.IsUpwardClosed X) : X ∈ 𝒜 := by
   have h₁ : ∀ Y ∈ 𝒜, ∀ Z ∈ 𝒜, F.boxSet (Y \ Z)ᶜ ∈ 𝒜 := by
@@ -158,7 +158,7 @@ variable {F : Frame κ} {X : Set F.World}
 
 /-- Above a point outside `X`, there is a point outside `X` from which one never re-enters `X`,
 provided `X` is determined by finitely many upward closed sets. -/
-lemma Frame.exists_rel_not_mem_of_finset_determines [IsPreorder κ F.Rel]
+lemma Frame.exists_rel_not_mem_of_finset_determines [IsPreorder _ F.Rel]
     {𝒵 : Finset (Set F.World)} (h𝒵 : ∀ Z ∈ 𝒵, F.IsUpwardClosed Z)
     (hX : ∀ u v, (∀ Z ∈ 𝒵, u ∈ Z ↔ v ∈ Z) → (u ∈ X ↔ v ∈ X)) {x : F.World} (hx : x ∉ X) :
     ∃ z, x ≺ z ∧ z ∉ X ∧ ∀ u v, z ≺ u → u ≺ v → u ∈ X → v ∈ X := by

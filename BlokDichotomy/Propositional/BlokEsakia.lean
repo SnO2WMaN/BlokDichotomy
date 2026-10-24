@@ -78,13 +78,13 @@ private lemma box_subst_gödelTranslate_iff_conj [DecidableEq (Formula α)]
     {γ : _root_.Formula (Formula α)} (hγ : γ.depth = 0) {s : Finset (Formula α)}
     (hs : γ.atoms ⊆ s) :
     □(γ⟦(·ᵍ)⟧) 🡘 ⋀ ((Formula.refutingSets s γ).toList.map fun I =>
-      (Formula.conj I.toList 🡒 Formula.disj (s \ I).toList)ᵍ) ∈ (𝐊 : NormalLogic α) := by
-  have h₁ := NormalLogic.box_congr <| Formula.cnf_iff_mem (L := (𝐊 : NormalLogic α)) hγ hs (·ᵍ);
+      (Formula.conj I.toList 🡒 Formula.disj (s \ I).toList)ᵍ) ∈ 𝐊 := by
+  have h₁ := NormalLogic.box_congr <| Formula.cnf_iff_mem (L := 𝐊) hγ hs (·ᵍ);
   rw [Formula.subst_cnf] at h₁;
-  have h₂ := NormalLogic.box_conj (L := (𝐊 : NormalLogic α))
+  have h₂ := NormalLogic.box_conj (L := 𝐊)
     (l := (Formula.refutingSets s γ).toList.map
       fun I => ⋀ (I.toList.map (·ᵍ)) 🡒 ⋁ ((s \ I).toList.map (·ᵍ)));
-  have h₃ := NormalLogic.conj_map_iff_congr (L := (𝐊 : NormalLogic α))
+  have h₃ := NormalLogic.conj_map_iff_congr (L := 𝐊)
     (l := (Formula.refutingSets s γ).toList)
     (f := fun I => □(⋀ (I.toList.map (·ᵍ)) 🡒 ⋁ ((s \ I).toList.map (·ᵍ))))
     (g := fun I => (Formula.conj I.toList 🡒 Formula.disj (s \ I).toList)ᵍ)
@@ -95,7 +95,7 @@ private lemma box_subst_gödelTranslate_iff_conj [DecidableEq (Formula α)]
 /-- Boxing a `◇`-free combination of translations gives again such a combination. -/
 theorem exists_box_subst_gödelTranslate_iff (γ : _root_.Formula (Formula α)) (hγ : γ.depth = 0) :
     ∃ δ : _root_.Formula (Formula α), δ.depth = 0 ∧
-      □(γ⟦(·ᵍ)⟧) 🡘 δ⟦(·ᵍ)⟧ ∈ (𝐊 : NormalLogic α) := by
+      □(γ⟦(·ᵍ)⟧) 🡘 δ⟦(·ᵍ)⟧ ∈ 𝐊 := by
   classical
   use ⋀ ((Formula.refutingSets γ.atoms γ).toList.map fun I =>
     #(Formula.conj I.toList 🡒 Formula.disj (γ.atoms \ I).toList));
@@ -111,7 +111,7 @@ theorem exists_box_subst_gödelTranslate_iff (γ : _root_.Formula (Formula α)) 
 `◇`-free combination of translations. -/
 theorem exists_subst_box_iff_gödelTranslate (E : _root_.Formula α) :
     ∃ γ : _root_.Formula (Formula α), γ.depth = 0 ∧
-      E⟦fun q => □(#q)⟧ 🡘 γ⟦(·ᵍ)⟧ ∈ (𝐊 : NormalLogic α) := by
+      E⟦fun q => □(#q)⟧ 🡘 γ⟦(·ᵍ)⟧ ∈ 𝐊 := by
   induction E with
   | atom q => exact ⟨#(#q), rfl, NormalLogic.iff_refl⟩;
   | falsum => exact ⟨⊥, rfl, NormalLogic.iff_refl⟩;
@@ -129,7 +129,7 @@ theorem exists_subst_box_iff_gödelTranslate (E : _root_.Formula α) :
     and_intros;
     · simp [h₂];
     · have h₃ := NormalLogic.iff_trans (NormalLogic.dia_congr i₁) NormalLogic.diaDual;
-      have h₄ : ∼□(∼(γ₁⟦(·ᵍ)⟧)) 🡘 ∼(γ₂⟦(·ᵍ)⟧) ∈ (𝐊 : NormalLogic α) :=
+      have h₄ : ∼□(∼(γ₁⟦(·ᵍ)⟧)) 🡘 ∼(γ₂⟦(·ᵍ)⟧) ∈ 𝐊 :=
         NormalLogic.neg_iff_congr i₂;
       exact NormalLogic.iff_trans h₃ h₄;
 
@@ -273,7 +273,7 @@ of `𝐆𝐫𝐳`, `L ↦ 𝐆𝐫𝐳 ⊕ Lᵍ`, with inverse `L ↦ {A | Aᵍ 
 - [Esa76]
 - [CZ98, Theorem 9.66] -/
 noncomputable def beIsomorphism (α : Type v) [Infinite α] :
-    Ext (𝐈𝐧𝐭 : Logic α) ≃o NExt (𝐆𝐫𝐳 : NormalLogic α) where
+    Ext (α := α) 𝐈𝐧𝐭 ≃o NExt (α := α) 𝐆𝐫𝐳 where
   toFun L := ⟨L.1.greatestMC, inferInstance⟩
   invFun L := ⟨L.1.siFragment, inferInstance⟩
   left_inv L := Subtype.ext (Logic.siFragment_greatestMC_eq L.1)
@@ -285,22 +285,22 @@ noncomputable def beIsomorphism (α : Type v) [Infinite α] :
       rwa [Logic.siFragment_greatestMC_eq, Logic.siFragment_greatestMC_eq] at h₁;
     · exact Logic.greatestMC_mono
 
-@[simp] lemma beIsomorphism_apply [Infinite α] (L : Ext (𝐈𝐧𝐭 : Logic α)) :
+@[simp] lemma beIsomorphism_apply [Infinite α] (L : Ext 𝐈𝐧𝐭) :
     (beIsomorphism α L).1 = L.1.greatestMC := rfl
 
-@[simp] lemma beIsomorphism_symm_apply [Infinite α] (L : NExt (𝐆𝐫𝐳 : NormalLogic α)) :
+@[simp] lemma beIsomorphism_symm_apply [Infinite α] (L : NExt 𝐆𝐫𝐳) :
     ((beIsomorphism α).symm L).1 = L.1.siFragment := rfl
 
 namespace Logic
 
 /-- `𝐈𝐧𝐭.leastMC = 𝐒𝟒`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem leastMC_logicInt : (𝐈𝐧𝐭 : Logic α).leastMC = 𝐒𝟒 :=
+theorem leastMC_logicInt : 𝐈𝐧𝐭.leastMC (α := α) = 𝐒𝟒 :=
   le_antisymm (leastMC_le fun _ hA => gödelTranslate_mem_logicS4_iff.mp hA) NormalLogic.le_add
 
 /-- `𝐈𝐧𝐭.greatestMC = 𝐆𝐫𝐳`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem greatestMC_logicInt : (𝐈𝐧𝐭 : Logic α).greatestMC = 𝐆𝐫𝐳 :=
+theorem greatestMC_logicInt : 𝐈𝐧𝐭.greatestMC (α := α) = 𝐆𝐫𝐳 :=
   le_antisymm
     (greatestMC_le fun _ hA =>
       NormalLogic.logicS4_le_logicGrz (gödelTranslate_mem_logicS4_iff.mp hA))
@@ -310,22 +310,22 @@ end Logic
 
 /-- `𝐒𝟒.siFragment = 𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem _root_.NormalLogic.siFragment_logicS4 : (𝐒𝟒 : NormalLogic α).siFragment = 𝐈𝐧𝐭 :=
+theorem _root_.NormalLogic.siFragment_logicS4 : 𝐒𝟒.siFragment (α := α) = 𝐈𝐧𝐭 :=
   SetLike.ext fun _ => gödelTranslate_mem_logicS4_iff.symm
 
 /-- `𝐆𝐫𝐳.siFragment = 𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem _root_.NormalLogic.siFragment_logicGrz : (𝐆𝐫𝐳 : NormalLogic α).siFragment = 𝐈𝐧𝐭 := by
+theorem _root_.NormalLogic.siFragment_logicGrz : 𝐆𝐫𝐳.siFragment (α := α) = 𝐈𝐧𝐭 := by
   apply SetLike.ext;
   intro A;
-  have h : Aᵍ ∈ (𝐈𝐧𝐭 : Logic α).greatestMC ↔ A ∈ 𝐈𝐧𝐭 := by
+  have h : Aᵍ ∈ 𝐈𝐧𝐭.greatestMC (α := α) ↔ A ∈ 𝐈𝐧𝐭 := by
     rw [← NormalLogic.mem_siFragment, Logic.siFragment_greatestMC_eq];
   rw [NormalLogic.mem_siFragment, ← Logic.greatestMC_logicInt];
   exact h
 
 /-- `𝐆𝐫𝐳` is a modal companion of `𝐈𝐧𝐭`.
 - [CZ98, §3.9, Example 9.63] -/
-theorem logicGrz_isModalCompanionOf_logicInt : (𝐆𝐫𝐳 : NormalLogic α).IsModalCompanionOf 𝐈𝐧𝐭 :=
+theorem logicGrz_isModalCompanionOf_logicInt : 𝐆𝐫𝐳.IsModalCompanionOf (α := α) 𝐈𝐧𝐭 :=
   fun A => (Iff.of_eq (congrArg (A ∈ ·) NormalLogic.siFragment_logicGrz.symm)).trans
     NormalLogic.mem_siFragment
 

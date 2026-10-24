@@ -54,7 +54,7 @@ variable {M : _root_.Model κ α} {x : M.World}
 
 /-- The intuitionistic model on the frame of a transitive modal model `M`, where `#a` is true at
 `x` iff `□#a` is true at `x` in `M`. -/
-def ofModal (M : _root_.Model κ α) [IsTrans κ M.Rel] : Propositional.Model κ α where
+def ofModal (M : _root_.Model κ α) [IsTrans _ M.Rel] : Propositional.Model κ α where
   toFrame := M.toFrame
   Val x a := x ⊩[M] □(#a)
   hereditary := by
@@ -70,7 +70,7 @@ lemma forces_gödelTranslate_iff_of_val [Std.Refl F.Rel] {V W : κ → α → Pr
   induction A generalizing x <;> grind;
 
 /-- - [CZ98, Lemma 3.81] -/
-theorem forces_ofModal_iff [IsPreorder κ M.Rel] : x ⊩[ofModal M] A ↔ x ⊩[M] Aᵍ := by
+theorem forces_ofModal_iff [IsPreorder _ M.Rel] : x ⊩[ofModal M] A ↔ x ⊩[M] Aᵍ := by
   exact forces_gödelTranslate_iff_of_val (F := M.toFrame) (V := M.Val')
     (hW := (ofModal M).hereditary) (fun _ _ => Iff.rfl);
 
@@ -78,7 +78,7 @@ end Model
 
 /-- A reflexive transitive frame validates `Aᵍ` iff it validates `A`.
 - [CZ98, Corollary 3.82] -/
-theorem Frame.validates_gödelTranslate_iff [IsPreorder κ F.Rel] : F ⊧ Aᵍ ↔ F ⊧ A := by
+theorem Frame.validates_gödelTranslate_iff [IsPreorder _ F.Rel] : F ⊧ Aᵍ ↔ F ⊧ A := by
   constructor;
   · intro h V hV x;
     have hV' : ∀ (x : κ) (a : α), V x a ↔ x ⊩[(⟨F, V⟩ : _root_.Model κ α)] □(#a) := by

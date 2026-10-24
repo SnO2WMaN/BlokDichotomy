@@ -107,7 +107,7 @@ lemma ReflTransRel.tail (Rxy : x ≺^* y) (Ryz : y ≺ z) : x ≺^* z :=
 @[simp, grind .] lemma rel_refl [Std.Refl F.Rel'] (x : F.World) : x ≺ x := refl x
 
 @[grind →]
-lemma rel_trans [IsTrans κ F.Rel'] (Rxy : x ≺ y) (Ryz : y ≺ z) : x ≺ z :=
+lemma rel_trans [IsTrans _ F.Rel'] (Rxy : x ≺ y) (Ryz : y ≺ z) : x ≺ z :=
   _root_.trans (r := F.Rel') Rxy Ryz
 
 end Frame
@@ -271,12 +271,12 @@ lemma not_forces_farthest_of_ne {m : ℕ} (hnm : n ≠ m) (h : x ⊩ farthest n)
     exact Frame.exists_relItr_of_le Rxy hlt;
 
 @[grind →]
-lemma forces_box_of_rel [IsTrans κ M.Rel'] {A : Formula α} (h : x ⊩ □A) (Rxy : x ≺ y) :
+lemma forces_box_of_rel [IsTrans _ M.Rel'] {A : Formula α} (h : x ⊩ □A) (Rxy : x ≺ y) :
     y ⊩ □A :=
   forces_box.mpr fun _ Ryz => forces_box.mp h _ <| Frame.rel_trans Rxy Ryz
 
 @[grind →]
-lemma forces_dia_of_rel [IsTrans κ M.Rel'] {A : Formula α} (h : y ⊩ ◇A) (Rxy : x ≺ y) :
+lemma forces_dia_of_rel [IsTrans _ M.Rel'] {A : Formula α} (h : y ⊩ ◇A) (Rxy : x ≺ y) :
     x ⊩ ◇A := by
   obtain ⟨z, Ryz, hz⟩ := forces_dia.mp h;
   exact forces_dia.mpr ⟨z, Frame.rel_trans Rxy Ryz, hz⟩

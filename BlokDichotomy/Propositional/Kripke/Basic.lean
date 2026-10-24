@@ -75,10 +75,10 @@ scoped[Propositional] infix:50 " ⊮ " => Model.World.NotForces _
 /-- Truth is preserved along the accessibility relation.
 - [CZ98, Proposition 2.1] -/
 @[grind →]
-lemma forces_of_rel [IsTrans κ M.Rel] (Rxy : x ≺ y) (h : x ⊩ A) : y ⊩ A := by
+lemma forces_of_rel [IsTrans _ M.Rel] (Rxy : x ≺ y) (h : x ⊩ A) : y ⊩ A := by
   induction A generalizing x y <;> grind;
 
-lemma not_forces_of_rel [IsTrans κ M.Rel] (Rxy : x ≺ y) (h : y ⊮ A) : x ⊮ A := by
+lemma not_forces_of_rel [IsTrans _ M.Rel] (Rxy : x ≺ y) (h : y ⊮ A) : x ⊮ A := by
   by_contra hx;
   exact h <| forces_of_rel Rxy hx;
 
@@ -137,7 +137,7 @@ lemma not_validateLogic_iff {L : Logic α} : F ⊭ L ↔ ∃ A ∈ L, F ⊭ A :=
   not_validatesSet_iff
 
 /-- The logic of a reflexive transitive frame. -/
-def logic (F : Frame κ) [IsPreorder κ F.Rel] : Logic α where
+def logic (F : Frame κ) [IsPreorder _ F.Rel] : Logic α where
   carrier := { A | F ⊧ A }
   mdp := by
     intro A B hA hAB V hV x;
@@ -151,13 +151,13 @@ def logic (F : Frame κ) [IsPreorder κ F.Rel] : Logic α where
 
 /-- Every reflexive transitive frame validates `𝐈𝐧𝐭`.
 - [CZ98, Theorem 2.43] -/
-theorem logicInt_le_logic [IsPreorder κ F.Rel] : 𝐈𝐧𝐭 ≤ Frame.logic (α := α) F := by
+theorem logicInt_le_logic [IsPreorder _ F.Rel] : 𝐈𝐧𝐭 ≤ Frame.logic (α := α) F := by
   apply Logic.ofSet_le;
   intro A hA V hV x;
   cases hA <;> grind [Model.World.forces_of_rel (M := ⟨F, V, hV⟩)];
 
 /-- - [CZ98, Theorem 2.43] -/
-theorem validates_of_mem_logicInt [IsPreorder κ F.Rel] (h : A ∈ 𝐈𝐧𝐭) : F ⊧ A :=
+theorem validates_of_mem_logicInt [IsPreorder _ F.Rel] (h : A ∈ 𝐈𝐧𝐭) : F ⊧ A :=
   logicInt_le_logic h
 
 end Frame

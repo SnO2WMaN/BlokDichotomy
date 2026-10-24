@@ -28,7 +28,7 @@ variable {κ : Type u} {α : Type v}
 /-- `ρ G`: the intuitionistic general frame of the admissible upward closed sets of a modal general
 frame on a preorder.
 - [CZ98, §8.3] -/
-def _root_.GeneralFrame.toIntuitionistic (G : _root_.GeneralFrame κ) [IsPreorder κ G.Rel] :
+def _root_.GeneralFrame.toIntuitionistic (G : _root_.GeneralFrame κ) [IsPreorder _ G.Rel] :
     Propositional.GeneralFrame κ where
   toFrame := G.toFrame
   refl := Frame.rel_refl
@@ -49,7 +49,7 @@ the intuitionistic general frame `H`.
 - [CZ98, §8.3] -/
 def toModal (H : Propositional.GeneralFrame κ) : _root_.GeneralFrame κ where
   toFrame := H.toFrame
-  Adm := (closure H.Adm : Set (Set κ))
+  Adm := (closure H.Adm : Set (Set H.World))
   univ_mem := (closure H.Adm).top_mem
   inter_mem hX hY := (closure H.Adm).inf_mem hX hY
   compl_mem hX := (closure H.Adm).compl_mem hX
@@ -57,13 +57,13 @@ def toModal (H : Propositional.GeneralFrame κ) : _root_.GeneralFrame κ where
 
 variable {H : Propositional.GeneralFrame κ}
 
-instance : IsPreorder κ H.toModal.Rel :=
-  inferInstanceAs (IsPreorder κ H.Rel)
+instance : IsPreorder _ H.toModal.Rel :=
+  inferInstanceAs (IsPreorder _ H.Rel)
 
 lemma subset_toModal_adm : H.Adm ⊆ H.toModal.Adm := subset_closure
 
 /-- An admissible upward closed set of `σ H` is admissible in `H`. -/
-lemma mem_adm_of_isUpwardClosed_of_mem_toModal {X : Set κ} (hX : X ∈ H.toModal.Adm)
+lemma mem_adm_of_isUpwardClosed_of_mem_toModal {X : Set H.World} (hX : X ∈ H.toModal.Adm)
     (h : H.toFrame.IsUpwardClosed X) : X ∈ H.Adm :=
   Frame.mem_of_isUpwardClosed_of_mem_closure H.isSublattice_adm H.himpSet_mem H.empty_mem hX h
 
@@ -71,7 +71,7 @@ end GeneralFrame
 
 section
 
-variable {G : _root_.GeneralFrame κ} [IsPreorder κ G.Rel]
+variable {G : _root_.GeneralFrame κ} [IsPreorder _ G.Rel]
 
 /-- `σ ρ G` has fewer admissible sets than `G`. -/
 lemma _root_.GeneralFrame.toIntuitionistic_toModal_adm_subset :
@@ -122,7 +122,7 @@ end GeneralFrame
 
 section
 
-variable {G : _root_.GeneralFrame κ} [IsPreorder κ G.Rel] {A : Formula α}
+variable {G : _root_.GeneralFrame κ} [IsPreorder _ G.Rel] {A : Formula α}
 
 /-- A modal formula `Aᵍ` is valid in `G` iff `A` is valid in `ρ G`.
 - [CZ98, Lemma 8.28] -/

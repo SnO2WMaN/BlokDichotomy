@@ -33,18 +33,18 @@ closed sets that contains `∅` and is closed under `∩`, `∪` and `Frame.himp
 structure GeneralFrame (κ : Type u) extends Frame κ where
   refl (x : toFrame.World) : x ≺ x
   trans {x y z : toFrame.World} : x ≺ y → y ≺ z → x ≺ z
-  Adm : Set (Set κ)
-  isUpwardClosed_of_mem {X : Set κ} : X ∈ Adm → toFrame.IsUpwardClosed X
+  Adm : Set (Set toFrame.World)
+  isUpwardClosed_of_mem {X : Set toFrame.World} : X ∈ Adm → toFrame.IsUpwardClosed X
   empty_mem : ∅ ∈ Adm
-  inter_mem {X Y : Set κ} : X ∈ Adm → Y ∈ Adm → X ∩ Y ∈ Adm
-  union_mem {X Y : Set κ} : X ∈ Adm → Y ∈ Adm → X ∪ Y ∈ Adm
-  himpSet_mem {X Y : Set κ} : X ∈ Adm → Y ∈ Adm → toFrame.himpSet X Y ∈ Adm
+  inter_mem {X Y : Set toFrame.World} : X ∈ Adm → Y ∈ Adm → X ∩ Y ∈ Adm
+  union_mem {X Y : Set toFrame.World} : X ∈ Adm → Y ∈ Adm → X ∪ Y ∈ Adm
+  himpSet_mem {X Y : Set toFrame.World} : X ∈ Adm → Y ∈ Adm → toFrame.himpSet X Y ∈ Adm
 
 namespace GeneralFrame
 
 variable {H : GeneralFrame κ}
 
-instance : IsPreorder κ H.Rel where
+instance : IsPreorder _ H.Rel where
   refl := H.refl
   trans _ _ _ := H.trans
 

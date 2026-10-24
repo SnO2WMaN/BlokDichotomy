@@ -173,7 +173,7 @@ end Logic
 /-- `𝐈𝐧𝐭` is sound and complete for the reflexive transitive frames.
 - [CZ98, Theorem 2.43] -/
 theorem mem_logicInt_iff {α : Type v} {A : Formula α} :
-    A ∈ 𝐈𝐧𝐭 ↔ ∀ (κ : Type v) (F : Frame κ) [IsPreorder κ F.Rel], F ⊧ A := by
+    A ∈ 𝐈𝐧𝐭 ↔ ∀ (κ : Type v) (F : Frame κ) [IsPreorder _ F.Rel], F ⊧ A := by
   constructor;
   · intro h κ F _;
     exact Frame.validates_of_mem_logicInt h;

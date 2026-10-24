@@ -236,7 +236,7 @@ lemma forces_ψ_subst_shift :
 
 section
 
-variable [IsTrans κ M.Rel']
+variable [IsTrans _ M.Rel']
 
 /-- - [Ger75, Claim 2]
 - [Lit04, Lemma 2.2] -/
@@ -324,7 +324,7 @@ lemma forces_chainVal_7_iff (hinj : Function.Injective u) (n : ℕ) :
   · rintro ⟨i, rfl⟩;
     use i;
 
-lemma chainVal_forces_neg_χ [IsTrans κ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
+lemma chainVal_forces_neg_χ [IsTrans _ F.Rel'] (hR : ∀ m, u m ≺ u (m + 1))
     (hinj : Function.Injective u) : u 0 ⊩[⟨F, chainVal u⟩] ∼χ := by
   have hlt : ∀ {i j}, i < j → u i ≺ u j := fun h => Nat.rel_of_forall_rel_succ_of_lt F.Rel' hR h;
   unfold χ;
