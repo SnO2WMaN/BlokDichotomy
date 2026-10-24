@@ -162,7 +162,7 @@ theorem mem_iff_canonicalModel_validates [L.IsExt 𝐈𝐧𝐭] : A ∈ L ↔ L.
     exact canonicalModel.truthlemma.mpr <| x.mem_of_mem_logic h;
   · intro h;
     by_contra hn;
-    have hnd : (∅ : FormulaSet α) ⊬[L] A := by
+    have hnd : ∅ ⊬[L] A := by
       by_contra hd;
       exact hn <| Derives.empty_iff.mp hd;
     obtain ⟨x, -, hx⟩ := exists_primeTheory hnd;
@@ -179,8 +179,8 @@ theorem mem_logicInt_iff {α : Type v} {A : Formula α} :
     exact Frame.validates_of_mem_logicInt h;
   · intro h;
     apply Logic.mem_iff_canonicalModel_validates.mpr;
-    exact h (𝐈𝐧𝐭 : Logic α).PrimeTheory (𝐈𝐧𝐭 : Logic α).canonicalModel.toFrame
-      (𝐈𝐧𝐭 : Logic α).canonicalModel.Val (𝐈𝐧𝐭 : Logic α).canonicalModel.hereditary;
+    exact h (logicInt (α := α)).PrimeTheory (logicInt (α := α)).canonicalModel.toFrame
+      (logicInt (α := α)).canonicalModel.Val (logicInt (α := α)).canonicalModel.hereditary;
 
 end Propositional
 

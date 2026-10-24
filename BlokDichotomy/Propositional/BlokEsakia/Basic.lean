@@ -94,14 +94,14 @@ companion of `L` by Esakia's theorem.
 - [CZ98, Corollary 9.64]
 - [Esa76] -/
 def greatestMC (L : Logic α) : NormalLogic α :=
-  (𝐆𝐫𝐳 : NormalLogic α) + Formula.gödelTranslate '' (L : Set (Formula α))
+  𝐆𝐫𝐳 + Formula.gödelTranslate '' L
 
 /-- `𝐒𝟒 ⊕ Lᵍ`, the least normal extension of `𝐒𝟒` containing the Gödel translations of the
 formulas of `L`; it is written `τ L` in [CZ98, §9.6]. For `L ⊇ 𝐈𝐧𝐭` it is the least modal companion
 of `L`.
 - [CZ98, §9.6] -/
 def leastMC (L : Logic α) : NormalLogic α :=
-  (𝐒𝟒 : NormalLogic α) + Formula.gödelTranslate '' (L : Set (Formula α))
+  𝐒𝟒 + Formula.gödelTranslate '' L
 
 instance : L.greatestMC.IsNExt 𝐆𝐫𝐳 := ⟨NormalLogic.le_add⟩
 

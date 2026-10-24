@@ -83,7 +83,7 @@ def upAdm (G : GeneralFrame κ) : Set (Set G.World) := {X ∈ G.Adm | G.toFrame.
 
 lemma upAdm_subset_adm : G.upAdm ⊆ G.Adm := fun _ hX => hX.1
 
-lemma validates_logicS4 [IsPreorder _ G.Rel] : G ⊧ (𝐒𝟒 : NormalLogic α) := by
+lemma validates_logicS4 [IsPreorder _ G.Rel] : G ⊧ logicS4 (α := α) := by
   intro A hA;
   exact validates_of_toFrame <| Frame.validates_logicS4 A hA;
 

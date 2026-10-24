@@ -132,7 +132,7 @@ lemma validates_axiomsK (h : φ ∈ (FormulaSet.axiomsK : FormulaSet α)) : A �
 Every modal algebra validates `𝐊`.
 - [CZ98, Theorem 7.44]
 -/
-theorem validates_logicK : A ⊧ (𝐊 : NormalLogic α) :=
+theorem validates_logicK : A ⊧ logicK (α := α) :=
   NormalLogic.ofSet_le (L := logic A) fun _ => validates_axiomsK
 
 instance : (logic A : NormalLogic α).IsNExt 𝐊 := ⟨fun _ => validates_logicK _⟩

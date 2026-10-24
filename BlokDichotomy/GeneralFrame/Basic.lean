@@ -182,7 +182,7 @@ def logic (G : GeneralFrame κ) : NormalLogic α where
 
 lemma validatesLogic_logic : G ⊧ (G.logic : NormalLogic α) := fun _ hA => hA
 
-lemma validates_logicK : G ⊧ (𝐊 : NormalLogic α) := by
+lemma validates_logicK : G ⊧ logicK (α := α) := by
   intro φ hA V _;
   exact Frame.validates_logicK φ hA V;
 

@@ -105,7 +105,7 @@ theorem gödelTranslate_mem_logicS4_iff : A ∈ 𝐈𝐧𝐭 ↔ Aᵍ ∈ 𝐒�
 
 /-- `𝐒𝟒` is a modal companion of `𝐈𝐧𝐭`.
 - [CZ98, Theorem 3.83, §9.6] -/
-theorem logicS4_isModalCompanionOf_logicInt : (𝐒𝟒 : NormalLogic α).IsModalCompanionOf 𝐈𝐧𝐭 :=
+theorem logicS4_isModalCompanionOf_logicInt : (logicS4 (α := α)).IsModalCompanionOf 𝐈𝐧𝐭 :=
   fun _ => gödelTranslate_mem_logicS4_iff
 
 end Propositional

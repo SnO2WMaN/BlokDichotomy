@@ -473,7 +473,7 @@ lemma validates_axiomsK : F ⊧ (FormulaSet.axiomsK : FormulaSet α) := by
   rintro φ hA V x;
   cases hA <;> grind;
 
-lemma validates_logicK : F ⊧ (𝐊 : NormalLogic α) := validates_ofSet validates_axiomsK
+lemma validates_logicK : F ⊧ logicK (α := α) := validates_ofSet validates_axiomsK
 
 lemma validates_add (hL : F ⊧ L) (hX : F ⊧ X) : F ⊧ (L + X) := by
   apply validates_ofSet;

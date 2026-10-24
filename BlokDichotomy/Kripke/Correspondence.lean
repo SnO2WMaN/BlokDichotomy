@@ -46,7 +46,7 @@ lemma trans_of_validates_four (h : F ⊧ (□#a 🡒 □□#a)) : IsTrans _ F.Re
 
 /-- - [CZ98, Proposition 3.30]
 - [CZ98, Proposition 3.31] -/
-lemma validates_logicS4 [Std.Refl F.Rel] [IsTrans _ F.Rel] : F ⊧ (𝐒𝟒 : NormalLogic α) := by
+lemma validates_logicS4 [Std.Refl F.Rel] [IsTrans _ F.Rel] : F ⊧ logicS4 (α := α) := by
   refine validates_add (validates_add validates_logicK ?_) ?_
   · rintro _ ⟨A, rfl⟩
     exact validates_four_of_trans
@@ -56,7 +56,7 @@ lemma validates_logicS4 [Std.Refl F.Rel] [IsTrans _ F.Rel] : F ⊧ (𝐒𝟒 : N
 /-- - [CZ98, Proposition 3.30]
 - [CZ98, Proposition 3.31] -/
 lemma validates_logicS4_iff [Inhabited α] :
-    F ⊧ (𝐒𝟒 : NormalLogic α) ↔ Std.Refl F.Rel' ∧ IsTrans _ F.Rel' := by
+    F ⊧ logicS4 (α := α) ↔ Std.Refl F.Rel' ∧ IsTrans _ F.Rel' := by
   constructor;
   · intro h;
     constructor;

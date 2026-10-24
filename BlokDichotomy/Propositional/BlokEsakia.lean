@@ -210,7 +210,7 @@ theorem exists_subst_not_mem [Nonempty α] (L₂ : NormalLogic α) [L₂.IsNExt 
     {A : _root_.Formula α} (h : A ∉ L₂) :
     ∃ (s : _root_.Formula.Substitution α α) (β : α → _root_.Formula (_root_.Formula α)),
       (∀ p, (β p).depth = 0 ∧ s p = (β p)⟦(□·)⟧) ∧ A⟦s⟧ ∉ L₂ := by
-  have hGrz : L₂.canonicalGeneralFrame ⊧ (𝐆𝐫𝐳 : NormalLogic α) := fun B hB =>
+  have hGrz : L₂.canonicalGeneralFrame ⊧ logicGrz (α := α) := fun B hB =>
     NormalLogic.canonicalGeneralFrame.validates_iff.mpr (NormalLogic.IsNExt.logic_le hB);
   have hA : L₂.canonicalGeneralFrame ⊭ A := by
     by_contra h₀;

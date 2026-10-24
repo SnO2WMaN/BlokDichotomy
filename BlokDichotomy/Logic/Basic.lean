@@ -89,7 +89,9 @@ instance : Inter (NormalLogic α) := ⟨inter⟩
 instance : SupSet (NormalLogic α) where
   sSup F := ofSet <| Set.sUnion ((·.carrier) '' F)
 
-instance : HAdd (NormalLogic α) (FormulaSet α) (NormalLogic α) := ⟨fun L X => ofSet (L.carrier ∪ X)⟩
+@[default_instance]
+instance : HAdd (NormalLogic α) (FormulaSet α) (NormalLogic α) :=
+  ⟨fun L X => ofSet (L.carrier ∪ X)⟩
 
 /-- The join of two normal logics. -/
 instance : Add (NormalLogic α) := ⟨fun L₁ L₂ => L₁ + L₂.carrier⟩
@@ -130,23 +132,23 @@ notation "𝐊" => logicK
 
 /-- The normal logic `𝐊𝟒 = 𝐊 ⊕ □A 🡒 □□A`. -/
 abbrev logicK4 : NormalLogic α :=
-  (𝐊 : NormalLogic α) + {□A 🡒 □□A | (A : Formula α)}
+  𝐊 + {□A 🡒 □□A | (A : Formula α)}
 notation "𝐊𝟒" => logicK4
 
 /-- The normal logic `𝐊𝐃 = 𝐊 ⊕ □A 🡒 ◇A`. -/
 abbrev logicKD : NormalLogic α :=
-  (𝐊 : NormalLogic α) + {□A 🡒 ◇A | (A : Formula α)}
+  𝐊 + {□A 🡒 ◇A | (A : Formula α)}
 notation "𝐊𝐃" => logicKD
 
 /-- The normal logic `𝐒𝟒 = 𝐊𝟒 ⊕ □A 🡒 A`. -/
 abbrev logicS4 : NormalLogic α :=
-  (𝐊𝟒 : NormalLogic α) + {□A 🡒 A | (A : Formula α)}
+  𝐊𝟒 + {□A 🡒 A | (A : Formula α)}
 notation "𝐒𝟒" => logicS4
 
 /-- The normal logic `𝐆𝐫𝐳 = 𝐒𝟒 ⊕ □(□(A 🡒 □A) 🡒 A) 🡒 A`.
 - [CZ98, §3.8] -/
 abbrev logicGrz : NormalLogic α :=
-  (𝐒𝟒 : NormalLogic α) + {□(□(A 🡒 □A) 🡒 A) 🡒 A | (A : Formula α)}
+  𝐒𝟒 + {□(□(A 🡒 □A) 🡒 A) 🡒 A | (A : Formula α)}
 notation "𝐆𝐫𝐳" => logicGrz
 
 namespace NormalLogic
@@ -187,9 +189,9 @@ instance [L.IsNExt L₀] : (L + X).IsNExt L₀ :=
 lemma IsNExt.trans (L₁ : NormalLogic α) [L.IsNExt L₁] [L₁.IsNExt L₀] : L.IsNExt L₀ :=
   ⟨le_trans (IsNExt.logic_le (L := L₁)) IsNExt.logic_le⟩
 
-lemma logicK_le_logicS4 : (𝐊 : NormalLogic α) ≤ 𝐒𝟒 := le_add.trans le_add
+lemma logicK_le_logicS4 : logicK (α := α) ≤ 𝐒𝟒 := le_add.trans le_add
 
-lemma logicS4_le_logicGrz : (𝐒𝟒 : NormalLogic α) ≤ 𝐆𝐫𝐳 := le_add
+lemma logicS4_le_logicGrz : logicS4 (α := α) ≤ 𝐆𝐫𝐳 := le_add
 
 instance [L.IsNExt 𝐒𝟒] : L.IsNExt 𝐊 := ⟨logicK_le_logicS4.trans IsNExt.logic_le⟩
 
@@ -698,7 +700,7 @@ end Modal
 
 end Reasoning
 
-lemma diaTop_mem_logicKD : ◇⊤ ∈ (𝐊𝐃 : NormalLogic α) := mem_mdp box_top <| mem_add ⟨⊤, rfl⟩
+lemma diaTop_mem_logicKD : ◇⊤ ∈ logicKD (α := α) := mem_mdp box_top <| mem_add ⟨⊤, rfl⟩
 
 end NormalLogic
 

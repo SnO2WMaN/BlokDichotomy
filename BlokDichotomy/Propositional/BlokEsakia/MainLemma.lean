@@ -490,7 +490,7 @@ private lemma dia_mem_definableType_of_rel {B : Formula α} (h : ◇B ∈ A.subf
 /-- If `◇B` belongs to the type assigned to `x` and the truth lemma holds for `B`, then `x` sees
 a point where `B` is true. -/
 private lemma exists_rel_forces_of_dia_mem_definableType [Nonempty α] (hV : G.IsAdmissible V)
-    (hGrz : G ⊧ (𝐆𝐫𝐳 : NormalLogic α)) (hB : ◇B ∈ A.subformulas)
+    (hGrz : G ⊧ logicGrz (α := α)) (hB : ◇B ∈ A.subformulas)
     (ih : ∀ y, y ⊩[G.model (G.definableValuation V A)] B ↔ B ∈ G.definableType V A y)
     (h : ◇B ∈ G.definableType V A x) : ∃ y, x ≺ y ∧ y ⊩[G.model (G.definableValuation V A)] B := by
   have hB' : B ∈ A.subformulas := mem_subformulas_of_dia hB;
@@ -512,7 +512,7 @@ private lemma exists_rel_forces_of_dia_mem_definableType [Nonempty α] (hV : G.I
 /-- The truth lemma: a subformula of `A` is true at `x` under `definableValuation` iff it belongs to
 the type assigned to `x`. -/
 lemma forces_definableValuation_iff [Nonempty α] (hV : G.IsAdmissible V)
-    (hGrz : G ⊧ (𝐆𝐫𝐳 : NormalLogic α)) {B : Formula α} (hB : B ∈ A.subformulas) (x : G.World) :
+    (hGrz : G ⊧ logicGrz (α := α)) {B : Formula α} (hB : B ∈ A.subformulas) (x : G.World) :
     x ⊩[G.model (G.definableValuation V A)] B ↔ B ∈ G.definableType V A x := by
   induction B generalizing x with
   | atom p => exact Iff.rfl;
@@ -540,7 +540,7 @@ omit [DecidableEq α] in
 /-- A formula refuted in a general frame on a preorder validating `𝐆𝐫𝐳` is refuted in `σ ρ G`.
 - [BC22, Lemma 4.1] -/
 theorem not_validates_toIntuitionistic_toModal_of_not_validates [Nonempty α]
-    (hGrz : G ⊧ (𝐆𝐫𝐳 : NormalLogic α)) (h : G ⊭ A) : G.toIntuitionistic.toModal ⊭ A := by
+    (hGrz : G ⊧ logicGrz (α := α)) (h : G ⊭ A) : G.toIntuitionistic.toModal ⊭ A := by
   classical
   by_contra hσ;
   apply h;
@@ -564,8 +564,8 @@ theorem not_validates_toIntuitionistic_toModal_of_not_validates [Nonempty α]
 omit [DecidableEq α] in
 /-- The logic of `σ ρ G` is the logic of `G`.
 - [BC22, Lemma 4.1] -/
-theorem logic_toIntuitionistic_toModal_eq [Nonempty α] (hGrz : G ⊧ (𝐆𝐫𝐳 : NormalLogic α)) :
-    (G.toIntuitionistic.toModal.logic : NormalLogic α) = G.logic := by
+theorem logic_toIntuitionistic_toModal_eq [Nonempty α] (hGrz : G ⊧ logicGrz (α := α)) :
+    G.toIntuitionistic.toModal.logic (α := α) = G.logic := by
   apply le_antisymm _ G.logic_le_toIntuitionistic_toModal;
   intro A hA;
   by_contra h;

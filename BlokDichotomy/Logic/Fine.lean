@@ -365,7 +365,7 @@ open Fine in
 - [Fin74a]
 - [Ger75, §4]
 - [Lit04, p. 332] -/
-abbrev logicS4Fine : NormalLogic ℕ := (𝐒𝟒 : NormalLogic ℕ) + ({θ, χ} : FormulaSet ℕ)
+abbrev logicS4Fine : NormalLogic ℕ := 𝐒𝟒 + ({θ, χ} : FormulaSet ℕ)
 
 /-- Fine's frame, on the points `(0, m) = a_m`, `(1, m) = b_m`, `(2, m) = c_m` and
 `(3, m) = d_m`.

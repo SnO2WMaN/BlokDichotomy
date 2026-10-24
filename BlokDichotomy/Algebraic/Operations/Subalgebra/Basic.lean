@@ -78,7 +78,7 @@ lemma Validates.subalgebra (S : ModalSubalgebra A) (h : A ⊧ φ) : S ⊧ φ :=
   h.of_injective S.subtype_injective
 
 lemma logic_le_of_injective {f : ModalAlgebraHom A B} (hf : Function.Injective f) :
-    (logic B : NormalLogic α) ≤ logic A := fun _ => Validates.of_injective hf
+    logic (α := α) B ≤ logic A := fun _ => Validates.of_injective hf
 
 end ModalAlgebra
 

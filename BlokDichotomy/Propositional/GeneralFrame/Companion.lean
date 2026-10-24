@@ -82,7 +82,7 @@ lemma _root_.GeneralFrame.toIntuitionistic_toModal_adm_subset :
   exact h hX
 
 lemma _root_.GeneralFrame.logic_le_toIntuitionistic_toModal :
-    (G.logic : NormalLogic α) ≤ G.toIntuitionistic.toModal.logic := by
+    G.logic (α := α) ≤ G.toIntuitionistic.toModal.logic := by
   intro A hA V hV;
   exact hA V fun a => _root_.GeneralFrame.toIntuitionistic_toModal_adm_subset (hV a)
 
@@ -186,7 +186,7 @@ theorem toModal_validates_grz (A : _root_.Formula α) :
 /-- `σ H` validates `𝐆𝐫𝐳`.
 - [CZ98, §8.3]
 - [BC22, §1.5] -/
-theorem toModal_validates_logicGrz : H.toModal ⊧ (𝐆𝐫𝐳 : NormalLogic α) := by
+theorem toModal_validates_logicGrz : H.toModal ⊧ logicGrz (α := α) := by
   apply _root_.GeneralFrame.validatesLogic_add _root_.GeneralFrame.validates_logicS4;
   rintro _ ⟨A, rfl⟩;
   exact toModal_validates_grz A
