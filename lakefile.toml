@@ -16,6 +16,10 @@ weak.linter.style.header = false
 [[lean_lib]]
 name = "BlokDichotomy"
 
+[[lean_lib]]
+name = "K4S4"
+roots = ["K4S4.Experiments"]
+
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4"
