@@ -78,6 +78,11 @@ lake build BlokDichotomy --wfail
 
 ## Mathematical notes
 
-Record subsequent conjectures and arguments here as they arise in discussion,
-labeling their status as conjectural, informally proved, unchecked Lean, or
-Lean-checked. No proof strategy for the continuum lower bound has been chosen yet.
+[Continuum many Kripke-complete S4 extensions of continuum degree](ContinuumManyDegreeContinuum.md)
+is an informal proof using the local general-frame construction in *A degree
+continuum logic above S4*. Splitting its indices into even and odd numbers gives
+continuum many different Kripke-complete logics, each with continuum many
+companions in `NExt S4`. The odd indices distinguish their validating frame
+classes, and the even indices distinguish the companions within each class.
+The general-frame construction and this application have not been formalized in
+Lean.
