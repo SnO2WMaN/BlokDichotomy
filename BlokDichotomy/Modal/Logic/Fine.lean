@@ -506,6 +506,26 @@ lemma rel_swap {x y : fineFrame.World} : (swap x ≺ swap y) ↔ x ≺ y := by
 
 @[simp] lemma forces_atom {n : ℕ} : x ⊩[⟨fineFrame, V⟩] #n ↔ V x n := Iff.rfl
 
+/-- The successors of `d_i` are the `d_k` and `a_k` with `i ≤ k`, and all `b`- and `c`-points. -/
+lemma forces_dia_d_iff {i : ℕ} {A : Formula ℕ} :
+    d i ⊩[⟨fineFrame, V⟩] ◇A ↔
+      (∃ k, i ≤ k ∧ (d k ⊩[⟨fineFrame, V⟩] A)) ∨
+      (∃ m, i ≤ m ∧ (a m ⊩[⟨fineFrame, V⟩] A)) ∨
+      (∃ k, (b k ⊩[⟨fineFrame, V⟩] A)) ∨ (∃ k, (c k ⊩[⟨fineFrame, V⟩] A)) := by
+  rw [forces_dia];
+  constructor;
+  · rintro ⟨y, hy, hyA⟩;
+    cases y using casesOn with
+    | d k => exact Or.inl ⟨k, hy, hyA⟩;
+    | a m => exact Or.inr <| Or.inl ⟨m, hy, hyA⟩;
+    | b k => exact Or.inr <| Or.inr <| Or.inl ⟨k, hyA⟩;
+    | c k => exact Or.inr <| Or.inr <| Or.inr ⟨k, hyA⟩;
+  · rintro (⟨k, hk, hA⟩ | ⟨m, hm, hA⟩ | ⟨k, hA⟩ | ⟨k, hA⟩);
+    · exact ⟨d k, hk, hA⟩;
+    · exact ⟨a m, hm, hA⟩;
+    · exact ⟨b k, trivial, hA⟩;
+    · exact ⟨c k, trivial, hA⟩;
+
 end fineFrame
 
 namespace fineModel
@@ -681,29 +701,12 @@ lemma d_eventually_period_two (A : Formula ℕ) :
     simp only [forces_imp, NotForces, hNA i j (by omega) (by omega) hij,
       hNB i j (by omega) (by omega) hij]
   | dia B ih =>
-    have hdia : ∀ i : ℕ, (d i ⊩[fineModel] ◇B) ↔
-        (∃ k, i ≤ k ∧ (d k ⊩[fineModel] B)) ∨
-        (∃ m, i ≤ m ∧ (a m ⊩[fineModel] B)) ∨
-        (∃ k, (b k ⊩[fineModel] B)) ∨ (∃ k, (c k ⊩[fineModel] B)) := by
-      intro i;
-      rw [forces_dia];
-      constructor;
-      · rintro ⟨y, hy, hyA⟩;
-        cases y using casesOn with
-        | d k => exact Or.inl ⟨k, hy, hyA⟩;
-        | a m => exact Or.inr <| Or.inl ⟨m, hy, hyA⟩;
-        | b k => exact Or.inr <| Or.inr <| Or.inl ⟨k, hyA⟩;
-        | c k => exact Or.inr <| Or.inr <| Or.inr ⟨k, hyA⟩;
-      · rintro (⟨k, hk, hA⟩ | ⟨m, hm, hA⟩ | ⟨k, hA⟩ | ⟨k, hA⟩);
-        · exact ⟨d k, hk, hA⟩;
-        · exact ⟨a m, hm, hA⟩;
-        · exact ⟨b k, trivial, hA⟩;
-        · exact ⟨c k, trivial, hA⟩;
     obtain ⟨N1, hN1⟩ := exists_ge_eventually_const (fun k => d k ⊩[fineModel] B);
     obtain ⟨N2, hN2⟩ := exists_ge_eventually_const (fun m => a m ⊩[fineModel] B);
     use max N1 N2;
     intro i j hi hj _;
-    rw [hdia i, hdia j, hN1 i j (by omega) (by omega), hN2 i j (by omega) (by omega)]
+    rw [forces_dia_d_iff, forces_dia_d_iff (i := j), hN1 i j (by omega) (by omega),
+      hN2 i j (by omega) (by omega)]
 
 /-- The three pairwise incompatible phases of a refutation of `χ⟦σ⟧`. -/
 def phase (σ : Formula.Substitution ℕ ℕ) (r : ℕ) : Formula ℕ :=

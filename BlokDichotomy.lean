@@ -20,6 +20,7 @@ public import BlokDichotomy.Modal.Kripke.Degree
 public import BlokDichotomy.Modal.Kripke.Filtration
 public import BlokDichotomy.Modal.Kripke.Generated
 public import BlokDichotomy.Modal.Kripke.JankovFine
+public import BlokDichotomy.Modal.Kripke.JankovFine.Transitive
 public import BlokDichotomy.Modal.Kripke.Makinson
 public import BlokDichotomy.Modal.Kripke.PMorphism
 public import BlokDichotomy.Modal.Kripke.Transport
@@ -28,6 +29,10 @@ public import BlokDichotomy.Modal.Kripke.UnionSplitting
 public import BlokDichotomy.Modal.Logic.Basic
 public import BlokDichotomy.Modal.Logic.CNF
 public import BlokDichotomy.Modal.Logic.Fine
+public import BlokDichotomy.Modal.Logic.Fine.Coding
+public import BlokDichotomy.Modal.Logic.Fine.Pin
+public import BlokDichotomy.Modal.Logic.Fine.Degree
+public import BlokDichotomy.Modal.Logic.Fine.Continuum
 public import BlokDichotomy.Modal.Logic.Restrict
 public import BlokDichotomy.Modal.Logic.Splitting
 public import BlokDichotomy.Modal.Logic.Uncountable
@@ -43,6 +48,7 @@ public import BlokDichotomy.Propositional.Logic.Basic
 public import BlokDichotomy.Propositional.ModalCompanion
 public import BlokDichotomy.ToMathlib.Data.Fintype.EquivFin
 public import BlokDichotomy.ToMathlib.Data.List.Induction
+public import BlokDichotomy.ToMathlib.Data.Nat.Basic
 public import BlokDichotomy.ToMathlib.Order.BooleanSubalgebra
 public import BlokDichotomy.ToMathlib.Order.Monotone.Basic
 public import BlokDichotomy.ToMathlib.Order.Notation
