@@ -1,11 +1,19 @@
 # Continuum many Kripke-complete S4 extensions of continuum degree
 
-**Status:** informal mathematical proof. We use the general frames, formulas,
-and logics of [A degree continuum logic above S4](literature/A%20degree%20continuum%20logic%20above%20S4.md).
-The general-frame construction and its application below have not been
-formalized in Lean. The rooted-frame intersection lemma used below is already
-formalized as `Frame.validates_inter_of_isRooted_of_infinite` in
-[`Degree.lean`](../BlokDichotomy/Modal/Kripke/Degree.lean).
+**Status:** Lean-checked. The concrete construction is described in
+[The indexed S4 construction](Construction.md) and formalized under
+[`Construction/`](Construction/). The main results in
+[`ContinuumManyDegreeContinuum.lean`](ContinuumManyDegreeContinuum.lean) are
+`Modal.K4S4.exists_complete_continuum_degree_family` and
+`Modal.K4S4.mk_complete_continuum_degree_eq_continuum`. The first also gives
+pairwise distinct classes of validating frames; the second states the exact
+cardinality of all Kripke-complete S4 extensions of continuum S4 degree.
+
+The reusable intersection lemmas are in
+[`Degree.lean`](Kripke/Degree.lean), including
+`NormalLogic.FrameEquiv.inter` and `NormalLogic.KripkeComplete.inter`.
+The formalization uses formulas over natural-number variables and all frames
+in `Type`, as below. Check it with `lake build K4S4 --wfail`.
 
 **Theorem.** There are $2^{\aleph_0}$ pairwise distinct Kripke-complete normal
 extensions of $\mathsf{S4}$, each of degree $2^{\aleph_0}$ in
@@ -22,13 +30,13 @@ $$
   \operatorname{Fr}(H)=\operatorname{Fr}(A)\}\right|.
 $$
 
-The idea is to split the source construction's indices into two infinite sets.
+The idea is to split the indexed construction's indices into two infinite sets.
 One set distinguishes the Kripke-complete logics; the other distinguishes
 continuum many companions of each one.
 
-## 1. The information supplied by the source construction
+## 1. The information supplied by the indexed construction
 
-Retain the source notation
+For the construction in [Construction.md](Construction.md), write
 
 $$
 M=\mathsf{S4}+\sigma+\{\theta_n:n\in\omega\},\qquad
@@ -41,7 +49,7 @@ L_I=M+\{\chi_n:n\in\omega\setminus I\}
 \chi_n=\phi_r\to\neg\Diamond\phi_{e_n}.
 $$
 
-The source proof establishes
+The construction establishes
 
 $$
 \operatorname{Fr}(L_I)=\operatorname{Fr}(L),\qquad
@@ -73,7 +81,8 @@ $$
 \tag{3}
 $$
 
-*Proof.* The source naming lemma holds for arbitrary valuations on $G_J$.
+*Proof.* The naming lemma in [Construction.md](Construction.md) holds for
+arbitrary valuations on $G_J$.
 Its proof uses only the relation and the Boolean types: it first identifies the
 two terminal points, then the four minimal nonterminal points, and then the
 ladder levels and the remaining named points. No step uses the finite-or-cofinite
@@ -85,7 +94,7 @@ $\chi_n$ is true everywhere. Otherwise the unrestricted naming lemma applies:
 $\phi_r$ names $r$, and $\phi_{e_n}$ is false everywhere because $e_n$ is absent.
 Again $\chi_n$ is true everywhere. Thus $G_J\models\chi_n$.
 
-If $n\in J$, the source valuation $V^*$ is also a valuation on $G_J$.
+If $n\in J$, the distinguished valuation $V^*$ is also a valuation on $G_J$.
 At $r$ it satisfies $\phi_r\land\Diamond\phi_{e_n}$, so it refutes $\chi_n$.
 This proves (3). $\square$
 
@@ -164,7 +173,7 @@ $$
 P_{I,J}=L_I\cap C_J.
 $$
 
-Every one of these logics is a normal extension of $\mathsf{S4}$: the source
+Every one of these logics is a normal extension of $\mathsf{S4}$: the indexed
 logics extend $\mathsf{S4}$, and each $G_J$ is reflexive and transitive.
 
 **Each $Q_J$ is Kripke complete.** Indeed,

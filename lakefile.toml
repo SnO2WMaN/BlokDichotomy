@@ -19,6 +19,7 @@ name = "BlokDichotomy"
 [[lean_lib]]
 name = "K4S4"
 roots = ["K4S4.Experiments"]
+globs = ["K4S4.+"]
 
 [[require]]
 name = "mathlib"

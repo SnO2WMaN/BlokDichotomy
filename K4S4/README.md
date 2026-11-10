@@ -65,6 +65,12 @@ lake build K4S4 --wfail
 lake env lean K4S4/Experiments.lean
 ```
 
+[`ContinuumManyDegreeContinuum.lean`](ContinuumManyDegreeContinuum.lean) proves
+the existence and exact cardinality of Kripke-complete S4 extensions of continuum
+degree in `NExt S4`. Its concrete frame construction and naming lemmas are in
+[`Construction/`](Construction/). The optional `K4S4` target builds these modules
+as well as the experiments.
+
 `Experiments.lean` contains small examples applying existing results: the degree
 bounds, the continuum-degree implication from `NExt S4` to `NExt K4`, and validity
 of the `4` scheme on transitive frames.
@@ -79,10 +85,9 @@ lake build BlokDichotomy --wfail
 ## Mathematical notes
 
 [Continuum many Kripke-complete S4 extensions of continuum degree](ContinuumManyDegreeContinuum.md)
-is an informal proof using the local general-frame construction in *A degree
-continuum logic above S4*. Splitting its indices into even and odd numbers gives
+is a Lean-checked proof using the general frames described in
+[The indexed S4 construction](Construction.md). Splitting its indices into even and odd numbers gives
 continuum many different Kripke-complete logics, each with continuum many
 companions in `NExt S4`. The odd indices distinguish their validating frame
 classes, and the even indices distinguish the companions within each class.
-The general-frame construction and this application have not been formalized in
-Lean.
+Both the general-frame construction and this application are formalized in Lean.
